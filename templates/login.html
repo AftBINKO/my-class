@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Авторизация
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-center align-items-center">
+            <form action="" method="post">
+                {{ form.hidden_tag() }}
+                <legend style="text-align: center">Авторизация</legend>
+                {% if type_message %}
+                    <div class="alert alert-{{ type_message }}">{{ message }}</div>
+                {% endif %}
+                <div class="mb-3">
+                    {{ form.login.label(class="form-label") }}
+                    {{ form.login(class="form-control", placeholder="user") }}
+                    {% for error in form.login.errors %}
+                        <div class="alert alert-danger" role="alert">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="mb-3">
+                    {{ form.password.label(class="form-label") }}
+                    {{ form.password(class="form-control", type="password") }}
+                    {% for error in form.password.errors %}
+                        <div class="alert alert-danger" role="alert">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="mb-3 form-check">
+                    {{ form.remember_me(class="form-check-input") }}
+                    {{ form.remember_me.label(class="form-check-label") }}
+                    {% for error in form.remember_me.errors %}
+                        <div class="alert alert-danger" role="alert">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div>
+                    <a href="">
+                        Меня пригласил учитель/администратор
+                    </a>
+                </div>
+                <div>
+                    {{ form.submit(type="submit", class="btn btn-success") }}
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
