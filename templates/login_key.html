@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Авторизация по приглашению
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-center align-items-center">
+            <form action="" method="post">
+                {{ form.hidden_tag() }}
+                <legend style="text-align: center">Авторизация по приглашению</legend>
+                {% if type_message %}
+                    <div class="alert alert-{{ type_message }}">{{ message }}</div>
+                {% endif %}
+                <div class="mb-3">
+                    {{ form.key.label(class="form-label") }}
+                    {{ form.key(class="form-control", placeholder="XXXXXXXXXX") }}
+                    {% for error in form.key.errors %}
+                        <div class="alert alert-danger" role="alert">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                </div>
+                <div>
+                    {{ form.submit(type="submit", class="btn btn-success") }}
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
