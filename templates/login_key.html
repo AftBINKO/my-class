@@ -10,16 +10,15 @@
             <form action="" method="post">
                 {{ form.hidden_tag() }}
                 <legend style="text-align: center">Авторизация по приглашению</legend>
-                {% if type_message %}
-                    <div class="alert alert-{{ type_message }}">{{ message }}</div>
+                {% if message %}
+                    <div class="alert alert-danger">{{ message }}</div>
                 {% endif %}
                 <div class="mb-3">
-                    {{ form.key.label(class="form-label") }}
+                    {{ form.key.label(class="form-label") }}*
                     {{ form.key(class="form-control", placeholder="XXXXXXXXXX") }}
                     {% for error in form.key.errors %}
                         <div class="alert alert-danger" role="alert">{{ error }}</div>
                     {% endfor %}
-                </div>
                 </div>
                 <div>
                     {{ form.submit(type="submit", class="btn btn-success") }}

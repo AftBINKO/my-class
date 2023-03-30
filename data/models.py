@@ -19,7 +19,7 @@ class User(SqlAlchemyBase, UserMixin):
     hashed_password = Column(String)
     key = Column(String, unique=True)
 
-    data = Column(Text, default="{}")
+    data = Column(Text, nullable=False, default="{}")
     status = Column(Integer, ForeignKey("statuses.id"), default=1, nullable=False)
 
     user_status = orm.relationship('Status')
@@ -75,7 +75,7 @@ class School(SqlAlchemyBase):
     name = Column(String, nullable=False)
     fullname = Column(String)
 
-    school_class = orm.relationship("User", back_populates="school")
+    school_class = orm.relationship("Class", back_populates="school")
 
     def __repr__(self):
         return f"<Status {self.title}>"

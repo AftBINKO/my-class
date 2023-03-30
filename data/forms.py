@@ -11,7 +11,7 @@ class LoginForm(FlaskForm):
 
 
 class LoginKeyForm(FlaskForm):
-    key = StringField('Ключ', validators=[DataRequired()])
+    key = PasswordField('Ключ', validators=[DataRequired()])
     submit = SubmitField('Завершить регистрацию')
 
 
