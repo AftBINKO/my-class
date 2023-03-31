@@ -79,10 +79,6 @@ def login_with_key():
     if current_user.is_authenticated:
         return redirect(url_for("profile"))
 
-    permission = db_sess.query(Permission).filter(Permission.title == "login_with_key").first()  # noqa
-    if not allowed_permission(current_user, permission):
-        return redirect(url_for("login"))
-
     form = LoginKeyForm()
     data = {
         "form": form,
