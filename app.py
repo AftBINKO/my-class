@@ -139,7 +139,13 @@ def finish_register():
 def profile():
     db_sess = create_session()
     status = db_sess.query(Status).filter(Status.id == current_user.status).first()
-    return render_template("profile.html", status=status)
+    permissions = all_permissions(current_user)
+    data = {
+        "status": status,
+        "permissions": permissions
+    }
+
+    return render_template("profile.html", **data)
 
 
 if __name__ == '__main__':

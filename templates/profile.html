@@ -14,25 +14,42 @@
         </h2>
         <p style="text-align: center">{{ status.title }}</p>
         <p class="fs-3" style="text-align: center">Ваш ID: {{ current_user.id }}</p>
-        <div class="dropdown" style="justify-content: center; display: flex">
-            <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                    aria-expanded="false">
-                Редактировать
-            </button>
-            <ul class="dropdown-menu">
-{#                <li>#}
-{#                    <a href="{{ url_for("change_email") }}" class="dropdown-item">#}
-{#                        Изменить почту#}
-{#                    </a>#}
-{#                </li>#}
-                <li>
-                    <a href="" class="dropdown-item">
-                        Изменить пароль
-                    </a>
+        {% if "editing_profile" in permissions %}
+            <div class="dropdown" style="justify-content: center; display: flex">
+                <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                    Редактировать
+                </button>
+                <ul class="dropdown-menu">
+                    {% if "changing_fullname" in permissions %}
+                        <li>
+                            <a href="" class="dropdown-item">
+                                Изменить ФИО
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                    {% endif %}
+                    {% if "changing_login" in permissions %}
+                        <li>
+                            <a href="" class="dropdown-item">
+                                Изменить логин
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% if "changing_password" in permissions %}
+                        <li>
+                            <a href="" class="dropdown-item">
+                                Изменить пароль
+                            </a>
+                        </li>
+                    {% endif %}
+
                     {#{{ url_for("change_password") }}#}
-                </li>
-            </ul>
-        </div>
+                    {#{{ url_for("change_login") }}#}
+                    {#{{ url_for("change_fullname") }}#}
+                </ul>
+            </div>
+        {% endif %}
         {#{{ url_for("edit_profile") }}#}
     </div>
 {% endblock %}
