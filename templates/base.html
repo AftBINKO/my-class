@@ -24,7 +24,9 @@
                             {{ current_user.fullname }}
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#">Профиль</a></li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for("profile") }}">Профиль</a>
+                            </li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>

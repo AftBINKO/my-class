@@ -1,4 +1,5 @@
 from sqlalchemy import Column, String, Integer, Boolean, Text, ForeignKey, orm
+from sqlalchemy_serializer import SerializerMixin
 
 from werkzeug.security import generate_password_hash, check_password_hash
 from random import choices
@@ -7,8 +8,10 @@ from flask_login import UserMixin
 from .db_session import SqlAlchemyBase
 
 
-class User(SqlAlchemyBase, UserMixin):
+class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     __tablename__ = 'users'
+
+    serialize_rules = ("-user_status", "-user_class",)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
@@ -49,8 +52,10 @@ class User(SqlAlchemyBase, UserMixin):
         return [column.key for column in self.__table__.columns]
 
 
-class Class(SqlAlchemyBase):
+class Class(SqlAlchemyBase, SerializerMixin):
     __tablename__ = 'classes'
+
+    serialize_rules = ("-school", "-user",)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     class_number = Column(Integer, nullable=False)
@@ -62,14 +67,16 @@ class Class(SqlAlchemyBase):
     user = orm.relationship("User", back_populates="user_class")
 
     def __repr__(self):
-        return f"<Status {self.title}>"
+        return f"<Class {self.title}>"
 
     def get_columns(self):
         return [column.key for column in self.__table__.columns]
 
 
-class School(SqlAlchemyBase):
+class School(SqlAlchemyBase, SerializerMixin):
     __tablename__ = 'schools'
+
+    serialize_rules = ("-school_class",)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, nullable=False)
@@ -78,22 +85,39 @@ class School(SqlAlchemyBase):
     school_class = orm.relationship("Class", back_populates="school")
 
     def __repr__(self):
+        return f"<School {self.title}>"
+
+    def get_columns(self):
+        return [column.key for column in self.__table__.columns]
+
+
+class Status(SqlAlchemyBase, SerializerMixin):
+    __tablename__ = 'statuses'
+
+    serialize_rules = ("-user",)
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    title = Column(String, nullable=False)
+    permissions = Column(String, nullable=False, default='{"allowed": [], "banned": []}')
+
+    user = orm.relationship("User", back_populates="user_status")
+
+    def __repr__(self):
         return f"<Status {self.title}>"
 
     def get_columns(self):
         return [column.key for column in self.__table__.columns]
 
 
-class Status(SqlAlchemyBase):
-    __tablename__ = 'statuses'
+class Permission(SqlAlchemyBase, SerializerMixin):
+    __tablename__ = 'permissions'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String, nullable=False)
-
-    user = orm.relationship("User", back_populates="user_status")
+    description = Column(String)
 
     def __repr__(self):
-        return f"<Status {self.title}>"
+        return f"<Permission {self.title}>"
 
     def get_columns(self):
         return [column.key for column in self.__table__.columns]

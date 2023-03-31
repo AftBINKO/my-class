@@ -5,7 +5,8 @@ from flask_login import LoginManager, current_user, login_user, login_required, 
 from data.config import Config
 from data.db_session import create_session, global_init
 from data.forms import LoginForm, LoginKeyForm, FinishRegisterForm
-from data.models import User
+from data.functions import all_permissions
+from data.models import User, Status
 from json import loads, dumps
 
 app = Flask(__name__)
@@ -125,6 +126,15 @@ def finish_register():
             db_sess.commit()
             return redirect(url_for("home"))
     return render_template("finish_register.html", **data)
+
+
+@app.route('/profile')
+@login_required
+def profile():
+    db_sess = create_session()
+    status = db_sess.query(Status).filter(Status.id == current_user.status).first()
+    print(all_permissions(current_user))
+    return render_template("profile.html", status=status)
 
 
 if __name__ == '__main__':
