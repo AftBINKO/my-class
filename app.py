@@ -5,8 +5,8 @@ from flask_login import LoginManager, current_user, login_user, login_required, 
 from data.config import Config
 from data.db_session import create_session, global_init
 from data.forms import LoginForm, LoginKeyForm, FinishRegisterForm
-from data.functions import all_permissions
-from data.models import User, Status
+from data.functions import all_permissions, allowed_permission
+from data.models import User, Status, Permission
 from json import loads, dumps
 
 app = Flask(__name__)
@@ -21,7 +21,13 @@ global_init("db/data.sqlite3")
 @login_manager.user_loader
 def load_user(user_id):
     db_sess = create_session()
-    return db_sess.query(User).get(user_id)
+
+    user = db_sess.query(User).get(user_id)
+    permission = db_sess.query(Permission).filter(Permission.title == "login").first()  # noqa
+
+    if isinstance(user, User):
+        if allowed_permission(user, permission):
+            return user
 
 
 @app.route('/logout')
@@ -69,8 +75,13 @@ def login():
 
 @app.route('/login_key', methods=['GET', 'POST'])
 def login_with_key():
+    db_sess = create_session()
     if current_user.is_authenticated:
         return redirect(url_for("profile"))
+
+    permission = db_sess.query(Permission).filter(Permission.title == "login_with_key").first()  # noqa
+    if not allowed_permission(current_user, permission):
+        return redirect(url_for("login"))
 
     form = LoginKeyForm()
     data = {
@@ -79,7 +90,6 @@ def login_with_key():
     }
 
     if form.validate_on_submit():
-        db_sess = create_session()
         user = db_sess.query(User).filter(User.key == form.key.data).first()
 
         if user is not None:
@@ -133,7 +143,6 @@ def finish_register():
 def profile():
     db_sess = create_session()
     status = db_sess.query(Status).filter(Status.id == current_user.status).first()
-    print(all_permissions(current_user))
     return render_template("profile.html", status=status)
 
 
