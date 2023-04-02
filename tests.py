@@ -5,11 +5,8 @@
 #     ],
 #     "banned": [4]
 # }))
-fullname = input()
-RUSSIAN_ALPHABET = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"
+from random import choices
+from string import digits, ascii_uppercase
 
-
-if not all([symbol in RUSSIAN_ALPHABET + ' ' for symbol in fullname]):
-    print("Поле заполнено неверно. Используйте только буквы русского алфавита")
-
-print(True)
+key = "".join(choices(digits + ascii_uppercase, k=10))
+print(key)

@@ -129,7 +129,7 @@ def finish_register():
             user.login = user_login
             user.set_password(user_password)  # noqa
             user.data = user_data
-            user.key = None
+            user.delete_key()  # noqa
 
             db_sess.commit()
             return redirect(url_for("home"))
