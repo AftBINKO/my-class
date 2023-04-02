@@ -20,3 +20,20 @@ class FinishRegisterForm(FlaskForm):
     password = PasswordField('Пароль', validators=[DataRequired()])
     password_again = PasswordField('Повторите пароль', validators=[DataRequired()])
     submit = SubmitField('Подтвердить')
+
+
+class ChangeFullnameForm(FlaskForm):
+    fullname = StringField('ФИО', validators=[DataRequired()])
+    submit = SubmitField('Подтвердить')
+
+
+class ChangeLoginForm(FlaskForm):
+    login = StringField('Логин', validators=[DataRequired()])
+    submit = SubmitField('Подтвердить')
+
+
+class ChangePasswordForm(FlaskForm):
+    old_password = PasswordField('Старый пароль', validators=[DataRequired()])
+    new_password = PasswordField('Новый пароль', validators=[DataRequired()])
+    new_password_again = PasswordField('Повторите новый пароль', validators=[DataRequired()])
+    submit = SubmitField('Подтвердить')

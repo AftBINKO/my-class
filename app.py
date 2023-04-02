@@ -1,10 +1,11 @@
 from string import ascii_letters, digits, punctuation
 
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, abort
 from flask_login import LoginManager, current_user, login_user, login_required, logout_user
 from data.config import Config
 from data.db_session import create_session, global_init
-from data.forms import LoginForm, LoginKeyForm, FinishRegisterForm
+from data.forms import LoginForm, LoginKeyForm, FinishRegisterForm, ChangeFullnameForm, ChangeLoginForm, \
+    ChangePasswordForm
 from data.functions import all_permissions, allowed_permission
 from data.models import User, Status, Permission
 from json import loads, dumps
@@ -16,6 +17,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 global_init("db/data.sqlite3")
+RUSSIAN_ALPHABET = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"
 
 
 @login_manager.user_loader
@@ -134,7 +136,7 @@ def finish_register():
     return render_template("finish_register.html", **data)
 
 
-@app.route('/profile')
+@app.route('/my')
 @login_required
 def profile():
     db_sess = create_session()
@@ -142,10 +144,110 @@ def profile():
     permissions = all_permissions(current_user)
     data = {
         "status": status,
-        "permissions": permissions
+        "permissions": permissions,
+        "class_name": ""  # TODO: дописать
     }
 
     return render_template("profile.html", **data)
+
+
+@app.route('/my/edit_fullname', methods=['GET', 'POST'])
+@login_required
+def change_fullname():
+    db_sess = create_session()
+
+    permission = db_sess.query(Permission).filter(Permission.title == "changing_fullname").first()  # noqa
+    if not allowed_permission(current_user, permission):
+        abort(404)
+
+    form = ChangeFullnameForm()
+    data = {
+        'form': form,
+        'message': None
+    }
+
+    if form.validate_on_submit():
+        user = db_sess.query(User).filter(User.id == current_user.id).first()
+        fullname = form.fullname.data
+
+        if not all([symbol in RUSSIAN_ALPHABET + ' ' for symbol in fullname]):
+            data['message'] = "Поле заполнено неверно. Используйте только буквы русского алфавита"
+        else:
+            user.fullname = ' '.join(list(map(lambda name: name.lower().capitalize(), fullname.split())))
+
+            db_sess.commit()
+            return redirect(url_for("profile"))
+
+    return render_template('change_fullname.html', **data)
+
+
+@app.route('/my/edit_login', methods=['GET', 'POST'])
+@login_required
+def change_login():
+    db_sess = create_session()
+
+    permission = db_sess.query(Permission).filter(Permission.title == "changing_login").first()  # noqa
+    if not allowed_permission(current_user, permission):
+        abort(404)
+
+    form = ChangeLoginForm()
+    data = {
+        'form': form,
+        'message': None
+    }
+
+    if form.validate_on_submit():
+        user = db_sess.query(User).filter(User.id == current_user.id).first()
+        user_login = form.login.data
+
+        if not all([symbol in ascii_letters + digits for symbol in user_login]):
+            data['message'] = "Логин содержит некорректные символы"
+        else:
+            user.login = user_login.lower()
+
+            db_sess.commit()
+            return redirect(url_for("profile"))
+
+    return render_template('change_login.html', **data)
+
+
+@app.route('/my/edit_password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    db_sess = create_session()
+
+    permission = db_sess.query(Permission).filter(Permission.title == "changing_password").first()  # noqa
+    if not allowed_permission(current_user, permission):
+        abort(404)
+
+    form = ChangePasswordForm()
+    data = {
+        'form': form,
+        'message': None
+    }
+
+    if form.validate_on_submit():
+        user = db_sess.query(User).filter(User.id == current_user.id).first()
+        old_password = form.old_password.data
+        new_password = form.new_password.data
+        new_password_again = form.new_password_again.data
+
+        if not all([symbol in ascii_letters + digits + punctuation for symbol in
+                    form.new_password.data]):
+            data['message'] = "Пароль содержит некорректные символы"
+        elif new_password != new_password_again:
+            data['message'] = "Пароли не совпадают"
+        elif not user.check_password(old_password):  # noqa
+            data['message'] = "Неверный пароль"
+        elif form.old_password.data == form.new_password.data:
+            data['message'] = "Новый пароль совпадает со старым"
+        else:
+            user.set_password(new_password)  # noqa
+
+            db_sess.commit()
+            return redirect(url_for("profile"))
+
+    return render_template('change_password.html', **data)
 
 
 if __name__ == '__main__':

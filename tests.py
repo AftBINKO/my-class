@@ -5,13 +5,11 @@
 #     ],
 #     "banned": [4]
 # }))
+fullname = input()
+RUSSIAN_ALPHABET = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"
 
 
-from data.models import User
-from data.db_session import create_session, global_init
+if not all([symbol in RUSSIAN_ALPHABET + ' ' for symbol in fullname]):
+    print("Поле заполнено неверно. Используйте только буквы русского алфавита")
 
-global_init("db/data.sqlite3")
-db_sess = create_session()
-a = db_sess.query(User).filter(User.id == 1).first()
-
-print(isinstance(a, User))
+print(True)

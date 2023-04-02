@@ -13,6 +13,10 @@
             {{ current_user.fullname }}
         </h2>
         <p style="text-align: center">{{ status.title }}</p>
+        {% if status.title == "Ученик" %}
+            <p style="text-align: center">{{ class_name }}</p>
+        {% endif %}
+        <p class="fs-3" style="text-align: center">Ваш логин: {{ current_user.login }}</p>
         <p class="fs-3" style="text-align: center">Ваш ID: {{ current_user.id }}</p>
         {% if "editing_profile" in permissions %}
             <div class="dropdown" style="justify-content: center; display: flex">
@@ -23,22 +27,24 @@
                 <ul class="dropdown-menu">
                     {% if "changing_fullname" in permissions %}
                         <li>
-                            <a href="" class="dropdown-item">
+                            <a href="{{ url_for('change_fullname') }}" class="dropdown-item">
                                 Изменить ФИО
                             </a>
                         </li>
-                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
                     {% endif %}
                     {% if "changing_login" in permissions %}
                         <li>
-                            <a href="" class="dropdown-item">
+                            <a href="{{ url_for('change_login') }}" class="dropdown-item">
                                 Изменить логин
                             </a>
                         </li>
                     {% endif %}
                     {% if "changing_password" in permissions %}
                         <li>
-                            <a href="" class="dropdown-item">
+                            <a href="{{ url_for('change_password') }}" class="dropdown-item">
                                 Изменить пароль
                             </a>
                         </li>

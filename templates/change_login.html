@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Изменить логин
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-center align-items-center">
+            <form action="" method="post">
+                {{ form.hidden_tag() }}
+                <legend style="text-align: center">Изменить логин</legend>
+                {% if message %}
+                    <div class="alert alert-danger">{{ message }}</div>
+                {% endif %}
+                <div class="mb-3">
+                    {{ form.login.label(class="form-label") }}*
+                    {{ form.login(class="form-control", placeholder="user") }}
+                    <div class="form-text">
+                        Ваш логин может содержать только буквы английского алфавита и цифры. Регистр
+                        логина не учитывается (user = USER = User)
+                    </div>
+                    {% for error in form.login.errors %}
+                        <div class="alert alert-danger" role="alert">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div>
+                    {{ form.submit(type="submit", class="btn btn-success") }}
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
