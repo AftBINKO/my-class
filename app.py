@@ -40,12 +40,27 @@ def logout():
 
 
 @app.route('/')
+@login_required
 def home():
-    if not current_user.is_authenticated:
-        return redirect(url_for("login"))
-    elif not bool(loads(current_user.data)):
+    if not bool(loads(current_user.data)):
         return redirect(url_for("finish_register"))
+
+    db_sess = create_session()
+    permission = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+    if allowed_permission(current_user, permission):
+        return redirect(url_for("admin_panel"))
+
     return render_template("home.html")
+
+
+@app.route('/admin_panel')
+def admin_panel():
+    db_sess = create_session()
+    permission = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+    if allowed_permission(current_user, permission):
+        return render_template("admin_panel.html")
+
+    return redirect(url_for("home"))
 
 
 @app.route('/login', methods=['GET', 'POST'])
