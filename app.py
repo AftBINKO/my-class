@@ -1,13 +1,13 @@
 from string import ascii_letters, digits, punctuation
 
-from flask import Flask, render_template, redirect, url_for, abort
+from flask import Flask, render_template, redirect, url_for, abort, request
 from flask_login import LoginManager, current_user, login_user, login_required, logout_user
 from data.config import Config
 from data.db_session import create_session, global_init
 from data.forms import LoginForm, LoginKeyForm, FinishRegisterForm, ChangeFullnameForm, ChangeLoginForm, \
     ChangePasswordForm
 from data.functions import all_permissions, allowed_permission
-from data.models import User, Status, Permission
+from data.models import *
 from json import loads, dumps
 
 app = Flask(__name__)
@@ -53,14 +53,37 @@ def home():
     return render_template("home.html")
 
 
-@app.route('/admin_panel')
+@app.route('/admin_panel', methods=['GET', 'POST'])
 def admin_panel():
     db_sess = create_session()
     permission = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
-    if allowed_permission(current_user, permission):
-        return render_template("admin_panel.html")
+    if not allowed_permission(current_user, permission):
+        return redirect(url_for("home"))
 
-    return redirect(url_for("home"))
+    schools = db_sess.query(School).all()
+
+    data = {
+        "schools": schools
+    }
+
+    if request.method == "POST":
+        school_id = int(request.form.get("school_id"))
+        return redirect(url_for("school_info", school_id=school_id))
+
+    return render_template("admin_panel.html", **data)
+
+
+@app.route('/school/<school_id>', methods=['GET', 'POST'])
+def school_info(school_id):
+    db_sess = create_session()
+
+    school = db_sess.query(School).filter(School.id == school_id).first()
+
+    data = {
+        "school": school
+    }
+
+    return render_template("school_info.html", **data)
 
 
 @app.route('/login', methods=['GET', 'POST'])

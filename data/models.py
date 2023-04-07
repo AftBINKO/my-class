@@ -29,7 +29,7 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     user_class = orm.relationship('Class')
 
     def __repr__(self):
-        return f"<User {self.fullname}"
+        return f"<User {self.fullname}>"
 
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)
