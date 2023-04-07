@@ -54,44 +54,44 @@ def allowed_permission(user: User, permission, method=2):
     if not isinstance(permission, (Permission, int, str)):
         raise TypeError
 
-    method = 2
+    # match method:
+    #     case 1:
+    #         db_sess = create_session()
+    #         status = db_sess.query(Status).filter(Status.id == user.status).first()  # noqa
+    #         user_perms = loads(status.permissions)
+    #         allowed_perms = set(user_perms["allowed"])
+    #         banned_perms = set(user_perms["banned"])
+    #
+    #         if isinstance(permission, str):
+    #             permission = db_sess.query(Permission).filter(
+    #                 Permission.title == permission).first()  # noqa
+    #
+    #         if isinstance(permission, Permission):
+    #             permission = permission.id
+    #
+    #         if "*" in allowed_perms:
+    #             if banned_perms:
+    #                 if "*" not in banned_perms:
+    #                     return permission not in banned_perms
+    #                 return False
+    #             return True
+    #         if banned_perms:
+    #             if "*" not in banned_perms:
+    #                 return permission in allowed_perms and permission not in banned_perms
+    #             return False
+    #         return permission in allowed_perms
+    #
+    #     case 2:
+    #         pass
 
-    match method:
-        case 1:
-            db_sess = create_session()
-            status = db_sess.query(Status).filter(Status.id == user.status).first()  # noqa
-            user_perms = loads(status.permissions)
-            allowed_perms = set(user_perms["allowed"])
-            banned_perms = set(user_perms["banned"])
+    user_perms = all_permissions(user)
 
-            if isinstance(permission, str):
-                permission = db_sess.query(Permission).filter(
-                    Permission.title == permission).first()  # noqa
+    if isinstance(permission, str):
+        return permission in user_perms
 
-            if isinstance(permission, Permission):
-                permission = permission.id
+    if isinstance(permission, int):
+        db_sess = create_session()
+        permission = db_sess.query(Permission).filter(
+            Permission.id == permission).first()  # noqa
 
-            if "*" in allowed_perms:
-                if banned_perms:
-                    if "*" not in banned_perms:
-                        return permission not in banned_perms
-                    return False
-                return True
-            if banned_perms:
-                if "*" not in banned_perms:
-                    return permission in allowed_perms and permission not in banned_perms
-                return False
-            return permission in allowed_perms
-
-        case 2:
-            user_perms = all_permissions(user)
-
-            if isinstance(permission, str):
-                return permission in user_perms
-
-            if isinstance(permission, int):
-                db_sess = create_session()
-                permission = db_sess.query(Permission).filter(
-                    Permission.id == permission).first()  # noqa
-
-            return permission.title in user_perms
+    return permission.title in user_perms
