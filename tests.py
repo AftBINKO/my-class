@@ -1,12 +1,19 @@
-# import json
-# print(json.dumps({
-#     "allowed": [
-#         "*"
-#     ],
-#     "banned": [4]
-# }))
-from random import choices
-from string import digits, ascii_uppercase
+from data.functions import *
+from data.db_session import global_init
+import json
 
-key = "".join(choices(digits + ascii_uppercase, k=10))
-print(key)
+
+def f1():
+    print(json.dumps({
+        "inheritance": 5,
+        "allowed": [],
+        "banned": [7]
+    }))
+
+
+def f2():
+    global_init("db/data.sqlite3")
+    print(all_status_permissions(3))
+
+
+f1()

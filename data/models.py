@@ -98,7 +98,7 @@ class Status(SqlAlchemyBase, SerializerMixin):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String, nullable=False)
-    permissions = Column(String, nullable=False, default='{"allowed": [], "banned": []}')
+    permissions = Column(String, nullable=False, default='{"inheritance": null, "allowed": [], "banned": []}')
 
     user = orm.relationship("User", back_populates="user_status")
 
