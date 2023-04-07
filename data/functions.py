@@ -50,9 +50,11 @@ def all_permissions(user: User):
     return all_status_permissions(status)
 
 
-def allowed_permission(user: User, permission, method=1):
+def allowed_permission(user: User, permission, method=2):
     if not isinstance(permission, (Permission, int, str)):
         raise TypeError
+
+    method = 2
 
     match method:
         case 1:
