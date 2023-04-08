@@ -43,16 +43,30 @@ def all_status_permissions(status):
     return permissions
 
 
-def all_permissions(user: User):
-    db_sess = create_session()
-    status = db_sess.query(Status).filter(Status.id == user.status).first()  # noqa
-
-    return all_status_permissions(status)
-
-
-def allowed_permission(user: User, permission, method=2):
-    if not isinstance(permission, (Permission, int, str)):
+def all_permissions(user):
+    if not isinstance(user, (User, int)):
         raise TypeError
+
+    db_sess = create_session()
+    if isinstance(user, int):
+        user = db_sess.query(User).filter(User.id == user).first()  # noqa
+
+    statuses = db_sess.query(Status).filter(Status.id.in_(loads(user.statuses))).all()  # noqa
+    permissions = set()
+
+    for status in statuses:
+        permissions = permissions | all_status_permissions(status)
+
+    return permissions
+
+
+def allowed_permission(user, permission, method=2):
+    if not (isinstance(user, (User, int)) or isinstance(permission, (Permission, int, str))):
+        raise TypeError
+
+    db_sess = create_session()
+    if isinstance(user, int):
+        user = db_sess.query(User).filter(User.id == user).first()  # noqa
 
     user_perms = all_permissions(user)
 
@@ -60,8 +74,6 @@ def allowed_permission(user: User, permission, method=2):
         return permission in user_perms
 
     if isinstance(permission, int):
-        db_sess = create_session()
-        permission = db_sess.query(Permission).filter(
-            Permission.id == permission).first()  # noqa
+        permission = db_sess.query(Permission).filter(Permission.id == permission).first()  # noqa
 
     return permission.title in user_perms

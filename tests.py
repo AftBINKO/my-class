@@ -15,8 +15,11 @@ def f1():
 
 
 def f2():
-    print(all_status_permissions(3))
+    db_sess = create_session()
+    user = db_sess.query(User).filter(User.id == 1).first()
+    print(all_permissions(user))
 
 
-db_sess = create_session()
-print(list(map(lambda school: school.to_dict(), db_sess.query(User).all())))
+# db_sess = create_session()
+# print(list(map(lambda school: school.to_dict(), db_sess.query(User).all())))
+f2()

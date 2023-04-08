@@ -23,9 +23,8 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     key = Column(String, unique=True)
 
     data = Column(Text, nullable=False, default="{}")
-    status = Column(Integer, ForeignKey("statuses.id"), default=1, nullable=False)
+    statuses = Column(Text, nullable=False, default="[1]")
 
-    user_status = orm.relationship('Status')
     user_class = orm.relationship('Class')
 
     def __repr__(self):
@@ -99,8 +98,6 @@ class Status(SqlAlchemyBase, SerializerMixin):
     id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String, nullable=False)
     permissions = Column(String, nullable=False, default='{"inheritance": null, "allowed": [], "banned": []}')
-
-    user = orm.relationship("User", back_populates="user_status")
 
     def __repr__(self):
         return f"<Status {self.title}>"

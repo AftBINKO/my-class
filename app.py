@@ -178,10 +178,11 @@ def finish_register():
 @login_required
 def profile():
     db_sess = create_session()
-    status = db_sess.query(Status).filter(Status.id == current_user.status).first()
+    statuses = list(sorted(db_sess.query(Status).filter(Status.id.in_(loads(current_user.statuses))).all(),  # noqa
+                           key=lambda status: status.id, reverse=True))
     permissions = all_permissions(current_user)
     data = {
-        "status": status,
+        "statuses": statuses,
         "permissions": permissions,
         "class_name": ""  # TODO: дописать
     }

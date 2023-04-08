@@ -12,8 +12,14 @@
         <h2 style="text-align: center">
             {{ current_user.fullname }}
         </h2>
-        <p style="text-align: center">{{ status.title }}</p>
-        {% if status.title == "Ученик" %}
+        {% set statuses_titles = [] %}
+        {% for status in statuses %}
+            {% set statuses_titles = statuses_titles.append(status.title) %}
+        {% endfor %}
+        <p style="text-align: center">
+            {{ statuses_titles|join(", ") }}
+        </p>
+        {% if "Ученик" in statuses_titles %}
             <p style="text-align: center">{{ class_name }}</p>
         {% endif %}
         <p class="fs-3" style="text-align: center">Ваш логин: {{ current_user.login }}</p>
@@ -52,6 +58,5 @@
                 </ul>
             </div>
         {% endif %}
-        {#{{ url_for("edit_profile") }}#}
     </div>
 {% endblock %}
