@@ -5,7 +5,7 @@ from flask_login import LoginManager, current_user, login_user, login_required, 
 from data.config import Config
 from data.db_session import create_session, global_init
 from data.forms import LoginForm, LoginKeyForm, FinishRegisterForm, ChangeFullnameForm, ChangeLoginForm, \
-    ChangePasswordForm, AddSchoolForm
+    ChangePasswordForm, EditSchoolForm
 from data.functions import all_permissions, allowed_permission
 from data.models import *
 
@@ -272,19 +272,6 @@ def change_password():
     return render_template('change_password.html', **data)
 
 
-@app.route('/schools/school/<school_id>', methods=['GET', 'POST'])
-def school_info(school_id):
-    db_sess = create_session()
-
-    school = db_sess.query(School).filter(School.id == school_id).first()
-
-    data = {
-        "school": school
-    }
-
-    return render_template("school_info.html", **data)
-
-
 @app.route('/schools/add', methods=['GET', 'POST'])
 @login_required
 def add_school():
@@ -294,7 +281,7 @@ def add_school():
     if not allowed_permission(current_user, permission):
         abort(404)
 
-    form = AddSchoolForm()
+    form = EditSchoolForm()
     data = {
         'form': form
     }
@@ -311,6 +298,46 @@ def add_school():
         return redirect(url_for("school_info", school_id=school.id))
 
     return render_template('add_school.html', **data)
+
+
+@app.route('/schools/school/<school_id>', methods=['GET', 'POST'])
+def school_info(school_id):
+    db_sess = create_session()
+
+    school = db_sess.query(School).filter(School.id == school_id).first()
+
+    data = {
+        "school": school
+    }
+
+    return render_template("school_info.html", **data)
+
+
+@app.route('/schools/school/<school_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_school(school_id):
+    db_sess = create_session()
+
+    permission = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+    if not allowed_permission(current_user, permission):
+        abort(404)
+
+    form = EditSchoolForm()
+    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
+    data = {
+        'form': form,
+        'school': school
+    }
+
+    if form.validate_on_submit():
+        school.name = form.school.data
+        school.fullname = form.fullname.data
+
+        db_sess.commit()
+
+        return redirect(url_for("school_info", school_id=school.id))
+
+    return render_template('edit_school.html', **data)
 
 
 if __name__ == '__main__':

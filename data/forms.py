@@ -39,7 +39,7 @@ class ChangePasswordForm(FlaskForm):
     submit = SubmitField('Подтвердить')
 
 
-class AddSchoolForm(FlaskForm):
+class EditSchoolForm(FlaskForm):
     school = StringField('Короткое название школы', validators=[DataRequired()])
-    fullname = StringField('Полное название школы')
+    fullname = StringField('Полное название школы')  # TODO: Сделать подлиннее
     submit = SubmitField('Подтвердить')

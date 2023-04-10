@@ -9,31 +9,36 @@
         <h1 style="text-align: center">{{ school.name }}</h1>
     </div>
     <div class="container" style="margin-top: 25px">
+        <a href="{{ url_for("edit_school", school_id=school.id) }}" class="btn btn-primary">
+            Изменить основную информацию
+        </a>
+    </div>
+    <div class="container" style="margin-top: 25px">
         <p>{{ school.fullname }}</p>
     </div>
-{#    <div class="container" style="margin-top: 25px">#}
-{#        <table class="table">#}
-{#            <thead>#}
-{#            <tr>#}
-{#                <th scope="col">ID</th>#}
-{#                <th scope="col">Название</th>#}
-{#                <th scope="col"></th>#}
-{#            </tr>#}
-{#            </thead>#}
-{#            <tbody class="table-group-divider">#}
-{#            {% for school in schools %}#}
-{#                <tr>#}
-{#                    <th scope="row">{{ school.id }}</th>#}
-{#                    <td>{{ school.name }}</td>#}
-{#                    <td>#}
-{#                        <form action="" method="post">#}
-{#                            <input type="hidden" name="school_id" value={{ school.id }}>#}
-{#                            <button class="btn btn-secondary" type="submit">Подробнее</button>#}
-{#                        </form>#}
-{#                    </td>#}
-{#                </tr>#}
-{#            {% endfor %}#}
-{#            </tbody>#}
-{#        </table>#}
-{#    </div>#}
+    {#    <div class="container" style="margin-top: 25px">#}
+    {#        <table class="table">#}
+    {#            <thead>#}
+    {#            <tr>#}
+    {#                <th scope="col">ID</th>#}
+    {#                <th scope="col">Название</th>#}
+    {#                <th scope="col"></th>#}
+    {#            </tr>#}
+    {#            </thead>#}
+    {#            <tbody class="table-group-divider">#}
+    {#            {% for school in schools %}#}
+    {#                <tr>#}
+    {#                    <th scope="row">{{ school.id }}</th>#}
+    {#                    <td>{{ school.name }}</td>#}
+    {#                    <td>#}
+    {#                        <form action="" method="post">#}
+    {#                            <input type="hidden" name="school_id" value={{ school.id }}>#}
+    {#                            <button class="btn btn-secondary" type="submit">Подробнее</button>#}
+    {#                        </form>#}
+    {#                    </td>#}
+    {#                </tr>#}
+    {#            {% endfor %}#}
+    {#            </tbody>#}
+    {#        </table>#}
+    {#    </div>#}
 {% endblock %}
