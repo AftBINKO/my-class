@@ -37,3 +37,9 @@ class ChangePasswordForm(FlaskForm):
     new_password = PasswordField('Новый пароль', validators=[DataRequired()])
     new_password_again = PasswordField('Повторите новый пароль', validators=[DataRequired()])
     submit = SubmitField('Подтвердить')
+
+
+class AddSchoolForm(FlaskForm):
+    school = StringField('Короткое название школы', validators=[DataRequired()])
+    fullname = StringField('Полное название школы')
+    submit = SubmitField('Подтвердить')
