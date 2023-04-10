@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from random import choices
 from string import digits, ascii_uppercase
 from flask_login import UserMixin
-from .db_session import SqlAlchemyBase, create_session
+from .db_session import SqlAlchemyBase
 
 
 class User(SqlAlchemyBase, UserMixin, SerializerMixin):
