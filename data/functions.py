@@ -4,27 +4,31 @@ from .models import User, Status, Permission
 from json import loads
 
 
-def all_status_permissions(status):
+def all_status_permissions(status):  # TODO: запихать все функции в модели
     db_sess = create_session()
     all_perms = db_sess.query(Permission).all()
 
     if isinstance(status, (int, str)):
         status = db_sess.query(Status).filter(
             Status.id == status if isinstance(status, int) else Status.title == status).first()  # noqa
-
-    status_perms = loads(status.permissions)
+    status: Status
 
     permissions = set()
 
-    inherited_status = status_perms["inheritance"]
+    inherited_status = status.inheritance
     inherited_permissions = set()
-    if isinstance(inherited_status, (int, str)):
+    if inherited_status is not None:
         inherited_permissions = set(
             map(lambda p: db_sess.query(Permission).filter(Permission.title == p).first().id, all_status_permissions(
                 inherited_status)))  # noqa
 
-    allowed_perms = inherited_permissions | set(status_perms["allowed"])
-    banned_perms = set(status_perms["banned"])
+    allowed_perms = inherited_permissions
+    if status.allowed_permissions:
+        allowed_perms = allowed_perms | set(status.allowed_permissions.split(", "))
+
+    banned_perms = None
+    if status.banned_permissions:
+        banned_perms = set(status.banned_permissions.split(", "))
 
     if "*" in allowed_perms:
         if banned_perms:
@@ -55,7 +59,7 @@ def all_permissions(user):
     permissions = set()
 
     for status in statuses:
-        permissions = permissions | all_status_permissions(status)
+        permissions = permissions | all_status_permissions(status)  # noqa
 
     return permissions
 

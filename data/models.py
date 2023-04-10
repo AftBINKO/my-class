@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from random import choices
 from string import digits, ascii_uppercase
 from flask_login import UserMixin
-from .db_session import SqlAlchemyBase
+from .db_session import SqlAlchemyBase, create_session
 
 
 class User(SqlAlchemyBase, UserMixin, SerializerMixin):
@@ -97,7 +97,9 @@ class Status(SqlAlchemyBase, SerializerMixin):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String, nullable=False)
-    permissions = Column(String, nullable=False, default='{"inheritance": null, "allowed": [], "banned": []}')
+    inheritance = Column(Integer, ForeignKey("statuses.id"))
+    allowed_permissions = Column(String)
+    banned_permissions = Column(String)
 
     def __repr__(self):
         return f"<Status {self.title}>"
