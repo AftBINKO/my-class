@@ -22,8 +22,9 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     hashed_password = Column(String)
     key = Column(String, unique=True)
 
-    data = Column(Text, nullable=False, default="{}")
-    statuses = Column(Text, nullable=False, default="[1]")
+    is_registered = Column(Boolean, nullable=False, default=False)
+    is_arrived = Column(Boolean)
+    statuses = Column(String, nullable=False, default="1")
 
     user_class = orm.relationship('Class')
 

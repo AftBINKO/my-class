@@ -1,8 +1,6 @@
 from .db_session import create_session
 from .models import User, Status, Permission
 
-from json import loads
-
 
 def all_status_permissions(status):  # TODO: запихать все функции в модели
     db_sess = create_session()
@@ -55,7 +53,7 @@ def all_permissions(user):
     if isinstance(user, int):
         user = db_sess.query(User).filter(User.id == user).first()  # noqa
 
-    statuses = db_sess.query(Status).filter(Status.id.in_(loads(user.statuses))).all()  # noqa
+    statuses = db_sess.query(Status).filter(Status.id.in_(user.statuses.split(", "))).all()  # noqa
     permissions = set()
 
     for status in statuses:

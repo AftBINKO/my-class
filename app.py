@@ -8,7 +8,6 @@ from data.forms import LoginForm, LoginKeyForm, FinishRegisterForm, ChangeFullna
     ChangePasswordForm
 from data.functions import all_permissions, allowed_permission
 from data.models import *
-from json import loads, dumps
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -42,7 +41,7 @@ def logout():
 @app.route('/')
 @login_required
 def home():
-    if not bool(loads(current_user.data)):
+    if not current_user.is_registered:
         return redirect(url_for("finish_register"))
 
     db_sess = create_session()
@@ -152,9 +151,6 @@ def finish_register():
         user_login = form.login.data.lower()
         user_password = form.password.data
         user_password_again = form.password_again.data
-        user_data = loads(user.data)
-        user_data['registered'] = True
-        user_data = dumps(user_data, ensure_ascii=True)
 
         if not all([symbol in ascii_letters + digits for symbol in user_login]):
             data['message'] = "Логин содержит некорректные символы"
@@ -166,7 +162,7 @@ def finish_register():
         else:
             user.login = user_login
             user.set_password(user_password)  # noqa
-            user.data = user_data
+            user.is_registered = True
             user.delete_key()  # noqa
 
             db_sess.commit()
@@ -178,7 +174,7 @@ def finish_register():
 @login_required
 def profile():
     db_sess = create_session()
-    statuses = list(sorted(db_sess.query(Status).filter(Status.id.in_(loads(current_user.statuses))).all(),  # noqa
+    statuses = list(sorted(db_sess.query(Status).filter(Status.id.in_(current_user.statuses.split(", "))).all(),  # noqa
                            key=lambda status: status.id, reverse=True))
     permissions = all_permissions(current_user)
     data = {
