@@ -72,19 +72,6 @@ def admin_panel():
     return render_template("admin_panel.html", **data)
 
 
-@app.route('/school/<school_id>', methods=['GET', 'POST'])
-def school_info(school_id):
-    db_sess = create_session()
-
-    school = db_sess.query(School).filter(School.id == school_id).first()
-
-    data = {
-        "school": school
-    }
-
-    return render_template("school_info.html", **data)
-
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
