@@ -310,7 +310,7 @@ def add_school():
 
         return redirect(url_for("school_info", school_id=school.id))
 
-    return render_template('change_password.html', **data)
+    return render_template('add_school.html', **data)
 
 
 if __name__ == '__main__':
