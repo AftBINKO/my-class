@@ -12,14 +12,15 @@
                 <legend style="text-align: center">Добавить образовательное учреждение</legend>
                 <div class="mb-3">
                     {{ form.school.label(class="form-label") }}*
-                    {{ form.school(class="form-control", placeholder="user") }}
+                    {{ form.school(class="form-control", placeholder='МБОУ "СОШ №1"') }}
                     {% for error in form.school.errors %}
                         <div class="alert alert-danger" role="alert">{{ error }}</div>
                     {% endfor %}
                 </div>
                 <div class="mb-3">
                     {{ form.fullname.label(class="form-label") }}
-                    {{ form.fullname(class="form-control", placeholder="user") }}
+                    {{ form.fullname(class="form-control",
+                    placeholder="Муниципальное бюджетное общеобразовательное учреждение «Средняя общеобразовательная школа №1»") }}
                     {% for error in form.fullname.errors %}
                         <div class="alert alert-danger" role="alert">{{ error }}</div>
                     {% endfor %}
