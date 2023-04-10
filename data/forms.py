@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired
 
 
@@ -41,5 +41,5 @@ class ChangePasswordForm(FlaskForm):
 
 class EditSchoolForm(FlaskForm):
     school = StringField('Короткое название школы', validators=[DataRequired()])
-    fullname = StringField('Полное название школы')  # TODO: Сделать подлиннее
+    fullname = TextAreaField('Полное название школы')  # TODO: Сделать подлиннее
     submit = SubmitField('Подтвердить')

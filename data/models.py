@@ -80,7 +80,7 @@ class School(SqlAlchemyBase, SerializerMixin):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, nullable=False)
-    fullname = Column(String)
+    fullname = Column(Text)
 
     school_class = orm.relationship("Class", back_populates="school")
 
