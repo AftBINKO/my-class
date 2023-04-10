@@ -15,9 +15,8 @@ def f1():
 
 
 def f2():
-    db_sess = create_session()
-    user = db_sess.query(User).filter(User.id == 1).first()
-    print(all_permissions(user))
+    for i in range(1, 6):
+        print(all_status_permissions(i))
 
 
 # db_sess = create_session()

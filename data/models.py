@@ -17,6 +17,7 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
 
     fullname = Column(String, nullable=False)
     class_id = Column(Integer, ForeignKey("classes.id"))
+    school_id = Column(Integer, ForeignKey("schools.id"))
 
     login = Column(String, unique=True)
     hashed_password = Column(String)
@@ -27,6 +28,7 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     statuses = Column(String, nullable=False, default="1")
 
     user_class = orm.relationship('Class')
+    school = orm.relationship('School')
 
     def __repr__(self):
         return f"<User {self.fullname}>"
@@ -83,6 +85,7 @@ class School(SqlAlchemyBase, SerializerMixin):
     fullname = Column(Text)
 
     school_class = orm.relationship("Class", back_populates="school")
+    user = orm.relationship("User", back_populates="school")
 
     def __repr__(self):
         return f"<School {self.title}>"
@@ -115,6 +118,7 @@ class Permission(SqlAlchemyBase, SerializerMixin):
     id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String, nullable=False)
     description = Column(String)
+    is_allowed_default = Column(Boolean, nullable=False, default=False)
 
     def __repr__(self):
         return f"<Permission {self.title}>"

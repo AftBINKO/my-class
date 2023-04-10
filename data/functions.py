@@ -17,8 +17,8 @@ def all_status_permissions(status):  # TODO: запихать все функц�
     inherited_permissions = set()
     if inherited_status is not None:
         inherited_permissions = set(
-            map(lambda p: db_sess.query(Permission).filter(Permission.title == p).first().id, all_status_permissions(
-                inherited_status)))  # noqa
+            map(lambda p: str(db_sess.query(Permission).filter(Permission.title == p).first().id),
+                all_status_permissions(inherited_status)))  # noqa
 
     allowed_perms = inherited_permissions
     if status.allowed_permissions:
@@ -31,16 +31,17 @@ def all_status_permissions(status):  # TODO: запихать все функц�
     if "*" in allowed_perms:
         if banned_perms:
             if "*" not in banned_perms:
-                permissions = {perm.title for perm in all_perms if perm.id not in banned_perms}
+                permissions = {perm.title for perm in all_perms if str(perm.id) not in banned_perms}
         else:
             permissions = set(map(lambda p: p.title, all_perms))
     else:
         if banned_perms:
             if "*" not in permissions:
                 permissions = {perm.title for perm in all_perms if
-                               perm.id in allowed_perms and perm.id not in banned_perms}
+                               (str(perm.id) in allowed_perms or perm.is_allowed_default) and str(
+                                   perm.id) not in banned_perms}
         else:
-            permissions = {perm.title for perm in all_perms if perm.id in allowed_perms}
+            permissions = {perm.title for perm in all_perms if str(perm.id) in allowed_perms or perm.is_allowed_default}
 
     return permissions
 

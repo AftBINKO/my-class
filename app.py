@@ -277,7 +277,7 @@ def change_password():
 def add_school():
     db_sess = create_session()
 
-    permission = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+    permission = db_sess.query(Permission).filter(Permission.title == "adding_school").first()  # noqa
     if not allowed_permission(current_user, permission):
         abort(404)
 
@@ -318,7 +318,7 @@ def school_info(school_id):
 def edit_school(school_id):
     db_sess = create_session()
 
-    permission = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+    permission = db_sess.query(Permission).filter(Permission.title == "editing_self_school").first()  # noqa
     if not allowed_permission(current_user, permission):
         abort(404)
 
