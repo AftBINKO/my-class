@@ -15,6 +15,16 @@ def f1():
 
 
 def f2():
+    # db_sess = create_session()
+    # statuses = db_sess.query(Status).all()
+    # permissions = db_sess.query(Permission).all()
+    # n = 1
+    # for status in statuses:
+    #     print(status)
+    #     for permission in permissions:
+    #         print(n, permission, end=" ")
+    #         print(allowed_status_permission(status, permission))
+    #         n += 1
     for i in range(1, 6):
         print(all_status_permissions(i))
 

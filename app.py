@@ -166,7 +166,7 @@ def profile():
     permissions = all_permissions(current_user)
     data = {
         "statuses": statuses,
-        "permissions": permissions,
+        "permissions": set(map(lambda permission: permission.title, permissions)),
         "class_name": ""  # TODO: дописать
     }
 
