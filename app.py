@@ -26,6 +26,8 @@ def load_user(user_id):
     user = db_sess.query(User).get(user_id)
     permission = db_sess.query(Permission).filter(Permission.title == "login").first()  # noqa
 
+    db_sess.close()
+
     if isinstance(user, User):
         if allowed_permission(user, permission):
             return user
@@ -46,6 +48,8 @@ def home():
 
     db_sess = create_session()
     permission = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+    db_sess.close()
+
     if allowed_permission(current_user, permission):
         return redirect(url_for("admin_panel"))
 
@@ -55,11 +59,14 @@ def home():
 @app.route('/admin_panel', methods=['GET', 'POST'])
 def admin_panel():
     db_sess = create_session()
+
     permission = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
     if not allowed_permission(current_user, permission):
         return redirect(url_for("home"))
 
     schools = db_sess.query(School).all()
+
+    db_sess.close()
 
     data = {
         "schools": schools
@@ -86,6 +93,7 @@ def login():
     if form.validate_on_submit():
         db_sess = create_session()
         user = db_sess.query(User).filter(User.login == form.login.data.lower()).first()
+        db_sess.close()
 
         if user:
             if user.check_password(form.password.data):  # noqa
@@ -101,7 +109,6 @@ def login():
 
 @app.route('/login_key', methods=['GET', 'POST'])
 def login_with_key():
-    db_sess = create_session()
     if current_user.is_authenticated:
         return redirect(url_for("profile"))
 
@@ -112,7 +119,9 @@ def login_with_key():
     }
 
     if form.validate_on_submit():
+        db_sess = create_session()
         user = db_sess.query(User).filter(User.key == form.key.data).first()
+        db_sess.close()
 
         if user is not None:
             login_user(user, remember=True)
@@ -153,7 +162,9 @@ def finish_register():
             user.delete_key()  # noqa
 
             db_sess.commit()
+            db_sess.close()
             return redirect(url_for("home"))
+        db_sess.close()
     return render_template("finish_register.html", **data)
 
 
@@ -163,6 +174,7 @@ def profile():
     db_sess = create_session()
     statuses = list(sorted(db_sess.query(Status).filter(Status.id.in_(current_user.statuses.split(", "))).all(),  # noqa
                            key=lambda status: status.id, reverse=True))
+    db_sess.close()
     permissions = all_permissions(current_user)
     data = {
         "statuses": statuses,
@@ -199,7 +211,7 @@ def change_fullname():
 
             db_sess.commit()
             return redirect(url_for("profile"))
-
+    db_sess.close()
     return render_template('change_fullname.html', **data)
 
 
@@ -229,6 +241,8 @@ def change_login():
 
             db_sess.commit()
             return redirect(url_for("profile"))
+
+    db_sess.close()
 
     return render_template('change_login.html', **data)
 
@@ -269,6 +283,8 @@ def change_password():
             db_sess.commit()
             return redirect(url_for("profile"))
 
+    db_sess.close()
+
     return render_template('change_password.html', **data)
 
 
@@ -297,14 +313,16 @@ def add_school():
 
         return redirect(url_for("school_info", school_id=school.id))
 
+    db_sess.close()
+
     return render_template('add_school.html', **data)
 
 
 @app.route('/schools/school/<school_id>', methods=['GET', 'POST'])
 def school_info(school_id):
     db_sess = create_session()
-
     school = db_sess.query(School).filter(School.id == school_id).first()
+    db_sess.close()
 
     data = {
         "school": school
@@ -336,6 +354,8 @@ def edit_school(school_id):
         db_sess.commit()
 
         return redirect(url_for("school_info", school_id=school.id))
+
+    db_sess.close()
 
     return render_template('edit_school.html', **data)
 

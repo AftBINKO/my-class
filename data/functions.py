@@ -10,7 +10,7 @@ def all_status_permissions(status):
         status = db_sess.query(Status).filter(
             Status.id == status if isinstance(status, int) else Status.title == status).first()  # noqa
     status: Status
-    db_sess.commit()
+    db_sess.close()
 
     permissions = {perm for perm in all_perms if allowed_status_permission(status, perm)}
 
@@ -48,7 +48,7 @@ def allowed_status_permission(status, permission, allow_default=True):
 
     all_id_perms = set(map(lambda p: p.id, db_sess.query(Permission).all()))
 
-    db_sess.commit()
+    db_sess.close()
 
     if "*" in allowed_id_perms:
         allowed_id_perms = all_id_perms
@@ -79,7 +79,7 @@ def all_permissions(user):
     user: User
 
     statuses = db_sess.query(Status).filter(Status.id.in_(user.statuses.split(", "))).all()  # noqa
-    db_sess.commit()
+    db_sess.close()
 
     permissions = set()
 
@@ -99,7 +99,7 @@ def allowed_permission(user, permission, allow_default=True):
     user: User
 
     statuses = db_sess.query(Status).filter(Status.id.in_(user.statuses.split(", "))).all()  # noqa
-    db_sess.commit()
+    db_sess.close()
 
     for status in statuses:
         if allowed_status_permission(status, permission, allow_default=allow_default):
