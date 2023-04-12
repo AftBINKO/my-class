@@ -2,6 +2,8 @@ from string import ascii_letters, digits, punctuation
 
 from flask import Flask, render_template, redirect, url_for, abort, request
 from flask_login import LoginManager, current_user, login_user, login_required, logout_user
+from sqlalchemy import and_
+
 from data.config import Config
 from data.db_session import create_session, global_init
 from data.forms import LoginForm, LoginKeyForm, FinishRegisterForm, ChangeFullnameForm, ChangeLoginForm, \
@@ -441,16 +443,22 @@ def class_info(school_id, class_id):
     permission3 = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
     if not ((allowed_permission(current_user, permission2) or (
             allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
-            current_user.school_id == school_id or allowed_permission(current_user, permission3))):
+                    current_user.school_id == school_id or allowed_permission(current_user, permission3))):
         abort(405)
 
     school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
     school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
+
+    students = sorted([student for student in db_sess.query(User).filter(User.class_id == class_id).all() if  # noqa
+                db_sess.query(Status).filter(Status.title == "Ученик").first().id in set(  # noqa
+                    map(int, student.statuses.split(", ")))], key=lambda student: student.fullname.split()[0])
+
     db_sess.close()
 
     data = {
         "school": school,
         "permissions": permissions,
+        "students": students,
         "class": school_class
     }
 
