@@ -414,7 +414,8 @@ def add_class(school_id):
         school_class = Class()
 
         school_class.class_number = form.class_number.data
-        school_class.letter = form.letter.data
+        if form.letter.data:
+            school_class.letter = form.letter.data
         school_class.school_id = school_id
 
         db_sess.add(school_class)

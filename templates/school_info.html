@@ -37,14 +37,16 @@
             <tbody class="table-group-divider">
             {% for class in classes %}
                 <tr>
-                    {% if current_user.class_id == class.id %}
-                        <td>
-                            {{ class.class_number }}{{ class.letter }}
+                    <td>
+                        {% if class.letter %}
+                            {{ class.class_number }} "{{ class.letter }}"
+                        {% else %}
+                            {{ class.class_number }}
+                        {% endif %}
+                        {% if current_user.class_id == class.id %}
                             <span class="badge bg-primary">ваш</span>
-                        </td>
-                    {% else %}
-                        <td>{{ class.class_number }}{{ class.letter }}</td>
-                    {% endif %}
+                        {% endif %}
+                    </td>
                     <td>
                         {% if "view_details_classes" in permissions or ("view_self_details_class" in permissions and current_user.class_id == class.id) %}
                             <form action="" method="post">
