@@ -7,6 +7,7 @@ from data.db_session import create_session, global_init
 from data.forms import LoginForm, LoginKeyForm, FinishRegisterForm, ChangeFullnameForm, ChangeLoginForm, \
     ChangePasswordForm, EditSchoolForm, EditClassForm
 from data.functions import all_permissions, allowed_permission
+from data.functions import delete_classes, delete_schools
 from data.models import *
 
 app = Flask(__name__)
@@ -192,7 +193,7 @@ def change_fullname():
 
     permission = db_sess.query(Permission).filter(Permission.title == "changing_fullname").first()  # noqa
     if not allowed_permission(current_user, permission):
-        abort(404)
+        abort(405)
 
     form = ChangeFullnameForm()
     data = {
@@ -222,7 +223,7 @@ def change_login():
 
     permission = db_sess.query(Permission).filter(Permission.title == "changing_login").first()  # noqa
     if not allowed_permission(current_user, permission):
-        abort(404)
+        abort(405)
 
     form = ChangeLoginForm()
     data = {
@@ -254,7 +255,7 @@ def change_password():
 
     permission = db_sess.query(Permission).filter(Permission.title == "changing_password").first()  # noqa
     if not allowed_permission(current_user, permission):
-        abort(404)
+        abort(405)
 
     form = ChangePasswordForm()
     data = {
@@ -295,7 +296,7 @@ def add_school():
 
     permission = db_sess.query(Permission).filter(Permission.title == "adding_school").first()  # noqa
     if not allowed_permission(current_user, permission):
-        abort(404)
+        abort(405)
 
     form = EditSchoolForm()
     data = {
@@ -329,7 +330,7 @@ def school_info(school_id):
     permission2 = db_sess.query(Permission).filter(Permission.title == "view_schools").first()  # noqa
     if not (allowed_permission(current_user, permission2) or (
             allowed_permission(current_user, permission1) and current_user.school_id == school_id)):
-        abort(404)
+        abort(405)
 
     school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
     classes = db_sess.query(Class).filter(Class.school_id == school_id).all()  # noqa
@@ -359,7 +360,7 @@ def edit_school(school_id):
     permission2 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
     if not (allowed_permission(current_user, permission2) or (
             allowed_permission(current_user, permission1) and current_user.school_id == school_id)):
-        abort(404)
+        abort(405)
 
     form = EditSchoolForm()
     school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
@@ -384,20 +385,8 @@ def edit_school(school_id):
 @app.route('/schools/school/<school_id>/delete', methods=['GET', 'POST'])
 @login_required
 def delete_school(school_id):
-    school_id = int(school_id)
-
-    db_sess = create_session()
-
-    permission1 = db_sess.query(Permission).filter(Permission.title == "deleting_self_school").first()  # noqa
-    permission2 = db_sess.query(Permission).filter(Permission.title == "deleting_school").first()  # noqa
-    if not (allowed_permission(current_user, permission2) or (
-            allowed_permission(current_user, permission1) and current_user.school_id == school_id)):
-        abort(404)
-
-    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
-    db_sess.delete(school)
-    db_sess.commit()
-    db_sess.close()
+    if delete_schools(int(school_id), current_user) == 405:
+        abort(405)
 
     return redirect(url_for("home"))
 
@@ -413,7 +402,7 @@ def add_class(school_id):
     permission2 = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
     if not (allowed_permission(current_user, permission1) and (
             current_user.school_id == school_id or allowed_permission(current_user, permission2))):
-        abort(404)
+        abort(405)
 
     form = EditClassForm()
     data = {
@@ -452,7 +441,7 @@ def class_info(school_id, class_id):
     if not ((allowed_permission(current_user, permission2) or (
             allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
             current_user.school_id == school_id or allowed_permission(current_user, permission3))):
-        abort(404)
+        abort(405)
 
     school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
     school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
@@ -469,23 +458,9 @@ def class_info(school_id, class_id):
 
 @app.route('/schools/school/<school_id>/classes/class/<class_id>/delete', methods=['GET', 'POST'])
 @login_required
-def delete_class(school_id, class_id):  # TODO: удалить учеников вместе с классом, вынести в отдельную функцию
-    school_id, class_id = int(school_id), int(class_id)
-
-    db_sess = create_session()
-
-    permission1 = db_sess.query(Permission).filter(Permission.title == "deleting_self_class").first()  # noqa
-    permission2 = db_sess.query(Permission).filter(Permission.title == "deleting_classes").first()  # noqa
-    permission3 = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
-    if not ((allowed_permission(current_user, permission2) or (
-            allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
-            current_user.school_id == school_id or allowed_permission(current_user, permission3))):
-        abort(404)
-
-    school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
-    db_sess.delete(school_class)
-    db_sess.commit()
-    db_sess.close()
+def delete_class(school_id, class_id):
+    if delete_classes(int(school_id), int(class_id), current_user) == 405:
+        abort(405)
 
     return redirect(url_for("school_info", school_id=school_id))
 

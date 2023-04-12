@@ -1,5 +1,5 @@
 from .db_session import create_session
-from .models import User, Status, Permission
+from .models import User, Status, Permission, Class, School
 
 
 def all_status_permissions(status):
@@ -108,3 +108,89 @@ def allowed_permission(user, permission, allow_default=True):
     if allow_default:
         return False
     return
+
+
+def delete_schools(schools, user=None, check_permission=True):
+    if not isinstance(schools, (School, int, list)):
+        raise TypeError
+
+    db_sess = create_session()
+
+    if isinstance(schools, (School, int)):  # noqa
+        if isinstance(schools, School):
+            schools = schools.id
+
+        schools = [schools]
+
+    elif isinstance(schools, list):
+        ss = []
+        for c in schools:
+            if isinstance(c, int):
+                ss.append(c)
+            elif isinstance(c, Class):
+                ss.append(c.id)
+
+        schools = ss
+
+    if check_permission and user is not None:
+        permission1 = db_sess.query(Permission).filter(Permission.title == "deleting_self_school").first()  # noqa
+        permission2 = db_sess.query(Permission).filter(Permission.title == "deleting_school").first()  # noqa
+        if not (allowed_permission(user, permission2) or (
+                allowed_permission(user, permission1) and user.school_id in schools)):
+            db_sess.close()
+            return 405
+
+    schools = db_sess.query(School).filter(School.id.in_(schools)).all()  # noqa
+    for school in schools:
+        classes = db_sess.query(Class).filter(Class.school_id == school.id).all()  # noqa
+        delete_classes(school, classes, check_permission=False)
+        db_sess.delete(school)
+
+    db_sess.commit()
+    db_sess.close()
+
+    return True
+
+
+def delete_classes(school, classes, user=None, check_permission=True):
+    if not (isinstance(school, (School, int)) and isinstance(classes, (Class, int, list))):
+        raise TypeError
+
+    db_sess = create_session()
+    if isinstance(school, School):
+        school = school.id
+
+    if isinstance(classes, (Class, int)):  # noqa
+        if isinstance(classes, Class):
+            classes = classes.id
+
+        classes = [classes]
+    elif isinstance(classes, list):
+        cs = []
+        for c in classes:
+            if isinstance(c, int):
+                cs.append(c)
+            elif isinstance(c, Class):
+                cs.append(c.id)
+
+        classes = cs
+
+    if check_permission and user is not None:
+        permission1 = db_sess.query(Permission).filter(Permission.title == "deleting_self_class").first()  # noqa
+        permission2 = db_sess.query(Permission).filter(Permission.title == "deleting_classes").first()  # noqa
+        permission3 = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+
+        if not ((allowed_permission(user, permission2) or (
+                allowed_permission(user, permission1) and user.class_id in classes)) and (
+                        user.school_id == school or allowed_permission(user, permission3))):
+            db_sess.close()
+            return 405
+
+    students = db_sess.query(User).filter(User.class_id.in_(classes)).all()  # noqa
+    for student in students:
+        student.class_id = None
+    db_sess.query(Class).filter(Class.id.in_(classes)).delete()  # noqa
+    db_sess.commit()
+    db_sess.close()
+
+    return True
