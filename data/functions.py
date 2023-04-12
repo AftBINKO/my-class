@@ -195,3 +195,29 @@ def delete_classes(school, classes, user=None, check_permission=True):
     db_sess.close()
 
     return True
+
+
+def delete_user(user, current_user=None, check_permission=True):
+    if not isinstance(user, (User, int)):
+        raise TypeError
+
+    db_sess = create_session()
+    if isinstance(user, int):
+        user = db_sess.query(User).filter(User.id == user).first()  # noqa
+
+    if check_permission and current_user is not None:
+        permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
+        permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
+        permission3 = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+
+        if not ((allowed_permission(current_user, permission2) or (
+                allowed_permission(current_user, permission1) and current_user.class_id == user.class_id)) and (
+                        current_user.school_id == user.school_id or allowed_permission(current_user, permission3))):
+            db_sess.close()
+            return 405
+
+    db_sess.delete(user)
+    db_sess.commit()
+    db_sess.close()
+
+    return True

@@ -10,6 +10,7 @@ from data.forms import LoginForm, LoginKeyForm, FinishRegisterForm, ChangeFullna
     ChangePasswordForm, EditSchoolForm, EditClassForm
 from data.functions import all_permissions, allowed_permission
 from data.functions import delete_classes, delete_schools
+from data.functions import delete_user as del_user
 from data.models import *
 
 app = Flask(__name__)
@@ -182,12 +183,13 @@ def profile_user(user_id):
                            key=lambda status: status.id, reverse=True))
     db_sess.close()
     permissions = None
+    permission3 = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
     if current_user.id == int(user_id):
         permissions = set(map(lambda permission: permission.title, all_permissions(user)))
     else:
         permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
         permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
-        permission3 = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+
         if not ((allowed_permission(current_user, permission2) or (
                 allowed_permission(current_user, permission1) and current_user.class_id == user.class_id)) and (
                         current_user.school_id == user.school_id or allowed_permission(current_user, permission3))):
@@ -197,6 +199,7 @@ def profile_user(user_id):
         "statuses": statuses,
         "permissions": permissions,
         "user": user,
+        "admin": allowed_permission(current_user, permission3),
         "class_name": ""  # TODO: дописать
     }
 
@@ -225,7 +228,6 @@ def change_fullname(user_id):
     form = ChangeFullnameForm()
     data = {
         'form': form,
-        'user': user,
         'message': None
     }
 
@@ -243,13 +245,17 @@ def change_fullname(user_id):
     return render_template('change_fullname.html', **data)
 
 
-@app.route('/my/edit_login', methods=['GET', 'POST'])
+@app.route('/profile/<user_id>/edit_login', methods=['GET', 'POST'])
 @login_required
-def change_login():
+def change_login(user_id):
     db_sess = create_session()
 
-    permission = db_sess.query(Permission).filter(Permission.title == "changing_login").first()  # noqa
-    if not allowed_permission(current_user, permission):
+    user = db_sess.query(User).filter(User.id == user_id).first()
+    if current_user.id == int(user_id):
+        permission = db_sess.query(Permission).filter(Permission.title == "changing_login").first()  # noqa
+    else:
+        permission = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+    if not allowed_permission(user, permission):
         abort(405)
 
     form = ChangeLoginForm()
@@ -259,7 +265,6 @@ def change_login():
     }
 
     if form.validate_on_submit():
-        user = db_sess.query(User).filter(User.id == current_user.id).first()
         user_login = form.login.data
 
         if not all([symbol in ascii_letters + digits for symbol in user_login]):
@@ -268,20 +273,24 @@ def change_login():
             user.login = user_login.lower()
 
             db_sess.commit()
-            return redirect(url_for("profile"))
+            return redirect(url_for("profile_user", user_id=user_id))
 
     db_sess.close()
 
     return render_template('change_login.html', **data)
 
 
-@app.route('/my/edit_password', methods=['GET', 'POST'])
+@app.route('/profile/<user_id>/edit_password', methods=['GET', 'POST'])
 @login_required
-def change_password():
+def change_password(user_id):
     db_sess = create_session()
 
-    permission = db_sess.query(Permission).filter(Permission.title == "changing_password").first()  # noqa
-    if not allowed_permission(current_user, permission):
+    user = db_sess.query(User).filter(User.id == user_id).first()
+    if current_user.id == int(user_id):
+        permission = db_sess.query(Permission).filter(Permission.title == "changing_password").first()  # noqa
+    else:
+        permission = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+    if not allowed_permission(user, permission):
         abort(405)
 
     form = ChangePasswordForm()
@@ -291,7 +300,6 @@ def change_password():
     }
 
     if form.validate_on_submit():
-        user = db_sess.query(User).filter(User.id == current_user.id).first()
         old_password = form.old_password.data
         new_password = form.new_password.data
         new_password_again = form.new_password_again.data
@@ -314,6 +322,19 @@ def change_password():
     db_sess.close()
 
     return render_template('change_password.html', **data)
+
+
+@app.route('/profile/<user_id>/delete', methods=['GET', 'POST'])
+@login_required
+def delete_user(user_id):
+    db_sess = create_session()
+    user = db_sess.query(User).filter(User.id == user_id).first()
+    school_id = user.school_id
+    class_id = user.class_id
+    if del_user(user_id, current_user) == 405:
+        abort(405)
+
+    return redirect(url_for("class_info", school_id=school_id, class_id=class_id))
 
 
 @app.route('/schools/add', methods=['GET', 'POST'])
