@@ -189,6 +189,7 @@ def delete_classes(school, classes, user=None, check_permission=True):
     students = db_sess.query(User).filter(User.class_id.in_(classes)).all()  # noqa
     for student in students:
         student.class_id = None
+        student.school_id = None
     db_sess.query(Class).filter(Class.id.in_(classes)).delete()  # noqa
     db_sess.commit()
     db_sess.close()
