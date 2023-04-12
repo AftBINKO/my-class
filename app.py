@@ -331,7 +331,7 @@ def delete_user(user_id):
     user = db_sess.query(User).filter(User.id == user_id).first()
     school_id = user.school_id
     class_id = user.class_id
-    if del_user(user_id, current_user) == 405:
+    if del_user(int(user_id), current_user) == 405:
         abort(405)
 
     return redirect(url_for("class_info", school_id=school_id, class_id=class_id))
