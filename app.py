@@ -7,7 +7,7 @@ from sqlalchemy import and_
 from data.config import Config
 from data.db_session import create_session, global_init
 from data.forms import LoginForm, LoginKeyForm, FinishRegisterForm, ChangeFullnameForm, ChangeLoginForm, \
-    ChangePasswordForm, EditSchoolForm, EditClassForm
+    ChangePasswordForm, EditSchoolForm, EditClassForm, EditStudentForm
 from data.functions import all_permissions, allowed_permission
 from data.functions import delete_classes, delete_schools
 from data.models import *
@@ -457,6 +457,41 @@ def class_info(school_id, class_id):
     return render_template("class_info.html", **data)
 
 
+@app.route('/schools/school/<school_id>/classes/class/<class_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_class(school_id, class_id):
+    db_sess = create_session()
+
+    permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
+    permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
+    permission3 = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+    if not ((allowed_permission(current_user, permission2) or (
+            allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
+                    current_user.school_id == school_id or allowed_permission(current_user, permission3))):
+        abort(405)
+
+    form = EditClassForm()
+    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
+    school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
+    data = {
+        'form': form,
+        'school': school,
+        'class': school_class
+    }
+
+    if form.validate_on_submit():
+        school_class.class_number = form.class_number.data
+        school_class.letter = form.letter.data
+
+        db_sess.commit()
+
+        return redirect(url_for("class_info", school_id=school_id, class_id=class_id))
+
+    db_sess.close()
+
+    return render_template('edit_class.html', **data)
+
+
 @app.route('/schools/school/<school_id>/classes/class/<class_id>/delete', methods=['GET', 'POST'])
 @login_required
 def delete_class(school_id, class_id):
@@ -464,6 +499,48 @@ def delete_class(school_id, class_id):
         abort(405)
 
     return redirect(url_for("school_info", school_id=school_id))
+
+
+@app.route('/schools/school/<school_id>/classes/class/<class_id>/students/add', methods=['GET', 'POST'])
+@login_required
+def add_student(school_id, class_id):
+    db_sess = create_session()
+
+    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
+    school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
+
+    permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
+    permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
+    permission3 = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+    if not ((allowed_permission(current_user, permission2) or (
+            allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
+                    current_user.school_id == school_id or allowed_permission(current_user, permission3))):
+        abort(405)
+
+    form = EditStudentForm()
+    data = {
+        'form': form,
+        'school': school,
+        'class': school_class
+    }
+
+    if form.validate_on_submit():
+        student = User()
+
+        student.fullname = form.fullname.data
+        student.school_id = school_id
+        student.class_id = class_id
+        student.statuses = 1
+        student.generate_key()
+
+        db_sess.add(student)
+        db_sess.commit()
+
+        return redirect(url_for("class_info", school_id=school_id, class_id=class_id))
+
+    db_sess.close()
+
+    return render_template('add_student.html', **data)
 
 
 if __name__ == '__main__':

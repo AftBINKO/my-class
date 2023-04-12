@@ -12,18 +12,27 @@
     <div class="container" style="margin-top: 25px">
         <h1 style="text-align: center">
             {% if class.letter %}
-                {{ class.class_number }} "{{ class.letter }} класс {{ school.name }}"
+                {{ class.class_number }} "{{ class.letter }}" класс {{ school.name }}"
             {% else %}
                 {{ class.class_number }} класс {{ school.name }}
             {% endif %}
         </h1>
     </div>
+    {% if "editing_classes" in permissions or ("editing_self_class" in permissions and current_user.class_id == class.id) %}
+        <div class="container" style="margin-top: 25px">
+            <a href="{{ url_for("edit_class", school_id=school.id, class_id=class.id) }}" class="btn btn-primary">
+                Редактировать класс
+            </a>
+        </div>
+    {% endif %}
     <div class="container" style="margin-top: 25px">
         <h3 style="text-align: center">Ученики</h3>
     </div>
     {% if "editing_classes" in permissions or ("editing_self_class" in permissions and current_user.class_id == class.id) %}
         <div class="container" style="margin-top: 25px">
-            <a href="" class="btn btn-success">Добавить ученика</a>
+            <a href="{{ url_for("add_student", school_id=school.id, class_id=class.id) }}" class="btn btn-success">
+                Добавить ученика
+            </a>
         </div>
     {% endif %}
     <div class="container" style="margin-top: 25px">
@@ -31,6 +40,7 @@
             <thead>
             <tr>
                 <th scope="col">Фамилия Имя Отчество</th>
+                <th scope="col">Ключ</th>
                 <th scope="col"></th>
             </tr>
             </thead>
@@ -41,6 +51,11 @@
                         {{ student.fullname }}
                         {% if student.id == current_user.id %}
                             <span class="badge bg-primary">вы</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if student.key %}
+                            {{ student.key }}
                         {% endif %}
                     </td>
                     <td>
