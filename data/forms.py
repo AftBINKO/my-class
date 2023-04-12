@@ -50,7 +50,3 @@ class EditClassForm(FlaskForm):
     letter = StringField('Литера')
     submit = SubmitField('Подтвердить')
 
-
-class EditStudentForm(FlaskForm):
-    fullname = StringField('Фамилия Имя Отчество', validators=[DataRequired()])
-    submit = SubmitField('Подтвердить')

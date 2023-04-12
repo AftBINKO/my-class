@@ -7,7 +7,7 @@ from sqlalchemy import and_
 from data.config import Config
 from data.db_session import create_session, global_init
 from data.forms import LoginForm, LoginKeyForm, FinishRegisterForm, ChangeFullnameForm, ChangeLoginForm, \
-    ChangePasswordForm, EditSchoolForm, EditClassForm, EditStudentForm
+    ChangePasswordForm, EditSchoolForm, EditClassForm
 from data.functions import all_permissions, allowed_permission
 from data.functions import delete_classes, delete_schools
 from data.models import *
@@ -170,37 +170,66 @@ def finish_register():
 @app.route('/my')
 @login_required
 def profile():
+    return redirect(url_for("profile_user", user_id=current_user.id))
+
+
+@app.route('/profile/<user_id>')
+@login_required
+def profile_user(user_id):
     db_sess = create_session()
-    statuses = list(sorted(db_sess.query(Status).filter(Status.id.in_(current_user.statuses.split(", "))).all(),  # noqa
+    user = db_sess.query(User).filter(User.id == user_id).first()
+    statuses = list(sorted(db_sess.query(Status).filter(Status.id.in_(user.statuses.split(", "))).all(),  # noqa
                            key=lambda status: status.id, reverse=True))
     db_sess.close()
-    permissions = set(map(lambda permission: permission.title, all_permissions(current_user)))
+    permissions = None
+    if current_user.id == int(user_id):
+        permissions = set(map(lambda permission: permission.title, all_permissions(user)))
+    else:
+        permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
+        permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
+        permission3 = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+        if not ((allowed_permission(current_user, permission2) or (
+                allowed_permission(current_user, permission1) and current_user.class_id == user.class_id)) and (
+                        current_user.school_id == user.school_id or allowed_permission(current_user, permission3))):
+            abort(405)
+
     data = {
         "statuses": statuses,
         "permissions": permissions,
+        "user": user,
         "class_name": ""  # TODO: дописать
     }
 
     return render_template("profile.html", **data)
 
 
-@app.route('/my/edit_fullname', methods=['GET', 'POST'])
+@app.route('/profile/<user_id>/edit_fullname', methods=['GET', 'POST'])
 @login_required
-def change_fullname():
+def change_fullname(user_id):
     db_sess = create_session()
 
-    permission = db_sess.query(Permission).filter(Permission.title == "changing_fullname").first()  # noqa
-    if not allowed_permission(current_user, permission):
-        abort(405)
+    user = db_sess.query(User).filter(User.id == user_id).first()
+    if current_user.id == int(user_id):
+        permission = db_sess.query(Permission).filter(Permission.title == "changing_fullname").first()  # noqa
+        if not allowed_permission(user, permission):
+            abort(405)
+    else:
+        permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
+        permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
+        permission3 = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+        if not ((allowed_permission(current_user, permission2) or (
+                allowed_permission(current_user, permission1) and current_user.class_id == user.class_id)) and (
+                        current_user.school_id == user.school_id or allowed_permission(current_user, permission3))):
+            abort(405)
 
     form = ChangeFullnameForm()
     data = {
         'form': form,
+        'user': user,
         'message': None
     }
 
     if form.validate_on_submit():
-        user = db_sess.query(User).filter(User.id == current_user.id).first()
         fullname = form.fullname.data
 
         if not all([symbol in RUSSIAN_ALPHABET + ' ' for symbol in fullname]):
@@ -209,7 +238,7 @@ def change_fullname():
             user.fullname = ' '.join(list(map(lambda name: name.lower().capitalize(), fullname.split())))
 
             db_sess.commit()
-            return redirect(url_for("profile"))
+            return redirect(url_for("profile_user", user_id=user_id))
     db_sess.close()
     return render_template('change_fullname.html', **data)
 
@@ -517,26 +546,30 @@ def add_student(school_id, class_id):
                     current_user.school_id == school_id or allowed_permission(current_user, permission3))):
         abort(405)
 
-    form = EditStudentForm()
+    form = ChangeFullnameForm()
     data = {
         'form': form,
         'school': school,
-        'class': school_class
+        'class': school_class,
+        'message': None
     }
 
     if form.validate_on_submit():
         student = User()
 
-        student.fullname = form.fullname.data
-        student.school_id = school_id
-        student.class_id = class_id
-        student.statuses = 1
-        student.generate_key()
+        if not all([symbol in RUSSIAN_ALPHABET + ' ' for symbol in form.fullname.data]):
+            data['message'] = "Поле заполнено неверно. Используйте только буквы русского алфавита"
+        else:
+            student.fullname = ' '.join(list(map(lambda name: name.lower().capitalize(), form.fullname.data.split())))
+            student.school_id = school_id
+            student.class_id = class_id
+            student.statuses = 1
+            student.generate_key()
 
-        db_sess.add(student)
-        db_sess.commit()
+            db_sess.add(student)
+            db_sess.commit()
 
-        return redirect(url_for("class_info", school_id=school_id, class_id=class_id))
+            return redirect(url_for("class_info", school_id=school_id, class_id=class_id))
 
     db_sess.close()
 
