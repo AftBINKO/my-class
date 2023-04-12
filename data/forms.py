@@ -43,3 +43,9 @@ class EditSchoolForm(FlaskForm):
     school = StringField('Короткое название школы', validators=[DataRequired()])
     fullname = TextAreaField('Полное название школы')
     submit = SubmitField('Подтвердить')
+
+
+class EditClassForm(FlaskForm):
+    class_number = StringField('Класс', validators=[DataRequired()])
+    letter = StringField('Литера')
+    submit = SubmitField('Подтвердить')

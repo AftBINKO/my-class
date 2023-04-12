@@ -8,37 +8,61 @@
     <div class="container" style="margin-top: 25px">
         <h1 style="text-align: center">{{ school.name }}</h1>
     </div>
-    <div class="container" style="margin-top: 25px">
-        <a href="{{ url_for("edit_school", school_id=school.id) }}" class="btn btn-primary">
-            Изменить основную информацию
-        </a>
-    </div>
+    {% if "editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) %}
+        <div class="container" style="margin-top: 25px">
+            <a href="{{ url_for("edit_school", school_id=school.id) }}" class="btn btn-primary">
+                Изменить основную информацию
+            </a>
+        </div>
+    {% endif %}
     <div class="container" style="margin-top: 25px">
         <p>{{ school.fullname }}</p>
     </div>
-    {#    <div class="container" style="margin-top: 25px">#}
-    {#        <table class="table">#}
-    {#            <thead>#}
-    {#            <tr>#}
-    {#                <th scope="col">ID</th>#}
-    {#                <th scope="col">Название</th>#}
-    {#                <th scope="col"></th>#}
-    {#            </tr>#}
-    {#            </thead>#}
-    {#            <tbody class="table-group-divider">#}
-    {#            {% for school in schools %}#}
-    {#                <tr>#}
-    {#                    <th scope="row">{{ school.id }}</th>#}
-    {#                    <td>{{ school.name }}</td>#}
-    {#                    <td>#}
-    {#                        <form action="" method="post">#}
-    {#                            <input type="hidden" name="school_id" value={{ school.id }}>#}
-    {#                            <button class="btn btn-secondary" type="submit">Подробнее</button>#}
-    {#                        </form>#}
-    {#                    </td>#}
-    {#                </tr>#}
-    {#            {% endfor %}#}
-    {#            </tbody>#}
-    {#        </table>#}
-    {#    </div>#}
+    <div class="container" style="margin-top: 25px">
+        <h3 style="text-align: center">Классы</h3>
+    </div>
+    {% if "adding_classes" in permissions %}
+        <div class="container" style="margin-top: 25px">
+            <a href="{{ url_for("add_class", school_id=school.id) }}" class="btn btn-success">Добавить класс</a>
+        </div>
+    {% endif %}
+    <div class="container" style="margin-top: 25px">
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">Класс</th>
+                <th scope="col"></th>
+            </tr>
+            </thead>
+            <tbody class="table-group-divider">
+            {% for class in classes %}
+                <tr>
+                    {% if current_user.class_id == class.id %}
+                        <td>
+                            {{ class.class_number }}{{ class.letter }}
+                            <span class="badge bg-primary">ваш</span>
+                        </td>
+                    {% else %}
+                        <td>{{ class.class_number }}{{ class.letter }}</td>
+                    {% endif %}
+                    <td>
+                        {% if "view_details_classes" in permissions or ("view_self_details_class" in permissions and current_user.class_id == class.id) %}
+                            <form action="" method="post">
+                                <input type="hidden" name="class_id" value={{ class.id }}>
+                                <button class="btn btn-secondary" type="submit">Подробнее</button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if "deleting_school" in permissions or ("deleting_self_school" in permissions and current_user.school_id == school.id) %}
+        <div class="container" style="justify-content: center; display: flex">
+            <a href="{{ url_for("delete_school", school_id=school.id) }}" class="btn btn-danger">
+                Удалить образовательное учреждение
+            </a>
+        </div>
+    {% endif %}
 {% endblock %}
