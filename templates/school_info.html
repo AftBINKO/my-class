@@ -49,10 +49,9 @@
                     </td>
                     <td>
                         {% if "view_details_classes" in permissions or ("view_self_details_class" in permissions and current_user.class_id == class.id) %}
-                            <form action="" method="post">
-                                <input type="hidden" name="class_id" value={{ class.id }}>
-                                <button class="btn btn-secondary" type="submit">Подробнее</button>
-                            </form>
+                            <a href="{{ url_for("class_info", school_id=school.id, class_id=class.id) }}" class="btn btn-secondary">
+                                Подробнее
+                            </a>
                         {% endif %}
                     </td>
                 </tr>

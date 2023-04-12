@@ -26,10 +26,9 @@
                     <th scope="row">{{ school.id }}</th>
                     <td>{{ school.name }}</td>
                     <td>
-                        <form action="" method="post">
-                            <input type="hidden" name="school_id" value={{ school.id }}>
-                            <button class="btn btn-secondary" type="submit">Подробнее</button>
-                        </form>
+                        <a href="{{ url_for("school_info", school_id=school.id) }}" class="btn btn-secondary">
+                            Подробнее
+                        </a>
                     </td>
                 </tr>
             {% endfor %}

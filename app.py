@@ -59,7 +59,7 @@ def home():
     return render_template("home.html")
 
 
-@app.route('/admin_panel', methods=['GET', 'POST'])
+@app.route('/admin_panel')
 def admin_panel():
     db_sess = create_session()
 
@@ -74,10 +74,6 @@ def admin_panel():
     data = {
         "schools": schools
     }
-
-    if request.method == "POST":
-        school_id = int(request.form.get("school_id"))
-        return redirect(url_for("school_info", school_id=school_id))
 
     return render_template("admin_panel.html", **data)
 
@@ -321,7 +317,7 @@ def add_school():
     return render_template('add_school.html', **data)
 
 
-@app.route('/schools/school/<school_id>', methods=['GET', 'POST'])
+@app.route('/schools/school/<school_id>')
 def school_info(school_id):
     school_id = int(school_id)
 
@@ -343,10 +339,6 @@ def school_info(school_id):
         "permissions": permissions,
         "classes": classes
     }
-
-    if request.method == "POST":
-        class_id = int(request.form.get("class_id"))
-        return redirect(url_for("class_info", school_id=school_id, class_id=class_id))
 
     return render_template("school_info.html", **data)
 
