@@ -144,6 +144,11 @@ def delete_schools(schools, user=None, check_permission=True):
     for school in schools:
         classes = db_sess.query(Class).filter(Class.school_id == school.id).all()  # noqa
         delete_classes(school, classes, check_permission=False)
+
+        users = db_sess.query(User).filter(User.school_id.in_(schools)).all()  # noqa
+        for user in users:
+            user.school_id = None
+
         db_sess.delete(school)
 
     db_sess.commit()
@@ -186,10 +191,10 @@ def delete_classes(school, classes, user=None, check_permission=True):
             db_sess.close()
             return 405
 
-    students = db_sess.query(User).filter(User.class_id.in_(classes)).all()  # noqa
-    for student in students:
-        student.class_id = None
-        student.school_id = None
+    users = db_sess.query(User).filter(User.class_id.in_(classes)).all()  # noqa
+    for user in users:
+        user.class_id = None
+        user.school_id = None
     db_sess.query(Class).filter(Class.id.in_(classes)).delete()  # noqa
     db_sess.commit()
     db_sess.close()
@@ -206,15 +211,24 @@ def delete_user(user, current_user=None, check_permission=True):
         user = db_sess.query(User).filter(User.id == user).first()  # noqa
 
     if check_permission and current_user is not None:
-        permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
-        permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
-        permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+        if max(list(map(int, user.statuses.split(", ")))) == 1:
+            permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
+            permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
+            permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
 
-        if not ((allowed_permission(current_user, permission2) or (
-                allowed_permission(current_user, permission1) and current_user.class_id == user.class_id)) and (
-                        current_user.school_id == user.school_id or allowed_permission(current_user, permission3))):
-            db_sess.close()
-            return 405
+            if not ((allowed_permission(current_user, permission2) or (
+                    allowed_permission(current_user, permission1) and current_user.class_id == user.class_id)) and (
+                            current_user.school_id == user.school_id or allowed_permission(current_user, permission3))):
+                db_sess.close()
+                return 405
+        elif max(list(map(int, user.statuses.split(", ")))) in [2, 3, 4]:
+            permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_school").first()  # noqa
+            permission2 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+
+            if not (allowed_permission(current_user, permission2) or (
+                    allowed_permission(current_user, permission1) and current_user.school_id == user.school_id)):
+                db_sess.close()
+                return 405
 
     db_sess.delete(user)
     db_sess.commit()

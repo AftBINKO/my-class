@@ -203,7 +203,7 @@ def profile_user(user_id):
                             current_user.school_id == user.school_id or allowed_permission(current_user, permission3))):
                 db_sess.close()
                 abort(405)
-        elif max(list(map(int, user.statuses.split(", ")))) in [2, 3]:
+        elif max(list(map(int, user.statuses.split(", ")))) in [2, 3, 4]:
             permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_school").first()  # noqa
             permission2 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
 
@@ -342,7 +342,7 @@ def change_password(user_id):
             user.set_password(new_password)  # noqa
 
             db_sess.commit()
-            return redirect(url_for("profile"))
+            return redirect(url_for("profile_user", user_id=user_id))
 
     db_sess.close()
 
@@ -360,7 +360,7 @@ def delete_user(user_id):
     if del_user(int(user_id), current_user) == 405:
         abort(405)
 
-    return redirect(url_for("class_info", school_id=school_id, class_id=class_id))
+    return redirect(url_for("home"))
 
 
 @app.route('/schools/add', methods=['GET', 'POST'])
@@ -410,12 +410,28 @@ def school_info(school_id):
 
     school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
     classes = db_sess.query(Class).filter(Class.school_id == school_id).all()  # noqa
+
+    users = db_sess.query(User).filter(User.school_id == school_id).all()  # noqa
+    moderators = []
+    teachers = []
+    for user in users:
+        statuses = list(map(int, user.statuses.split(", ")))
+        if 4 in statuses:
+            moderators.append(user)
+        if 2 in statuses:
+            teachers.append(user)
+
+    moderators.sort(key=lambda moder: moder.fullname.split()[0])
+    teachers.sort(key=lambda teacher: teacher.fullname.split()[0])
+
     db_sess.close()
 
     data = {
         "school": school,
         "permissions": permissions,
-        "classes": classes
+        "classes": classes,
+        "moderators": moderators,
+        "teachers": teachers
     }
 
     return render_template("school_info.html", **data)
@@ -430,6 +446,7 @@ def edit_school(school_id):
 
     permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_school").first()  # noqa
     permission2 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+
     if not (allowed_permission(current_user, permission2) or (
             allowed_permission(current_user, permission1) and current_user.school_id == school_id)):
         db_sess.close()
@@ -453,6 +470,96 @@ def edit_school(school_id):
     db_sess.close()
 
     return render_template('edit_school.html', **data)
+
+
+@app.route('/schools/school/<school_id>/moderators/add', methods=['GET', 'POST'])
+@login_required
+def add_moderator(school_id):
+    school_id = int(school_id)  # noqa
+
+    db_sess = create_session()
+
+    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
+
+    permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_school").first()  # noqa
+    permission2 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+
+    if not (allowed_permission(current_user, permission2) or (
+            allowed_permission(current_user, permission1) and current_user.school_id == school_id)):
+        db_sess.close()
+        abort(405)
+
+    form = ChangeFullnameForm()
+    data = {
+        'form': form,
+        'school': school,
+        'message': None
+    }
+
+    if form.validate_on_submit():
+        moder = User()
+
+        if not all([symbol in RUSSIAN_ALPHABET + ' ' for symbol in form.fullname.data]):
+            data['message'] = "Поле заполнено неверно. Используйте только буквы русского алфавита"
+        else:
+            moder.fullname = ' '.join(list(map(lambda name: name.lower().capitalize(), form.fullname.data.split())))
+            moder.school_id = school_id
+            moder.statuses = 4
+            moder.generate_key()
+
+            db_sess.add(moder)
+            db_sess.commit()
+
+            return redirect(url_for("school_info", school_id=school_id))
+
+    db_sess.close()
+
+    return render_template('add_moderator.html', **data)
+
+
+@app.route('/schools/school/<school_id>/teachers/add', methods=['GET', 'POST'])
+@login_required
+def add_teacher(school_id):
+    school_id = int(school_id)  # noqa
+
+    db_sess = create_session()
+
+    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
+
+    permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_school").first()  # noqa
+    permission2 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+
+    if not (allowed_permission(current_user, permission2) or (
+            allowed_permission(current_user, permission1) and current_user.school_id == school_id)):
+        db_sess.close()
+        abort(405)
+
+    form = ChangeFullnameForm()
+    data = {
+        'form': form,
+        'school': school,
+        'message': None
+    }
+
+    if form.validate_on_submit():
+        teacher = User()
+
+        if not all([symbol in RUSSIAN_ALPHABET + ' ' for symbol in form.fullname.data]):
+            data['message'] = "Поле заполнено неверно. Используйте только буквы русского алфавита"
+        else:
+            teacher.fullname = ' '.join(list(map(lambda name: name.lower().capitalize(), form.fullname.data.split())))
+            teacher.school_id = school_id
+            teacher.statuses = 2
+            teacher.generate_key()
+
+            db_sess.add(teacher)
+            db_sess.commit()
+
+            return redirect(url_for("school_info", school_id=school_id))
+
+    db_sess.close()
+
+    return render_template('add_teacher.html', **data)
 
 
 @app.route('/schools/school/<school_id>/delete', methods=['GET', 'POST'])

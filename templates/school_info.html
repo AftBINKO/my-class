@@ -18,46 +18,146 @@
     <div class="container" style="margin-top: 25px">
         <p>{{ school.fullname }}</p>
     </div>
-    <div class="container" style="margin-top: 25px">
-        <h3 style="text-align: center">Классы</h3>
-    </div>
-    {% if "adding_classes" in permissions %}
+    <div class="container" style="margin-top: 50px">
         <div class="container" style="margin-top: 25px">
-            <a href="{{ url_for("add_class", school_id=school.id) }}" class="btn btn-success">Добавить класс</a>
+            <h3 style="text-align: center">Администрация</h3>
         </div>
-    {% endif %}
-    <div class="container" style="margin-top: 25px">
-        <table class="table">
-            <thead>
-            <tr>
-                <th scope="col">Класс</th>
-                <th scope="col"></th>
-            </tr>
-            </thead>
-            <tbody class="table-group-divider">
-            {% for class in classes %}
+        {% if "editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) %}
+            <div class="container" style="margin-top: 25px">
+                <a href="{{ url_for("add_moderator", school_id=school.id) }}" class="btn btn-success">
+                    Добавить модератора
+                </a>
+                <p>Вы можете добавить директора, информатика, завуча или другого управляющего лица</p>
+            </div>
+        {% endif %}
+        <div class="container" style="margin-top: 25px">
+            <table class="table">
+                <thead>
                 <tr>
-                    <td>
-                        {% if class.letter %}
-                            {{ class.class_number }} "{{ class.letter }}"
-                        {% else %}
-                            {{ class.class_number }}
-                        {% endif %}
-                        {% if current_user.class_id == class.id %}
-                            <span class="badge bg-primary">ваш</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if "view_details_classes" in permissions or ("view_self_details_class" in permissions and current_user.class_id == class.id) %}
-                            <a href="{{ url_for("class_info", school_id=school.id, class_id=class.id) }}" class="btn btn-secondary">
-                                Подробнее
-                            </a>
-                        {% endif %}
-                    </td>
+                    <th scope="col">Фамилия Имя Отчество</th>
+                    <th scope="col">Ключ</th>
+                    <th scope="col"></th>
                 </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody class="table-group-divider">
+                {% for moder in moderators %}
+                    <tr>
+                        <td>
+                            {{ moder.fullname }}
+                            {% if moder.id == current_user.id %}
+                                <span class="badge bg-primary">вы</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if moder.key %}
+                                {{ moder.key }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if ("editing_school" in permissions or ("editing_self_school" in permissions and current_user.class_id == class.id) or current_user.id == student.id) %}
+                                <form action="" method="post">
+                                    <a href="{{ url_for("profile_user", user_id=moder.id) }}" class="btn btn-secondary">
+                                        Подробнее
+                                    </a>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="container" style="margin-top: 50px">
+        <div class="container" style="margin-top: 25px">
+            <h3 style="text-align: center">Классы</h3>
+        </div>
+        {% if "adding_classes" in permissions %}
+            <div class="container" style="margin-top: 25px">
+                <a href="{{ url_for("add_class", school_id=school.id) }}" class="btn btn-success">Добавить класс</a>
+            </div>
+        {% endif %}
+        <div class="container" style="margin-top: 25px">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">Класс</th>
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+                <tbody class="table-group-divider">
+                {% for class in classes %}
+                    <tr>
+                        <td>
+                            {% if class.letter %}
+                                {{ class.class_number }} "{{ class.letter }}"
+                            {% else %}
+                                {{ class.class_number }}
+                            {% endif %}
+                            {% if current_user.class_id == class.id %}
+                                <span class="badge bg-primary">ваш</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if "view_details_classes" in permissions or ("view_self_details_class" in permissions and current_user.class_id == class.id) %}
+                                <a href="{{ url_for("class_info", school_id=school.id, class_id=class.id) }}"
+                                   class="btn btn-secondary">
+                                    Подробнее
+                                </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="container" style="margin-top: 50px">
+        <div class="container" style="margin-top: 25px">
+            <h3 style="text-align: center">Преподавательский коллектив </h3>
+        </div>
+        {% if "editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) %}
+            <div class="container" style="margin-top: 25px">
+                <a href="{{ url_for("add_teacher", school_id=school.id) }}" class="btn btn-success">Добавить учителя</a>
+            </div>
+        {% endif %}
+        <div class="container" style="margin-top: 25px">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">Фамилия Имя Отчество</th>
+                    <th scope="col">Ключ</th>
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+                <tbody class="table-group-divider">
+                {% for teacher in teachers %}
+                    <tr>
+                        <td>
+                            {{ teacher.fullname }}
+                            {% if teacher.id == current_user.id %}
+                                <span class="badge bg-primary">вы</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if teacher.key %}
+                                {{ teacher.key }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if ("editing_school" in permissions or ("editing_self_school" in permissions and current_user.class_id == class.id) or current_user.id == student.id) %}
+                                <form action="" method="post">
+                                    <a href="{{ url_for("profile_user", user_id=teacher.id) }}" class="btn btn-secondary">
+                                        Подробнее
+                                    </a>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
     {% if "deleting_school" in permissions or ("deleting_self_school" in permissions and current_user.school_id == school.id) %}
         <div class="container" style="justify-content: center; display: flex">
