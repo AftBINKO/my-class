@@ -3,6 +3,7 @@ from string import ascii_letters, digits, punctuation
 
 from flask import Flask, render_template, redirect, url_for, abort
 from flask_login import LoginManager, current_user, login_user, login_required, logout_user
+from waitress import serve
 
 from data.config import Config
 from data.db_session import create_session, global_init
@@ -809,4 +810,4 @@ def add_class_teacher(school_id, class_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=os.getenv("PORT", default=5000))
+    serve(app, host='0.0.0.0', port=5000)
