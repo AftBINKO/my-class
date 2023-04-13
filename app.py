@@ -1,8 +1,7 @@
 from string import ascii_letters, digits, punctuation
 
-from flask import Flask, render_template, redirect, url_for, abort, request
+from flask import Flask, render_template, redirect, url_for, abort
 from flask_login import LoginManager, current_user, login_user, login_required, logout_user
-from sqlalchemy import and_
 
 from data.config import Config
 from data.db_session import create_session, global_init
@@ -52,12 +51,20 @@ def home():
 
     db_sess = create_session()
     permission = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+    status = max(list(map(int, current_user.statuses.split(", "))))
     db_sess.close()
 
     if allowed_permission(current_user, permission):
         return redirect(url_for("admin_panel"))
 
-    return render_template("home.html")
+    if not current_user.school_id:
+        abort(404)  # TODO: исправить на другую страницу
+
+    if status in [1, 3]:
+        if current_user.class_id:
+            return redirect(url_for("class_info", school_id=current_user.school_id, class_id=current_user.class_id))
+
+    return redirect(url_for("school_info", school_id=current_user.school_id))
 
 
 @app.route('/admin_panel')
@@ -181,19 +188,31 @@ def profile_user(user_id):
     user = db_sess.query(User).filter(User.id == user_id).first()
     statuses = list(sorted(db_sess.query(Status).filter(Status.id.in_(user.statuses.split(", "))).all(),  # noqa
                            key=lambda status: status.id, reverse=True))
-    db_sess.close()
     permissions = None
     permission3 = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
     if current_user.id == int(user_id):
         permissions = set(map(lambda permission: permission.title, all_permissions(user)))
     else:
-        permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
-        permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
+        if max(list(map(int, user.statuses.split(", ")))) == 1:
+            permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
+            permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
+            permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
 
-        if not ((allowed_permission(current_user, permission2) or (
-                allowed_permission(current_user, permission1) and current_user.class_id == user.class_id)) and (
-                        current_user.school_id == user.school_id or allowed_permission(current_user, permission3))):
-            abort(405)
+            if not ((allowed_permission(current_user, permission2) or (
+                    allowed_permission(current_user, permission1) and current_user.class_id == user.class_id)) and (
+                            current_user.school_id == user.school_id or allowed_permission(current_user, permission3))):
+                db_sess.close()
+                abort(405)
+        elif max(list(map(int, user.statuses.split(", ")))) in [2, 3]:
+            permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_school").first()  # noqa
+            permission2 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+
+            if not (allowed_permission(current_user, permission2) or (
+                    allowed_permission(current_user, permission1) and current_user.school_id == user.school_id)):
+                db_sess.close()
+                abort(405)
+
+    db_sess.close()
 
     data = {
         "statuses": statuses,
@@ -215,14 +234,17 @@ def change_fullname(user_id):
     if current_user.id == int(user_id):
         permission = db_sess.query(Permission).filter(Permission.title == "changing_fullname").first()  # noqa
         if not allowed_permission(user, permission):
+            db_sess.close()
             abort(405)
     else:
         permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
         permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
-        permission3 = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+        permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+
         if not ((allowed_permission(current_user, permission2) or (
                 allowed_permission(current_user, permission1) and current_user.class_id == user.class_id)) and (
                         current_user.school_id == user.school_id or allowed_permission(current_user, permission3))):
+            db_sess.close()
             abort(405)
 
     form = ChangeFullnameForm()
@@ -240,6 +262,7 @@ def change_fullname(user_id):
             user.fullname = ' '.join(list(map(lambda name: name.lower().capitalize(), fullname.split())))
 
             db_sess.commit()
+            db_sess.close()
             return redirect(url_for("profile_user", user_id=user_id))
     db_sess.close()
     return render_template('change_fullname.html', **data)
@@ -254,8 +277,9 @@ def change_login(user_id):
     if current_user.id == int(user_id):
         permission = db_sess.query(Permission).filter(Permission.title == "changing_login").first()  # noqa
     else:
-        permission = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+        permission = db_sess.query(Permission).filter(Permission.title == "editing_user").first()  # noqa
     if not allowed_permission(user, permission):
+        db_sess.close()
         abort(405)
 
     form = ChangeLoginForm()
@@ -289,8 +313,9 @@ def change_password(user_id):
     if current_user.id == int(user_id):
         permission = db_sess.query(Permission).filter(Permission.title == "changing_password").first()  # noqa
     else:
-        permission = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+        permission = db_sess.query(Permission).filter(Permission.title == "editing_user").first()  # noqa
     if not allowed_permission(user, permission):
+        db_sess.close()
         abort(405)
 
     form = ChangePasswordForm()
@@ -329,6 +354,7 @@ def change_password(user_id):
 def delete_user(user_id):
     db_sess = create_session()
     user = db_sess.query(User).filter(User.id == user_id).first()
+    db_sess.close()
     school_id = user.school_id
     class_id = user.class_id
     if del_user(int(user_id), current_user) == 405:
@@ -344,6 +370,7 @@ def add_school():
 
     permission = db_sess.query(Permission).filter(Permission.title == "adding_school").first()  # noqa
     if not allowed_permission(current_user, permission):
+        db_sess.close()
         abort(405)
 
     form = EditSchoolForm()
@@ -378,6 +405,7 @@ def school_info(school_id):
     permission2 = db_sess.query(Permission).filter(Permission.title == "view_schools").first()  # noqa
     if not (allowed_permission(current_user, permission2) or (
             allowed_permission(current_user, permission1) and current_user.school_id == school_id)):
+        db_sess.close()
         abort(405)
 
     school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
@@ -404,6 +432,7 @@ def edit_school(school_id):
     permission2 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
     if not (allowed_permission(current_user, permission2) or (
             allowed_permission(current_user, permission1) and current_user.school_id == school_id)):
+        db_sess.close()
         abort(405)
 
     form = EditSchoolForm()
@@ -438,14 +467,18 @@ def delete_school(school_id):
 @app.route('/schools/school/<school_id>/classes/add', methods=['GET', 'POST'])
 @login_required
 def add_class(school_id):
+    school_id = int(school_id)
+
     db_sess = create_session()
 
     school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
 
     permission1 = db_sess.query(Permission).filter(Permission.title == "adding_classes").first()  # noqa
-    permission2 = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+    permission2 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+
     if not (allowed_permission(current_user, permission1) and (
             current_user.school_id == school_id or allowed_permission(current_user, permission2))):
+        db_sess.close()
         abort(405)
 
     form = EditClassForm()
@@ -482,18 +515,20 @@ def class_info(school_id, class_id):
 
     permission1 = db_sess.query(Permission).filter(Permission.title == "view_self_details_class").first()  # noqa
     permission2 = db_sess.query(Permission).filter(Permission.title == "view_details_classes").first()  # noqa
-    permission3 = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+    permission3 = db_sess.query(Permission).filter(Permission.title == "view_schools").first()  # noqa
+
     if not ((allowed_permission(current_user, permission2) or (
             allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
                     current_user.school_id == school_id or allowed_permission(current_user, permission3))):
+        db_sess.close()
         abort(405)
 
     school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
     school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
 
     students = sorted([student for student in db_sess.query(User).filter(User.class_id == class_id).all() if  # noqa
-                db_sess.query(Status).filter(Status.title == "Ученик").first().id in set(  # noqa
-                    map(int, student.statuses.split(", ")))], key=lambda student: student.fullname.split()[0])
+                       db_sess.query(Status).filter(Status.title == "Ученик").first().id in set(  # noqa
+                           map(int, student.statuses.split(", ")))], key=lambda student: student.fullname.split()[0])
 
     db_sess.close()
 
@@ -510,14 +545,18 @@ def class_info(school_id, class_id):
 @app.route('/schools/school/<school_id>/classes/class/<class_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_class(school_id, class_id):
+    school_id, class_id = int(school_id), int(class_id)
+
     db_sess = create_session()
 
     permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
     permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
-    permission3 = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+    permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+
     if not ((allowed_permission(current_user, permission2) or (
             allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
                     current_user.school_id == school_id or allowed_permission(current_user, permission3))):
+        db_sess.close()
         abort(405)
 
     form = EditClassForm()
@@ -554,6 +593,8 @@ def delete_class(school_id, class_id):
 @app.route('/schools/school/<school_id>/classes/class/<class_id>/students/add', methods=['GET', 'POST'])
 @login_required
 def add_student(school_id, class_id):
+    school_id, class_id = int(school_id), int(class_id)
+
     db_sess = create_session()
 
     school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
@@ -561,10 +602,12 @@ def add_student(school_id, class_id):
 
     permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
     permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
-    permission3 = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+    permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+
     if not ((allowed_permission(current_user, permission2) or (
             allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
                     current_user.school_id == school_id or allowed_permission(current_user, permission3))):
+        db_sess.close()
         abort(405)
 
     form = ChangeFullnameForm()

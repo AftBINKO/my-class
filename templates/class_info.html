@@ -67,7 +67,7 @@
                         {% endif %}
                     </td>
                     <td>
-                        {% if "view_details_classes" in permissions or ("view_self_details_class" in permissions and current_user.class_id == class.id) %}
+                        {% if ("editing_classes" in permissions or ("editing_self_class" in permissions and current_user.class_id == class.id) or current_user.id == student.id) %}
                             <form action="" method="post">
                                 <a href="{{ url_for("profile_user", user_id=student.id) }}" class="btn btn-secondary">
                                     Подробнее
