@@ -1,5 +1,6 @@
 from string import ascii_letters, digits, punctuation
 
+from waitress import serve
 from flask import Flask, render_template, redirect, url_for, abort
 from flask_login import LoginManager, current_user, login_user, login_required, logout_user
 
@@ -808,4 +809,4 @@ def add_class_teacher(school_id, class_id):
 
 
 if __name__ == '__main__':
-    app.run()
+    serve(app, host='0.0.0.0', port=5000)
