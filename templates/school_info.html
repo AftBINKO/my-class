@@ -54,7 +54,7 @@
                             {% endif %}
                         </td>
                         <td>
-                            {% if ("editing_school" in permissions or ("editing_self_school" in permissions and current_user.class_id == class.id) or current_user.id == student.id) %}
+                            {% if ("editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) or current_user.id == moder.id) %}
                                 <form action="" method="post">
                                     <a href="{{ url_for("profile_user", user_id=moder.id) }}" class="btn btn-secondary">
                                         Подробнее
@@ -145,7 +145,7 @@
                             {% endif %}
                         </td>
                         <td>
-                            {% if ("editing_school" in permissions or ("editing_self_school" in permissions and current_user.class_id == class.id) or current_user.id == student.id) %}
+                            {% if ("editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) or current_user.id == teacher.id) %}
                                 <form action="" method="post">
                                     <a href="{{ url_for("profile_user", user_id=teacher.id) }}" class="btn btn-secondary">
                                         Подробнее

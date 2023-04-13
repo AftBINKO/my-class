@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if class.letter %}
+        Добавить классного руководителя в {{ class.class_number }} "{{ class.letter }}" класс {{ school.name }}
+    {% else %}
+        Добавить классного руководителя в {{ class.class_number }} класс {{ school.name }}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-center align-items-center">
+            <form action="" method="post">
+                {{ form.hidden_tag() }}
+                <legend style="text-align: center">
+                    {% if class.letter %}
+                        Добавить классного руководителя в {{ class.class_number }} "{{ class.letter }}" класс
+                        {{ school.name }}
+                    {% else %}
+                        Добавить классного руководителя в {{ class.class_number }} класс {{ school.name }}
+                    {% endif %}
+                </legend>
+                {% if message %}
+                    <div class="alert alert-danger">{{ message }}</div>
+                {% endif %}
+                <div class="mb-3">
+                    {{ form.fullname.label(class="form-label") }}*
+                    {{ form.fullname(class="form-control", placeholder='Иванов Иван Иванович') }}
+                    <div class="form-text">
+                        Логин и пароль создаются учителем. Чтобы он мог их установить, вам надо предоставить
+                        учителю ключ, который сгенерируется после добавления учителя
+                    </div>
+                    {% for error in form.fullname.errors %}
+                        <div class="alert alert-danger" role="alert">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div>
+                    {{ form.submit(type="submit", class="btn btn-success") }}
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

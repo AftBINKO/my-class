@@ -633,9 +633,18 @@ def class_info(school_id, class_id):
     school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
     school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
 
-    students = sorted([student for student in db_sess.query(User).filter(User.class_id == class_id).all() if  # noqa
-                       db_sess.query(Status).filter(Status.title == "Ученик").first().id in set(  # noqa
-                           map(int, student.statuses.split(", ")))], key=lambda student: student.fullname.split()[0])
+    students = []
+    class_teacher = None
+
+    for user in db_sess.query(User).filter(User.class_id == class_id).all():  # noqa
+        if db_sess.query(Status).filter(Status.title == "Ученик").first().id in set(  # noqa
+            map(int, user.statuses.split(", "))):
+            students.append(user)
+        elif db_sess.query(Status).filter(Status.title == "Классный руководитель").first().id in set(  # noqa
+            map(int, user.statuses.split(", "))):
+            class_teacher = user
+
+    students.sort(key=lambda student: student.fullname.split()[0])
 
     db_sess.close()
 
@@ -643,6 +652,7 @@ def class_info(school_id, class_id):
         "school": school,
         "permissions": permissions,
         "students": students,
+        "class_teacher": class_teacher,
         "class": school_class
     }
 
@@ -745,6 +755,56 @@ def add_student(school_id, class_id):
     db_sess.close()
 
     return render_template('add_student.html', **data)
+
+
+@app.route('/schools/school/<school_id>/classes/class/<class_id>/class_teacher/add', methods=['GET', 'POST'])
+@login_required
+def add_class_teacher(school_id, class_id):
+    school_id, class_id = int(school_id), int(class_id)  # noqa
+
+    db_sess = create_session()
+
+    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
+    school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
+
+    permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
+    permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
+    permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+
+    if not ((allowed_permission(current_user, permission2) or (
+            allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
+                    current_user.school_id == school_id or allowed_permission(current_user, permission3))):
+        db_sess.close()
+        abort(405)
+
+    form = ChangeFullnameForm()
+    data = {
+        'form': form,
+        'school': school,
+        'class': school_class,
+        'message': None
+    }
+
+    if form.validate_on_submit():
+        teacher = User()
+
+        if not all([symbol in RUSSIAN_ALPHABET + ' ' for symbol in form.fullname.data]):
+            data['message'] = "Поле заполнено неверно. Используйте только буквы русского алфавита"
+        else:
+            teacher.fullname = ' '.join(list(map(lambda name: name.lower().capitalize(), form.fullname.data.split())))
+            teacher.school_id = school_id
+            teacher.class_id = class_id
+            teacher.statuses = 3
+            teacher.generate_key()
+
+            db_sess.add(teacher)
+            db_sess.commit()
+
+            return redirect(url_for("class_info", school_id=school_id, class_id=class_id))
+
+    db_sess.close()
+
+    return render_template('add_class_teacher.html', **data)
 
 
 if __name__ == '__main__':
