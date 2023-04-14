@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Успешно
+{% endblock %}
+
+{% block content %}
+    <div class="content" style="margin-top: 400px; margin-bottom: 400px">
+        <h1 style="text-align: center">Успешно</h1>
+        <p class="fs-3" style="text-align: center">
+            Можете заходить в класс, вы отмечены, как присутствующий
+        </p>
+        <p style="text-align: center">
+            Вы автоматически будете перенаправлены на <a href="{{ url_for("home") }}">
+            Главную страницу
+        </a> через 3 секунды
+        </p>
+    </div>
+{% endblock %}

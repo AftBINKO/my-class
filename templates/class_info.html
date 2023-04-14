@@ -36,7 +36,8 @@
             {% endif %}
         {% else %}
             {% if ("editing_classes" in permissions or ("editing_self_class" in permissions and current_user.class_id == class.id) or current_user.id == class_teacher.id) %}
-                <a href="{{ url_for("add_class_teacher", class_id=class.id, school_id=school.id) }}" class="btn btn-success">
+                <a href="{{ url_for("add_class_teacher", class_id=class.id, school_id=school.id) }}"
+                   class="btn btn-success">
                     Добавить классного руководителя
                 </a>
             {% endif %}
@@ -58,7 +59,16 @@
                 <thead>
                 <tr>
                     <th scope="col">Фамилия Имя Отчество</th>
-                    <th scope="col">В школе?</th>
+                    <th scope="col">
+                        <div style="display:inline-block">
+                            <form action="" method="post">
+                                В школе?
+                                {% if "editing_classes" in permissions or ("editing_self_class" in permissions and current_user.class_id == class.id) %}
+                                    <button class="btn btn-info" type="submit">Обнулить</button>
+                                {% endif %}
+                            </form>
+                        </div>
+                    </th>
                     <th scope="col">Ключ</th>
                     <th scope="col"></th>
                 </tr>

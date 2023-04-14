@@ -1,7 +1,7 @@
 from os import path
 from string import ascii_letters, digits, punctuation
 
-from flask import Flask, render_template, redirect, url_for, abort, jsonify, current_app, send_from_directory
+from flask import Flask, render_template, redirect, url_for, abort, jsonify, current_app, send_from_directory, request
 from flask_login import LoginManager, current_user, login_user, login_required, logout_user
 from json import loads
 from waitress import serve
@@ -74,8 +74,9 @@ def home():
 @login_required
 def download_db():
     db_sess = create_session()
-
     permission = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+    db_sess.close()
+
     if not allowed_permission(current_user, permission):
         abort(405)
 
@@ -412,6 +413,7 @@ def add_school():
 
 
 @app.route('/schools/school/<school_id>')
+@login_required
 def school_info(school_id):
     school_id = int(school_id)
 
@@ -630,6 +632,7 @@ def add_class(school_id):
 
 
 @app.route('/schools/school/<school_id>/classes/class/<class_id>', methods=['GET', 'POST'])
+@login_required
 def class_info(school_id, class_id):
     school_id, class_id = int(school_id), int(class_id)
 
@@ -655,15 +658,20 @@ def class_info(school_id, class_id):
 
     for user in db_sess.query(User).filter(User.class_id == class_id).all():  # noqa
         if db_sess.query(Status).filter(Status.title == "Ученик").first().id in set(  # noqa
-            map(int, user.statuses.split(", "))):
+                map(int, user.statuses.split(", "))):
             students.append(user)
         elif db_sess.query(Status).filter(Status.title == "Классный руководитель").first().id in set(  # noqa
-            map(int, user.statuses.split(", "))):
+                map(int, user.statuses.split(", "))):
             class_teacher = user
 
-    students.sort(key=lambda student: student.fullname.split()[0])
+    students.sort(key=lambda st: st.fullname.split()[0])
 
-    db_sess.close()
+    if request.method == "POST":
+        for student in students:
+            student.is_arrived = False
+        db_sess.commit()
+
+        return redirect(url_for("class_info", school_id=school_id, class_id=class_id))
 
     data = {
         "school": school,
@@ -673,7 +681,34 @@ def class_info(school_id, class_id):
         "class": school_class
     }
 
+    db_sess.close()
     return render_template("class_info.html", **data)
+
+
+@app.route('/enter_to_class/<class_id>', methods=['GET', 'POST'])
+@login_required
+def enter_to_class(class_id):
+    class_id = int(class_id)
+
+    db_sess = create_session()
+
+    if not (current_user.class_id == class_id and db_sess.query(Status).filter(
+            Status.title == "Ученик").first().id in set(map(int, current_user.statuses.split(", ")))):  # noqa
+        abort(405)
+
+    user = db_sess.query(User).filter(User.id == current_user.id).first()
+    user.is_arrived = True
+
+    db_sess.commit()
+    db_sess.close()
+
+    return redirect(url_for("enter_success"))
+
+
+@app.route('/enter_to_class/success')
+def enter_success():
+    return render_template("success.html", message="Успешный вход. Можете заходить в класс, вы отмечены, "
+                                                   "как присутствующий"), {"Refresh": f"3; url={url_for('home')}"}
 
 
 @app.route('/schools/school/<school_id>/classes/class/<class_id>/edit', methods=['GET', 'POST'])
@@ -727,7 +762,7 @@ def delete_class(school_id, class_id):
 @app.route('/schools/school/<school_id>/classes/class/<class_id>/students/add', methods=['GET', 'POST'])
 @login_required
 def add_student(school_id, class_id):
-    school_id, class_id = int(school_id), int(class_id)
+    school_id, class_id = int(school_id), int(class_id)  # noqa
 
     db_sess = create_session()
 
