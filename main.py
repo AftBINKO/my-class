@@ -859,6 +859,11 @@ def add_class_teacher(school_id, class_id):
     return render_template('add_class_teacher.html', **data)
 
 
+@app.errorhandler(401)
+def unauthorized(error):
+    return redirect(url_for('login'))
+
+
 if __name__ == '__main__':
     # serve(app, host='0.0.0.0', port=5000)
     app.run(debug=True)
