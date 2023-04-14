@@ -1,8 +1,9 @@
-import os
+from os import path
 from string import ascii_letters, digits, punctuation
 
-from flask import Flask, render_template, redirect, url_for, abort
+from flask import Flask, render_template, redirect, url_for, abort, jsonify, current_app, send_from_directory
 from flask_login import LoginManager, current_user, login_user, login_required, logout_user
+from json import loads
 from waitress import serve
 
 from data.config import Config
@@ -69,13 +70,27 @@ def home():
     return redirect(url_for("school_info", school_id=current_user.school_id))
 
 
+@app.route('/admin_panel/download_db', methods=['GET', 'POST'])
+@login_required
+def download_db():
+    db_sess = create_session()
+
+    permission = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+    if not allowed_permission(current_user, permission):
+        abort(405)
+
+    uploads = path.join(current_app.root_path, "db/")
+    return send_from_directory(directory=uploads, path="data.sqlite3")
+
+
 @app.route('/admin_panel')
+@login_required
 def admin_panel():
     db_sess = create_session()
 
     permission = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
     if not allowed_permission(current_user, permission):
-        return redirect(url_for("home"))
+        abort(405)
 
     schools = db_sess.query(School).all()
 
@@ -810,4 +825,5 @@ def add_class_teacher(school_id, class_id):
 
 
 if __name__ == '__main__':
-    serve(app, host='0.0.0.0', port=5000)
+    # serve(app, host='0.0.0.0', port=5000)
+    app.run(debug=True)

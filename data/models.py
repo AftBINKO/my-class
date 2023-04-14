@@ -11,7 +11,7 @@ from .db_session import SqlAlchemyBase
 class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     __tablename__ = 'users'
 
-    serialize_rules = ("-user_status", "-user_class",)
+    serialize_rules = ("-user_class", "-school",)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
@@ -65,7 +65,6 @@ class Class(SqlAlchemyBase, SerializerMixin):
     school_id = Column(Integer, ForeignKey("schools.id"))
 
     school = orm.relationship('School')
-
     user = orm.relationship("User", back_populates="user_class")
 
     def __repr__(self):
@@ -78,7 +77,7 @@ class Class(SqlAlchemyBase, SerializerMixin):
 class School(SqlAlchemyBase, SerializerMixin):
     __tablename__ = 'schools'
 
-    serialize_rules = ("-school_class",)
+    serialize_rules = ("-school_class", "-user",)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, nullable=False)
@@ -96,8 +95,6 @@ class School(SqlAlchemyBase, SerializerMixin):
 
 class Status(SqlAlchemyBase, SerializerMixin):
     __tablename__ = 'statuses'
-
-    serialize_rules = ("-user",)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String, nullable=False)

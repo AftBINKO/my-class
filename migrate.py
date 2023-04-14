@@ -23,7 +23,6 @@ def migrate():
         db = {}
 
         for name, data in bases.items():
-            # noinspection PyUnresolvedReferences
             db[name] = [obj.to_dict() for obj in db_sess.query(data).all()]
 
         with open(tmp, 'x', encoding='utf-8') as json:
