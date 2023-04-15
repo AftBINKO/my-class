@@ -1,9 +1,8 @@
 from os import path
-from string import ascii_letters, digits, punctuation
+from string import ascii_letters, punctuation
 
 from flask import Flask, render_template, redirect, url_for, abort, jsonify, current_app, send_from_directory, request
 from flask_login import LoginManager, current_user, login_user, login_required, logout_user
-from json import loads
 from waitress import serve
 
 from data.config import Config
@@ -220,7 +219,7 @@ def profile_user(user_id):
                     allowed_permission(current_user, permission1) and current_user.class_id == user.class_id)) and (
                             current_user.school_id == user.school_id or allowed_permission(current_user, permission3))):
                 db_sess.close()
-                abort(405)
+                abort(403)
         elif max(list(map(int, user.statuses.split(", ")))) in [2, 3, 4]:
             permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_school").first()  # noqa
             permission2 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
@@ -228,7 +227,7 @@ def profile_user(user_id):
             if not (allowed_permission(current_user, permission2) or (
                     allowed_permission(current_user, permission1) and current_user.school_id == user.school_id)):
                 db_sess.close()
-                abort(405)
+                abort(403)
 
     db_sess.close()
 
@@ -263,7 +262,7 @@ def change_fullname(user_id):
                 allowed_permission(current_user, permission1) and current_user.class_id == user.class_id)) and (
                         current_user.school_id == user.school_id or allowed_permission(current_user, permission3))):
             db_sess.close()
-            abort(405)
+            abort(403)
 
     form = ChangeFullnameForm()
     data = {
@@ -315,6 +314,7 @@ def change_login(user_id):
             user.login = user_login.lower()
 
             db_sess.commit()
+            db_sess.close()
             return redirect(url_for("profile_user", user_id=user_id))
 
     db_sess.close()
@@ -334,7 +334,7 @@ def change_password(user_id):
         permission = db_sess.query(Permission).filter(Permission.title == "editing_user").first()  # noqa
     if not allowed_permission(user, permission):
         db_sess.close()
-        abort(405)
+        abort(403)
 
     form = ChangePasswordForm()
     data = {
@@ -360,6 +360,7 @@ def change_password(user_id):
             user.set_password(new_password)  # noqa
 
             db_sess.commit()
+            db_sess.close()
             return redirect(url_for("profile_user", user_id=user_id))
 
     db_sess.close()
@@ -370,13 +371,8 @@ def change_password(user_id):
 @app.route('/profile/<user_id>/delete', methods=['GET', 'POST'])
 @login_required
 def delete_user(user_id):
-    db_sess = create_session()
-    user = db_sess.query(User).filter(User.id == user_id).first()
-    db_sess.close()
-    school_id = user.school_id
-    class_id = user.class_id
     if del_user(int(user_id), current_user) == 405:
-        abort(405)
+        abort(403)
 
     return redirect(url_for("home"))
 
@@ -389,7 +385,7 @@ def add_school():
     permission = db_sess.query(Permission).filter(Permission.title == "adding_school").first()  # noqa
     if not allowed_permission(current_user, permission):
         db_sess.close()
-        abort(405)
+        abort(403)
 
     form = EditSchoolForm()
     data = {
@@ -404,6 +400,7 @@ def add_school():
 
         db_sess.add(school)
         db_sess.commit()
+        db_sess.close()
 
         return redirect(url_for("school_info", school_id=school.id))
 
@@ -425,7 +422,7 @@ def school_info(school_id):
     if not (allowed_permission(current_user, permission2) or (
             allowed_permission(current_user, permission1) and current_user.school_id == school_id)):
         db_sess.close()
-        abort(405)
+        abort(403)
 
     school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
     classes = db_sess.query(Class).filter(Class.school_id == school_id).all()  # noqa
@@ -469,7 +466,7 @@ def edit_school(school_id):
     if not (allowed_permission(current_user, permission2) or (
             allowed_permission(current_user, permission1) and current_user.school_id == school_id)):
         db_sess.close()
-        abort(405)
+        abort(403)
 
     form = EditSchoolForm()
     school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
@@ -483,6 +480,7 @@ def edit_school(school_id):
         school.fullname = form.fullname.data
 
         db_sess.commit()
+        db_sess.close()
 
         return redirect(url_for("school_info", school_id=school.id))
 
@@ -506,7 +504,7 @@ def add_moderator(school_id):
     if not (allowed_permission(current_user, permission2) or (
             allowed_permission(current_user, permission1) and current_user.school_id == school_id)):
         db_sess.close()
-        abort(405)
+        abort(403)
 
     form = ChangeFullnameForm()
     data = {
@@ -528,6 +526,7 @@ def add_moderator(school_id):
 
             db_sess.add(moder)
             db_sess.commit()
+            db_sess.close()
 
             return redirect(url_for("school_info", school_id=school_id))
 
@@ -551,7 +550,7 @@ def add_teacher(school_id):
     if not (allowed_permission(current_user, permission2) or (
             allowed_permission(current_user, permission1) and current_user.school_id == school_id)):
         db_sess.close()
-        abort(405)
+        abort(403)
 
     form = ChangeFullnameForm()
     data = {
@@ -573,6 +572,7 @@ def add_teacher(school_id):
 
             db_sess.add(teacher)
             db_sess.commit()
+            db_sess.close()
 
             return redirect(url_for("school_info", school_id=school_id))
 
@@ -585,7 +585,7 @@ def add_teacher(school_id):
 @login_required
 def delete_school(school_id):
     if delete_schools(int(school_id), current_user) == 405:
-        abort(405)
+        abort(403)
 
     return redirect(url_for("home"))
 
@@ -605,7 +605,7 @@ def add_class(school_id):
     if not (allowed_permission(current_user, permission1) and (
             current_user.school_id == school_id or allowed_permission(current_user, permission2))):
         db_sess.close()
-        abort(405)
+        abort(403)
 
     form = EditClassForm()
     data = {
@@ -623,6 +623,7 @@ def add_class(school_id):
 
         db_sess.add(school_class)
         db_sess.commit()
+        db_sess.close()
 
         return redirect(url_for("class_info", school_id=school_id, class_id=school_class.id))
 
@@ -648,7 +649,7 @@ def class_info(school_id, class_id):
             allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
                     current_user.school_id == school_id or allowed_permission(current_user, permission3))):
         db_sess.close()
-        abort(405)
+        abort(403)
 
     school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
     school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
@@ -670,6 +671,7 @@ def class_info(school_id, class_id):
         for student in students:
             student.is_arrived = False
         db_sess.commit()
+        db_sess.close()
 
         return redirect(url_for("class_info", school_id=school_id, class_id=class_id))
 
@@ -694,7 +696,8 @@ def enter_to_class(class_id):
 
     if not (current_user.class_id == class_id and db_sess.query(Status).filter(
             Status.title == "Ученик").first().id in set(map(int, current_user.statuses.split(", ")))):  # noqa
-        abort(405)
+        db_sess.close()
+        abort(403)
 
     user = db_sess.query(User).filter(User.id == current_user.id).first()
     user.is_arrived = True
@@ -707,8 +710,9 @@ def enter_to_class(class_id):
 
 @app.route('/enter_to_class/success')
 def enter_success():
-    return render_template("success.html", message="Успешный вход. Можете заходить в класс, вы отмечены, "
-                                                   "как присутствующий"), {"Refresh": f"3; url={url_for('home')}"}
+    return render_template("alert.html", title="Успешный вход",
+                           message="Можете заходить в класс, вы отмечены, как присутствующий"), {
+        "Refresh": f"3; url={url_for('home')}"}
 
 
 @app.route('/schools/school/<school_id>/classes/class/<class_id>/edit', methods=['GET', 'POST'])
@@ -726,7 +730,7 @@ def edit_class(school_id, class_id):
             allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
                     current_user.school_id == school_id or allowed_permission(current_user, permission3))):
         db_sess.close()
-        abort(405)
+        abort(403)
 
     form = EditClassForm()
     school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
@@ -742,6 +746,7 @@ def edit_class(school_id, class_id):
         school_class.letter = form.letter.data
 
         db_sess.commit()
+        db_sess.close()
 
         return redirect(url_for("class_info", school_id=school_id, class_id=class_id))
 
@@ -754,7 +759,7 @@ def edit_class(school_id, class_id):
 @login_required
 def delete_class(school_id, class_id):
     if delete_classes(int(school_id), int(class_id), current_user) == 405:
-        abort(405)
+        abort(403)
 
     return redirect(url_for("school_info", school_id=school_id))
 
@@ -777,7 +782,7 @@ def add_student(school_id, class_id):
             allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
                     current_user.school_id == school_id or allowed_permission(current_user, permission3))):
         db_sess.close()
-        abort(405)
+        abort(403)
 
     form = ChangeFullnameForm()
     data = {
@@ -801,6 +806,7 @@ def add_student(school_id, class_id):
 
             db_sess.add(student)
             db_sess.commit()
+            db_sess.close()
 
             return redirect(url_for("class_info", school_id=school_id, class_id=class_id))
 
@@ -827,7 +833,7 @@ def add_class_teacher(school_id, class_id):
             allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
                     current_user.school_id == school_id or allowed_permission(current_user, permission3))):
         db_sess.close()
-        abort(405)
+        abort(403)
 
     form = ChangeFullnameForm()
     data = {
@@ -851,6 +857,7 @@ def add_class_teacher(school_id, class_id):
 
             db_sess.add(teacher)
             db_sess.commit()
+            db_sess.close()
 
             return redirect(url_for("class_info", school_id=school_id, class_id=class_id))
 
@@ -864,6 +871,25 @@ def unauthorized(error):
     return redirect(url_for('login'))
 
 
+@app.errorhandler(403)
+def forbidden(error):
+    return render_template("alert.html", title="Недостаточно прав",
+                           message="Вам сюда нельзя"), {"Refresh": f"3; url={url_for('home')}"}
+
+
+@app.errorhandler(404)
+def not_found(error):
+    return render_template("alert.html", title="Страницы не существует",
+                           message="Вы перешли на несуществующую страницу"), {
+        "Refresh": f"3; url={url_for('home')}"}
+
+
+@app.errorhandler(500)
+def crash(error):
+    return render_template("alert.html", title="Ошибка сервера",
+                           message="На сервере произошла ошибка"), {
+        "Refresh": f"3; url={url_for('home')}"}
+
+
 if __name__ == '__main__':
-    # serve(app, host='0.0.0.0', port=5000)
-    app.run(debug=True)
+    serve(app, host='0.0.0.0', port=5000)

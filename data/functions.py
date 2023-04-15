@@ -138,7 +138,7 @@ def delete_schools(schools, user=None, check_permission=True):
         if not (allowed_permission(user, permission2) or (
                 allowed_permission(user, permission1) and user.school_id in schools)):
             db_sess.close()
-            return 405
+            return 403
 
     schools = db_sess.query(School).filter(School.id.in_(schools)).all()  # noqa
     for school in schools:
@@ -189,7 +189,7 @@ def delete_classes(school, classes, user=None, check_permission=True):
                 allowed_permission(user, permission1) and user.class_id in classes)) and (
                         user.school_id == school or allowed_permission(user, permission3))):
             db_sess.close()
-            return 405
+            return 403
 
     users = db_sess.query(User).filter(User.class_id.in_(classes)).all()  # noqa
     for user in users:
@@ -228,7 +228,7 @@ def delete_user(user, current_user=None, check_permission=True):
             if not (allowed_permission(current_user, permission2) or (
                     allowed_permission(current_user, permission1) and current_user.school_id == user.school_id)):
                 db_sess.close()
-                return 405
+                return 403
 
     db_sess.delete(user)
     db_sess.commit()
