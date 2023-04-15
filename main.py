@@ -60,7 +60,7 @@ def home():
         return redirect(url_for("admin_panel"))
 
     if not current_user.school_id:
-        abort(404)  # TODO: исправить на другую страницу
+        abort(403)
 
     if status in [1, 3]:
         if current_user.class_id:
@@ -77,7 +77,7 @@ def download_db():
     db_sess.close()
 
     if not allowed_permission(current_user, permission):
-        abort(405)
+        abort(403)
 
     uploads = path.join(current_app.root_path, "db/")
     return send_from_directory(directory=uploads, path="data.sqlite3")
@@ -90,7 +90,7 @@ def admin_panel():
 
     permission = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
     if not allowed_permission(current_user, permission):
-        abort(405)
+        abort(403)
 
     schools = db_sess.query(School).all()
 
