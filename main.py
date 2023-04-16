@@ -893,6 +893,16 @@ def generate_qrcode(school_id, class_id):
     return redirect(url_for("class_info", school_id=school_id, class_id=class_id))
 
 
+@app.route('/schools/school/<school_id>/classes/class/<class_id>/qr', methods=['GET', 'POST'])
+@login_required
+def view_qrcode(school_id, class_id):
+    school_id, class_id = int(school_id), int(class_id)  # noqa
+
+    uploads = path.join(current_app.root_path, path.join(app.config["UPLOAD_FOLDER"], path.join("qrcodes", "classes")))
+
+    return send_from_directory(directory=uploads, path=f"class_{class_id}.png")
+
+
 @app.errorhandler(401)
 def unauthorized(error):
     return redirect(url_for('login'))
