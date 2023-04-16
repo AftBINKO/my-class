@@ -677,12 +677,20 @@ def class_info(school_id, class_id):
 
         return redirect(url_for("class_info", school_id=school_id, class_id=class_id))
 
+    qr_path = path.join(
+        path.join(current_app.root_path, path.join(app.config["UPLOAD_FOLDER"], path.join("qrcodes", "classes"))),
+        f"class_{class_id}.png")
+    qr = None
+    if path.exists(qr_path):
+        qr = qr_path
+
     data = {
         "school": school,
         "permissions": permissions,
         "students": students,
         "class_teacher": class_teacher,
-        "class": school_class
+        "class": school_class,
+        "qr": qr
     }
 
     db_sess.close()
@@ -714,13 +722,13 @@ def enter_to_class(class_id):
 def enter_success():
     return render_template("alert.html", title="Успешный вход",
                            message="Можете заходить в класс, вы отмечены, как присутствующий"), {
-               "Refresh": f"3; url={url_for('home')}"}
+        "Refresh": f"3; url={url_for('home')}"}
 
 
 @app.route('/schools/school/<school_id>/classes/class/<class_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_class(school_id, class_id):
-    school_id, class_id = int(school_id), int(class_id)
+    school_id, class_id = int(school_id), int(class_id)  # noqa
 
     db_sess = create_session()
 
@@ -918,14 +926,14 @@ def forbidden(error):
 def not_found(error):
     return render_template("alert.html", title="Страницы не существует",
                            message="Вы перешли на несуществующую страницу"), {
-               "Refresh": f"3; url={url_for('home')}"}
+        "Refresh": f"3; url={url_for('home')}"}
 
 
 @app.errorhandler(500)
 def crash(error):
     return render_template("alert.html", title="Ошибка сервера",
                            message="На сервере произошла ошибка"), {
-               "Refresh": f"3; url={url_for('home')}"}
+        "Refresh": f"3; url={url_for('home')}"}
 
 
 if __name__ == '__main__':
