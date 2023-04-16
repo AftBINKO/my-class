@@ -1,3 +1,5 @@
+import qrcode
+
 from os import path
 from string import ascii_letters, punctuation
 
@@ -712,7 +714,7 @@ def enter_to_class(class_id):
 def enter_success():
     return render_template("alert.html", title="Успешный вход",
                            message="Можете заходить в класс, вы отмечены, как присутствующий"), {
-        "Refresh": f"3; url={url_for('home')}"}
+               "Refresh": f"3; url={url_for('home')}"}
 
 
 @app.route('/schools/school/<school_id>/classes/class/<class_id>/edit', methods=['GET', 'POST'])
@@ -866,6 +868,31 @@ def add_class_teacher(school_id, class_id):
     return render_template('add_class_teacher.html', **data)
 
 
+@app.route('/schools/school/<school_id>/classes/class/<class_id>/get_qr', methods=['GET', 'POST'])
+@login_required
+def generate_qrcode(school_id, class_id):
+    school_id, class_id = int(school_id), int(class_id)  # noqa
+
+    db_sess = create_session()
+
+    permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
+    permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
+    permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+
+    if not ((allowed_permission(current_user, permission2) or (
+            allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
+                    current_user.school_id == school_id or allowed_permission(current_user, permission3))):
+        db_sess.close()
+        return 405
+
+    uploads = path.join(current_app.root_path, path.join(app.config["UPLOAD_FOLDER"], path.join("qrcodes", "classes")))
+
+    qr = qrcode.make(url_for("enter_to_class", class_id=class_id, _external=True))
+    qr.save(path.join(uploads, f"class_{class_id}.png"))
+
+    return redirect(url_for("class_info", school_id=school_id, class_id=class_id))
+
+
 @app.errorhandler(401)
 def unauthorized(error):
     return redirect(url_for('login'))
@@ -881,14 +908,14 @@ def forbidden(error):
 def not_found(error):
     return render_template("alert.html", title="Страницы не существует",
                            message="Вы перешли на несуществующую страницу"), {
-        "Refresh": f"3; url={url_for('home')}"}
+               "Refresh": f"3; url={url_for('home')}"}
 
 
 @app.errorhandler(500)
 def crash(error):
     return render_template("alert.html", title="Ошибка сервера",
                            message="На сервере произошла ошибка"), {
-        "Refresh": f"3; url={url_for('home')}"}
+               "Refresh": f"3; url={url_for('home')}"}
 
 
 if __name__ == '__main__':
