@@ -59,17 +59,17 @@
                 <thead>
                 <tr>
                     <th scope="col">Фамилия Имя Отчество</th>
-                    <th scope="col">
-                        <div style="display:inline-block">
-                            <form action="" method="post">
-                                В школе?
-                                {% if "editing_classes" in permissions or ("editing_self_class" in permissions and current_user.class_id == class.id) %}
+                    {% if "editing_classes" in permissions or ("editing_self_class" in permissions and current_user.class_id == class.id) %}
+                        <th scope="col">
+                            <div style="display:inline-block">
+                                <form action="" method="post">
+                                    В школе?
                                     <button class="btn btn-info" type="submit">Обнулить</button>
-                                {% endif %}
-                            </form>
-                        </div>
-                    </th>
-                    <th scope="col">Ключ</th>
+                                </form>
+                            </div>
+                        </th>
+                        <th scope="col">Ключ</th>
+                    {% endif %}
                     <th scope="col"></th>
                 </tr>
                 </thead>
@@ -82,18 +82,20 @@
                                 <span class="badge bg-primary">вы</span>
                             {% endif %}
                         </td>
-                        <td>
-                            {% if student.is_arrived %}
-                                Да
-                            {% elif student.is_arrived == False %}
-                                Нет
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if student.key %}
-                                {{ student.key }}
-                            {% endif %}
-                        </td>
+                        {% if "editing_classes" in permissions or ("editing_self_class" in permissions and current_user.class_id == class.id) %}
+                            <td>
+                                {% if student.is_arrived %}
+                                    Да
+                                {% elif student.is_arrived == False %}
+                                    Нет
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if student.key %}
+                                    {{ student.key }}
+                                {% endif %}
+                            </td>
+                        {% endif %}
                         <td>
                             {% if ("editing_classes" in permissions or ("editing_self_class" in permissions and current_user.class_id == class.id) or current_user.id == student.id) %}
                                 <form action="" method="post">
