@@ -88,6 +88,9 @@ def download_db():
 @app.route('/admin_panel')
 @login_required
 def admin_panel():
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
+
     db_sess = create_session()
 
     permission = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
@@ -108,6 +111,8 @@ def admin_panel():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
+        if not current_user.is_registered:
+            return redirect(url_for("finish_register"))
         return redirect(url_for("profile"))
 
     form = LoginForm()
@@ -136,6 +141,8 @@ def login():
 @app.route('/login_key', methods=['GET', 'POST'])
 def login_with_key():
     if current_user.is_authenticated:
+        if not current_user.is_registered:
+            return redirect(url_for("finish_register"))
         return redirect(url_for("profile"))
 
     form = LoginKeyForm()
@@ -197,12 +204,16 @@ def finish_register():
 @app.route('/my')
 @login_required
 def profile():
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
     return redirect(url_for("profile_user", user_id=current_user.id))
 
 
 @app.route('/profile/<user_id>')
 @login_required
 def profile_user(user_id):
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
     db_sess = create_session()
     user = db_sess.query(User).filter(User.id == user_id).first()
     statuses = list(sorted(db_sess.query(Status).filter(Status.id.in_(user.statuses.split(", "))).all(),  # noqa
@@ -247,6 +258,9 @@ def profile_user(user_id):
 @app.route('/profile/<user_id>/edit_fullname', methods=['GET', 'POST'])
 @login_required
 def change_fullname(user_id):
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
+
     db_sess = create_session()
 
     user = db_sess.query(User).filter(User.id == user_id).first()
@@ -290,6 +304,9 @@ def change_fullname(user_id):
 @app.route('/profile/<user_id>/edit_login', methods=['GET', 'POST'])
 @login_required
 def change_login(user_id):
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
+
     db_sess = create_session()
 
     user = db_sess.query(User).filter(User.id == user_id).first()
@@ -327,6 +344,9 @@ def change_login(user_id):
 @app.route('/profile/<user_id>/edit_password', methods=['GET', 'POST'])
 @login_required
 def change_password(user_id):
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
+
     db_sess = create_session()
 
     user = db_sess.query(User).filter(User.id == user_id).first()
@@ -373,6 +393,9 @@ def change_password(user_id):
 @app.route('/profile/<user_id>/delete', methods=['GET', 'POST'])
 @login_required
 def delete_user(user_id):
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
+
     if del_user(int(user_id), current_user) == 405:
         abort(403)
 
@@ -382,6 +405,9 @@ def delete_user(user_id):
 @app.route('/schools/add', methods=['GET', 'POST'])
 @login_required
 def add_school():
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
+
     db_sess = create_session()
 
     permission = db_sess.query(Permission).filter(Permission.title == "adding_school").first()  # noqa
@@ -415,6 +441,9 @@ def add_school():
 @login_required
 def school_info(school_id):
     school_id = int(school_id)
+
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
 
     db_sess = create_session()
     permissions = set(map(lambda permission: permission.title, all_permissions(current_user)))
@@ -460,6 +489,9 @@ def school_info(school_id):
 def edit_school(school_id):
     school_id = int(school_id)
 
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
+
     db_sess = create_session()
 
     permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_school").first()  # noqa
@@ -495,6 +527,9 @@ def edit_school(school_id):
 @login_required
 def add_moderator(school_id):
     school_id = int(school_id)  # noqa
+
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
 
     db_sess = create_session()
 
@@ -542,6 +577,9 @@ def add_moderator(school_id):
 def add_teacher(school_id):
     school_id = int(school_id)  # noqa
 
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
+
     db_sess = create_session()
 
     school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
@@ -586,6 +624,9 @@ def add_teacher(school_id):
 @app.route('/schools/school/<school_id>/delete', methods=['GET', 'POST'])
 @login_required
 def delete_school(school_id):
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
+
     if delete_schools(int(school_id), current_user) == 405:
         abort(403)
 
@@ -596,6 +637,9 @@ def delete_school(school_id):
 @login_required
 def add_class(school_id):
     school_id = int(school_id)
+
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
 
     db_sess = create_session()
 
@@ -638,6 +682,9 @@ def add_class(school_id):
 @login_required
 def class_info(school_id, class_id):
     school_id, class_id = int(school_id), int(class_id)
+
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
 
     db_sess = create_session()
     permissions = set(map(lambda permission: permission.title, all_permissions(current_user)))
@@ -732,6 +779,9 @@ def edit_class(school_id, class_id):
 
     db_sess = create_session()
 
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
+
     permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
     permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
     permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
@@ -768,6 +818,9 @@ def edit_class(school_id, class_id):
 @app.route('/schools/school/<school_id>/classes/class/<class_id>/delete', methods=['GET', 'POST'])
 @login_required
 def delete_class(school_id, class_id):
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
+
     if delete_classes(int(school_id), int(class_id), current_user) == 405:
         abort(403)
 
@@ -778,6 +831,9 @@ def delete_class(school_id, class_id):
 @login_required
 def add_student(school_id, class_id):
     school_id, class_id = int(school_id), int(class_id)  # noqa
+
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
 
     db_sess = create_session()
 
@@ -830,6 +886,9 @@ def add_student(school_id, class_id):
 def add_class_teacher(school_id, class_id):
     school_id, class_id = int(school_id), int(class_id)  # noqa
 
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
+
     db_sess = create_session()
 
     school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
@@ -881,6 +940,9 @@ def add_class_teacher(school_id, class_id):
 def generate_qrcode(school_id, class_id):
     school_id, class_id = int(school_id), int(class_id)  # noqa
 
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
+
     db_sess = create_session()
 
     permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
@@ -905,6 +967,9 @@ def generate_qrcode(school_id, class_id):
 @login_required
 def view_qrcode(school_id, class_id):
     school_id, class_id = int(school_id), int(class_id)  # noqa
+
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
 
     uploads = path.join(current_app.root_path, path.join(app.config["UPLOAD_FOLDER"], path.join("qrcodes", "classes")))
 
