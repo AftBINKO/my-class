@@ -1,6 +1,8 @@
+from shutil import make_archive
+
 import qrcode
 
-from os import path
+from os import path, remove
 from string import ascii_letters, punctuation
 
 from flask import Flask, render_template, redirect, url_for, abort, jsonify, current_app, send_from_directory, request
@@ -83,6 +85,25 @@ def download_db():
 
     uploads = path.join(current_app.root_path, "db/")
     return send_from_directory(directory=uploads, path="data.sqlite3")
+
+
+@app.route('/admin_panel/download_files', methods=['GET', 'POST'])
+@login_required
+def download_files():
+    db_sess = create_session()
+    permission = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
+    db_sess.close()
+
+    if not allowed_permission(current_user, permission):
+        abort(403)
+
+    uploads = path.join(current_app.root_path, "static/files")
+    tmp = path.join(current_app.root_path, "static/tmp")
+    archive = path.join(tmp, "files")
+    if path.exists(archive):
+        remove(archive)
+    make_archive(archive, 'zip', uploads)
+    return send_from_directory(directory=tmp, path="files.zip")
 
 
 @app.route('/admin_panel')
