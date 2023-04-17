@@ -724,20 +724,12 @@ def class_info(school_id, class_id):
 
         return redirect(url_for("class_info", school_id=school_id, class_id=class_id))
 
-    qr_path = path.join(
-        path.join(current_app.root_path, path.join(app.config["UPLOAD_FOLDER"], path.join("qrcodes", "classes"))),
-        f"class_{class_id}.png")
-    qr = None
-    if path.exists(qr_path):
-        qr = qr_path
-
     data = {
         "school": school,
         "permissions": permissions,
         "students": students,
         "class_teacher": class_teacher,
         "class": school_class,
-        "qr": qr
     }
 
     db_sess.close()
@@ -953,12 +945,19 @@ def generate_qrcode(school_id, class_id):
             allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
                     current_user.school_id == school_id or allowed_permission(current_user, permission3))):
         db_sess.close()
-        return 405
+        abort(405)
 
     uploads = path.join(current_app.root_path, path.join(app.config["UPLOAD_FOLDER"], path.join("qrcodes", "classes")))
 
+    name = f"class_{class_id}.png"
     qr = qrcode.make(url_for("enter_to_class", class_id=class_id, _external=True))
-    qr.save(path.join(uploads, f"class_{class_id}.png"))
+    qr.save(path.join(uploads, name))
+
+    school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
+    school_class.qr = name
+    db_sess.commit()
+
+    db_sess.close()
 
     return redirect(url_for("class_info", school_id=school_id, class_id=class_id))
 
@@ -973,7 +972,13 @@ def view_qrcode(school_id, class_id):
 
     uploads = path.join(current_app.root_path, path.join(app.config["UPLOAD_FOLDER"], path.join("qrcodes", "classes")))
 
-    return send_from_directory(directory=uploads, path=f"class_{class_id}.png")
+    db_sess = create_session()
+    qr = db_sess.query(Class).filter(Class.id == class_id).first().qr  # noqa
+    db_sess.close()
+    if qr is None:
+        abort(404)
+
+    return send_from_directory(directory=uploads, path=qr)
 
 
 @app.errorhandler(401)
@@ -1002,4 +1007,5 @@ def crash(error):
 
 
 if __name__ == '__main__':
-    serve(app, host='0.0.0.0', port=5000)
+    app.run(debug=True)
+    # serve(app, host='0.0.0.0', port=5000)

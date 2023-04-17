@@ -44,6 +44,18 @@
         {% endif %}
     </div>
     <div class="container" style="margin-top: 50px">
+        <h3 style="text-align: center">QR код</h3>
+        <div style="justify-content: center; display: flex">
+            <a href="{{ url_for("generate_qrcode", class_id=class.id, school_id=school.id) }}"
+                class="btn btn-success">
+            Сгенерировать QR код
+            </a>
+        </div>
+        {% if class.qr %}
+            <img src="/static/files/qrcodes/classes/{{ class.qr }}" class="rounded mx-auto d-block" alt="QR код">
+        {% endif %}
+    </div>
+    <div class="container" style="margin-top: 50px">
         <div class="container" style="margin-top: 25px">
             <h3 style="text-align: center">Ученики</h3>
         </div>

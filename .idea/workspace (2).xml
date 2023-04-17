@@ -1,0 +1,629 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="0536fb4e-c892-4a08-90d6-c197dc4bb670" name="Changes" comment="Добавлены обработчики ошибок">
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Flask Main" />
+        <option value="Python Script" />
+        <option value="HTML File" />
+      </list>
+    </option>
+  </component>
+  <component name="FlaskConsoleOptions" custom-start-script="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))">
+    <envs>
+      <env key="FLASK_APP" value="app" />
+    </envs>
+    <option name="myCustomStartScript" value="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))" />
+    <option name="myEnvs">
+      <map>
+        <entry key="FLASK_APP" value="app" />
+      </map>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2NKOhD4yPtmS4kF9tDu3C3uXmy9" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/AftBINKO/Documents/projects/python/myclass/db&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.IDE.editor.colors.Color Scheme Font&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\AftBINKO\Documents\projects\python\myclass\db" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\AftBINKO\Documents\projects\python\myclass\templates" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.tests">
+    <configuration name="config" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="myclass" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/data" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/data/config.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="functions" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="myclass" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/data" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/data/functions.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="migrate" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="myclass" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/migrate.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="models" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="myclass" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/data" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/data/models.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="tests" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="myclass" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="flaskProject" type="Python.FlaskServer">
+      <module name="myclass" />
+      <option name="target" value="$PROJECT_DIR$/main.py" />
+      <option name="targetType" value="PATH" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="launchJavascriptDebuger" value="false" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.tests" />
+        <item itemvalue="Python.migrate" />
+        <item itemvalue="Python.functions" />
+        <item itemvalue="Python.models" />
+        <item itemvalue="Python.config" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="0536fb4e-c892-4a08-90d6-c197dc4bb670" name="Changes" comment="" />
+      <created>1679409424180</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1679409424180</updated>
+      <workItem from="1679409441417" duration="8959000" />
+      <workItem from="1679421044328" duration="2328000" />
+      <workItem from="1679456566133" duration="205000" />
+      <workItem from="1679456953603" duration="88000" />
+      <workItem from="1680155766064" duration="8416000" />
+      <workItem from="1680267686568" duration="2301000" />
+      <workItem from="1680454280420" duration="5912000" />
+      <workItem from="1680868639668" duration="9228000" />
+      <workItem from="1680888660460" duration="4398000" />
+      <workItem from="1680928904298" duration="5253000" />
+      <workItem from="1681139650385" duration="9914000" />
+      <workItem from="1681210681739" duration="23801000" />
+      <workItem from="1681308335621" duration="18900000" />
+      <workItem from="1681386345369" duration="15162000" />
+      <workItem from="1681407803552" duration="614000" />
+      <workItem from="1681481155195" duration="14158000" />
+      <workItem from="1681551732157" duration="3447000" />
+    </task>
+    <task id="LOCAL-00001" summary="Создана главная страничка и страничка для авторизации">
+      <created>1679417466215</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1679417466215</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Добавлен requirements.txt">
+      <created>1680156222052</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1680156222053</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Добавлена возможность авторизации и регистрации">
+      <created>1680162634179</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1680162634179</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Добавлены разрешения на определённые действия">
+      <created>1680268347887</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1680268347887</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Добавлена проверка разрешения входа">
+      <created>1680269094183</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1680269094183</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Оптимизирован код">
+      <created>1680269251858</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1680269251858</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Добавлена кнопка смены ФИО">
+      <created>1680270050565</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1680270050565</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Доступны функции смены информации в личном кабинете">
+      <created>1680460261604</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1680460261604</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Вместо главной страницы, для администратора будет открываться панель администратора">
+      <created>1680870599093</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1680870599093</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Добавлена наследственность разрешений">
+      <created>1680875139095</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1680875139095</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Создан костыль для того, чтобы пофиксить баг в будущем">
+      <created>1680875390382</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1680875390382</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Костыль оптимизирован">
+      <created>1680875728373</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1680875728373</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Функция упрощена">
+      <created>1680892697454</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1680892697455</updated>
+    </task>
+    <task id="LOCAL-00014" summary="Добавлен функционал панели администратора; добавлена страница школы">
+      <created>1680892758562</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1680892758562</updated>
+    </task>
+    <task id="LOCAL-00015" summary="Теперь можно установить сразу несколько статусов">
+      <created>1680932943202</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1680932943202</updated>
+    </task>
+    <task id="LOCAL-00016" summary="JSON формат заменён на дополнительные столбцы SQL">
+      <created>1681140621296</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1681140621296</updated>
+    </task>
+    <task id="LOCAL-00017" summary="JSON формат заменён на дополнительные столбцы SQL везде">
+      <created>1681141788719</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1681141788719</updated>
+    </task>
+    <task id="LOCAL-00018" summary="Оптимизирован код">
+      <created>1681141824182</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1681141824182</updated>
+    </task>
+    <task id="LOCAL-00019" summary="Добавлена возможность добавлять школы">
+      <created>1681142924804</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1681142924804</updated>
+    </task>
+    <task id="LOCAL-00020" summary="Исправлено дублирование кода">
+      <created>1681143014007</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1681143014007</updated>
+    </task>
+    <task id="LOCAL-00021" summary="Кнопка &quot;Добавить образовательное учреждение&quot; теперь работает, как надо">
+      <created>1681143085220</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1681143085220</updated>
+    </task>
+    <task id="LOCAL-00022" summary="Исправлена опечатка при выводе шаблона">
+      <created>1681143152345</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1681143152345</updated>
+    </task>
+    <task id="LOCAL-00023" summary="Исправлен плейсхолдер">
+      <created>1681144213261</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1681144213261</updated>
+    </task>
+    <task id="LOCAL-00024" summary="Добавлена возможность изменять информацию о школе">
+      <created>1681144236565</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1681144236565</updated>
+    </task>
+    <task id="LOCAL-00025" summary="Изменён формат написания полного названия школы">
+      <created>1681148661092</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1681148661092</updated>
+    </task>
+    <task id="LOCAL-00026" summary="Добавлена ячейка для указания школы пользователя, а также для таблицы разрешений добавлена ячейка значения по умолчанию">
+      <created>1681152705707</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1681152705707</updated>
+    </task>
+    <task id="LOCAL-00027" summary="Обновлены функции получения разрешений">
+      <created>1681223939964</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1681223939965</updated>
+    </task>
+    <task id="LOCAL-00028" summary="Оптимизирован код">
+      <created>1681225919849</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1681225919849</updated>
+    </task>
+    <task id="LOCAL-00029" summary="Классы были частично добавлены">
+      <created>1681309733379</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1681309733379</updated>
+    </task>
+    <task id="LOCAL-00030" summary="Усовершенстовоаны функции удаления классов и школ">
+      <created>1681315385578</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1681315385578</updated>
+    </task>
+    <task id="LOCAL-00031" summary="Незаметные изменения в коде">
+      <created>1681316346636</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1681316346636</updated>
+    </task>
+    <task id="LOCAL-00032" summary="Добавлено отображение пользователей">
+      <created>1681319939510</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1681319939510</updated>
+    </task>
+    <task id="LOCAL-00033" summary="Оптимизация">
+      <created>1681320370152</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1681320370152</updated>
+    </task>
+    <task id="LOCAL-00034" summary="Теперь вместе при удалении класса, у учеников удаляется и школа">
+      <created>1681322259517</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1681322259517</updated>
+    </task>
+    <task id="LOCAL-00035" summary="Теперь можно добавлять учащихся">
+      <created>1681322316505</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1681322316505</updated>
+    </task>
+    <task id="LOCAL-00036" summary="Учащихся можно редактировать">
+      <created>1681324385161</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1681324385161</updated>
+    </task>
+    <task id="LOCAL-00037" summary="Учащихся можно удалять">
+      <created>1681326678067</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1681326678067</updated>
+    </task>
+    <task id="LOCAL-00038" summary="Исправлен баг">
+      <created>1681326751726</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1681326751726</updated>
+    </task>
+    <task id="LOCAL-00039" summary="Оптимизация кода и исправление недочётов">
+      <created>1681392128126</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1681392128126</updated>
+    </task>
+    <task id="LOCAL-00040" summary="Реализованно добавление модераторов и учителей для школы">
+      <created>1681394650514</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1681394650514</updated>
+    </task>
+    <task id="LOCAL-00041" summary="Классные руководители функционируют">
+      <created>1681396726310</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1681396726310</updated>
+    </task>
+    <task id="LOCAL-00042" summary="Подготовка к деплою #1">
+      <created>1681401518943</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1681401518943</updated>
+    </task>
+    <task id="LOCAL-00043" summary="Подготовка к деплою #2">
+      <created>1681402378047</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1681402378047</updated>
+    </task>
+    <task id="LOCAL-00044" summary="Подготовка к деплою #3">
+      <created>1681406351841</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1681406351841</updated>
+    </task>
+    <task id="LOCAL-00045" summary="Подготовка к деплою #3">
+      <created>1681407368620</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1681407368620</updated>
+    </task>
+    <task id="LOCAL-00046" summary="Добавлена загрузка базы данных для администраторов">
+      <created>1681493426621</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1681493426621</updated>
+    </task>
+    <task id="LOCAL-00047" summary="Добавлена кнопка загрузки базы данных">
+      <created>1681493761249</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1681493761249</updated>
+    </task>
+    <task id="LOCAL-00048" summary="Добавлены обработчики ошибок">
+      <created>1681554562871</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1681554562871</updated>
+    </task>
+    <option name="localTasksCounter" value="49" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+    <MESSAGE value="Исправлен плейсхолдер" />
+    <MESSAGE value="Добавлена возможность изменять информацию о школе" />
+    <MESSAGE value="Изменён формат написания полного названия школы" />
+    <MESSAGE value="Добавлена ячейка для указания школы пользователя, а также для таблицы разрешений добавлена ячейка значения по умолчанию" />
+    <MESSAGE value="Обновлены функции получения разрешений" />
+    <MESSAGE value="Оптимизирован код" />
+    <MESSAGE value="Классы были частично добавлены" />
+    <MESSAGE value="Усовершенстовоаны функции удаления классов и школ" />
+    <MESSAGE value="Незаметные изменения в коде" />
+    <MESSAGE value="Добавлено отображение пользователей" />
+    <MESSAGE value="Оптимизация" />
+    <MESSAGE value="Теперь вместе при удалении класса, у учеников удаляется и школа" />
+    <MESSAGE value="Теперь можно добавлять учащихся" />
+    <MESSAGE value="Учащихся можно редактировать" />
+    <MESSAGE value="Учащихся можно удалять" />
+    <MESSAGE value="Исправлен баг" />
+    <MESSAGE value="Оптимизация кода и исправление недочётов" />
+    <MESSAGE value="Реализованно добавление модераторов и учителей для школы" />
+    <MESSAGE value="Классные руководители функционируют" />
+    <MESSAGE value="Подготовка к деплою #1" />
+    <MESSAGE value="Подготовка к деплою #2" />
+    <MESSAGE value="Подготовка к деплою #3" />
+    <MESSAGE value="Добавлена загрузка базы данных для администраторов" />
+    <MESSAGE value="Добавлена кнопка загрузки базы данных" />
+    <MESSAGE value="Добавлены обработчики ошибок" />
+    <option name="LAST_COMMIT_MESSAGE" value="Добавлены обработчики ошибок" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/myclass$functions.coverage" NAME="functions Coverage Results" MODIFIED="1681217496592" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/data" />
+    <SUITE FILE_PATH="coverage/myclass$models.coverage" NAME="models Coverage Results" MODIFIED="1680933085165" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/data" />
+    <SUITE FILE_PATH="coverage/myclass$Flask.coverage" NAME="Flask Coverage Results" MODIFIED="1680158046421" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/myclass$migrate.coverage" NAME="migrate Coverage Results" MODIFIED="1681487875417" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/myclass$flaskProject.coverage" NAME="flaskProject Coverage Results" MODIFIED="1680157481505" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/myclass$config.coverage" NAME="config Coverage Results" MODIFIED="1680159612078" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/data" />
+    <SUITE FILE_PATH="coverage/myclass$tests.coverage" NAME="tests Coverage Results" MODIFIED="1681496067816" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+  </component>
+</project>

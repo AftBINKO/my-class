@@ -63,6 +63,7 @@ class Class(SqlAlchemyBase, SerializerMixin):
     class_number = Column(Integer, nullable=False)
     letter = Column(String)
     school_id = Column(Integer, ForeignKey("schools.id"))
+    qr = Column(String)
 
     school = orm.relationship('School')
     user = orm.relationship("User", back_populates="user_class")
