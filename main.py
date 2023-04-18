@@ -345,9 +345,9 @@ def change_login(user_id):
         permission = db_sess.query(Permission).filter(Permission.title == "changing_login").first()  # noqa
     else:
         permission = db_sess.query(Permission).filter(Permission.title == "editing_user").first()  # noqa
-    if not allowed_permission(user, permission):
+    if not allowed_permission(current_user, permission):
         db_sess.close()
-        abort(405)
+        abort(403)
 
     form = ChangeLoginForm()
     data = {
@@ -385,7 +385,7 @@ def change_password(user_id):
         permission = db_sess.query(Permission).filter(Permission.title == "changing_password").first()  # noqa
     else:
         permission = db_sess.query(Permission).filter(Permission.title == "editing_user").first()  # noqa
-    if not allowed_permission(user, permission):
+    if not allowed_permission(current_user, permission):
         db_sess.close()
         abort(403)
 
