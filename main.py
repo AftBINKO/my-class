@@ -768,8 +768,10 @@ def class_info(school_id, class_id):
 
 
 @app.route('/enter_to_class/<class_id>', methods=['GET', 'POST'])
-@login_required
 def enter_to_class(class_id):
+    if not current_user.is_authenticated:
+        return redirect(url_for("login", class_id=class_id))
+
     class_id = int(class_id)
 
     db_sess = create_session()
