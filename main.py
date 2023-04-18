@@ -130,7 +130,8 @@ def admin_panel():
 
 
 @app.route('/login', methods=['GET', 'POST'])
-def login():
+@app.route('/enter_to_class/<class_id>/login', methods=['GET', 'POST'])
+def login(class_id=None):
     if current_user.is_authenticated:
         if not current_user.is_registered:
             return redirect(url_for("finish_register"))
@@ -139,7 +140,8 @@ def login():
     form = LoginForm()
     data = {
         "form": form,
-        "message": None
+        "message": None,
+        "class_id": class_id
     }
 
     if form.validate_on_submit():
@@ -150,6 +152,8 @@ def login():
         if user:
             if user.check_password(form.password.data):  # noqa
                 login_user(user, remember=form.remember_me.data)
+                if class_id:
+                    return redirect(url_for("enter_to_class", class_id=class_id))
                 return redirect(url_for("home"))
 
             data["message"] = "Неверный пароль"
@@ -160,7 +164,8 @@ def login():
 
 
 @app.route('/login_key', methods=['GET', 'POST'])
-def login_with_key():
+@app.route('/enter_to_class/<class_id>/login_key', methods=['GET', 'POST'])
+def login_with_key(class_id=None):
     if current_user.is_authenticated:
         if not current_user.is_registered:
             return redirect(url_for("finish_register"))
@@ -169,7 +174,7 @@ def login_with_key():
     form = LoginKeyForm()
     data = {
         "form": form,
-        "message": None
+        "message": None,
     }
 
     if form.validate_on_submit():
@@ -179,15 +184,16 @@ def login_with_key():
 
         if user is not None:
             login_user(user, remember=True)
-            return redirect(url_for("home"))
+            return redirect(url_for("finish_register", class_id=class_id))
         else:
             data["message"] = "Неверный ключ"
     return render_template("login_key.html", **data)
 
 
 @app.route('/finish_register', methods=['GET', 'POST'])
+@app.route('/enter_to_class/<class_id>/finish_register', methods=['GET', 'POST'])
 @login_required
-def finish_register():
+def finish_register(class_id=None):
     form = FinishRegisterForm()
     data = {
         "form": form,
@@ -217,6 +223,10 @@ def finish_register():
 
             db_sess.commit()
             db_sess.close()
+
+            if class_id:
+                return redirect(url_for("enter_to_class", class_id=class_id))
+
             return redirect(url_for("home"))
         db_sess.close()
     return render_template("finish_register.html", **data)
