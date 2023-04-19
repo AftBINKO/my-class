@@ -50,9 +50,9 @@
                                 <span class="badge bg-primary">вы</span>
                             {% endif %}
                         </td>
-                        {% if moder.key %}
+                        {% if "editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) %}
                             <td>
-                                {% if "editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) %}
+                                {% if moder.key %}
                                     {{ moder.key }}
                                 {% endif %}
                             </td>

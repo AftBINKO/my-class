@@ -1,4 +1,3 @@
-# python 3.11
 from shutil import make_archive
 
 import qrcode
