@@ -13,7 +13,7 @@ from data.config import Config
 from data.db_session import create_session, global_init
 from data.forms import LoginForm, LoginKeyForm, FinishRegisterForm, ChangeFullnameForm, ChangeLoginForm, \
     ChangePasswordForm, EditSchoolForm, EditClassForm
-from data.functions import all_permissions, allowed_permission
+from data.functions import all_permissions, allowed_permission, delete_login_data
 from data.functions import delete_classes, delete_schools
 from data.functions import delete_user as del_user
 from data.models import *
@@ -421,13 +421,25 @@ def change_password(user_id):
     return render_template('change_password.html', **data)
 
 
+@app.route('/profile/<user_id>/delete_login', methods=['GET', 'POST'])
+@login_required
+def delete_login(user_id):
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
+
+    if delete_login_data(int(user_id), current_user) == 403:
+        abort(403)
+
+    return redirect(url_for("profile_user", user_id=user_id))
+
+
 @app.route('/profile/<user_id>/delete', methods=['GET', 'POST'])
 @login_required
 def delete_user(user_id):
     if not current_user.is_registered:
         return redirect(url_for("finish_register"))
 
-    if del_user(int(user_id), current_user) == 405:
+    if del_user(int(user_id), current_user) == 403:
         abort(403)
 
     return redirect(url_for("home"))
@@ -459,9 +471,12 @@ def add_school():
 
         db_sess.add(school)
         db_sess.commit()
+
+        school_id = school.id
+
         db_sess.close()
 
-        return redirect(url_for("school_info", school_id=school.id))
+        return redirect(url_for("school_info", school_id=school_id))
 
     db_sess.close()
 
@@ -700,9 +715,12 @@ def add_class(school_id):
 
         db_sess.add(school_class)
         db_sess.commit()
+
+        class_id = school_class.id
+
         db_sess.close()
 
-        return redirect(url_for("class_info", school_id=school_id, class_id=school_class.id))
+        return redirect(url_for("class_info", school_id=school_id, class_id=class_id))
 
     db_sess.close()
 
@@ -1040,4 +1058,5 @@ def crash(error):
 
 
 if __name__ == '__main__':
-    serve(app, host='0.0.0.0', port=5000)
+    app.run(debug=True)
+    # serve(app, host='0.0.0.0', port=5000)

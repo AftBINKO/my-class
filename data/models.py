@@ -69,7 +69,7 @@ class Class(SqlAlchemyBase, SerializerMixin):
     user = orm.relationship("User", back_populates="user_class")
 
     def __repr__(self):
-        return f"<Class {self.title}>"
+        return f"<Class {self.class_number}{self.letter}>"
 
     def get_columns(self):
         return [column.key for column in self.__table__.columns]
@@ -88,7 +88,7 @@ class School(SqlAlchemyBase, SerializerMixin):
     user = orm.relationship("User", back_populates="school")
 
     def __repr__(self):
-        return f"<School {self.title}>"
+        return f"<School {self.name}>"
 
     def get_columns(self):
         return [column.key for column in self.__table__.columns]

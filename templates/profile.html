@@ -76,20 +76,11 @@
                             Изменить ФИО
                         </a>
                     </li>
-                    {% if admin %}
+                    {% if user.login and user.hashed_password %}
                         <li>
-                            {% if user.login %}
-                                <a href="{{ url_for('change_login', user_id=user.id) }}" class="dropdown-item">
-                                    Изменить логин
-                                </a>
-                            {% endif %}
-                        </li>
-                        <li>
-                            {% if user.password %}
-                                <a href="{{ url_for('change_password', user_id=user.id) }}" class="dropdown-item">
-                                    Изменить пароль
-                                </a>
-                            {% endif %}
+                            <a href="{{ url_for('delete_login', user_id=user.id) }}" class="dropdown-item">
+                                Удалить авторизационные данные
+                            </a>
                         </li>
                     {% endif %}
                     <li>

@@ -127,7 +127,7 @@ def delete_schools(schools, user=None, check_permission=True):
         for c in schools:
             if isinstance(c, int):
                 ss.append(c)
-            elif isinstance(c, Class):
+            elif isinstance(c, School):
                 ss.append(c.id)
 
         schools = ss
@@ -145,7 +145,7 @@ def delete_schools(schools, user=None, check_permission=True):
         classes = db_sess.query(Class).filter(Class.school_id == school.id).all()  # noqa
         delete_classes(school, classes, check_permission=False)
 
-        users = db_sess.query(User).filter(User.school_id.in_(schools)).all()  # noqa
+        users = db_sess.query(User).filter(User.school_id == school.id).all()  # noqa
         for user in users:
             user.school_id = None
 
@@ -203,7 +203,7 @@ def delete_classes(school, classes, user=None, check_permission=True):
 
 
 def delete_user(user, current_user=None, check_permission=True):
-    if not isinstance(user, (User, int)):
+    if not isinstance(user, (User, int)):  # noqa
         raise TypeError
 
     db_sess = create_session()
@@ -220,7 +220,7 @@ def delete_user(user, current_user=None, check_permission=True):
                     allowed_permission(current_user, permission1) and current_user.class_id == user.class_id)) and (
                             current_user.school_id == user.school_id or allowed_permission(current_user, permission3))):
                 db_sess.close()
-                return 405
+                return 403
         elif max(list(map(int, user.statuses.split(", ")))) in [2, 3, 4]:
             permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_school").first()  # noqa
             permission2 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
@@ -231,6 +231,44 @@ def delete_user(user, current_user=None, check_permission=True):
                 return 403
 
     db_sess.delete(user)
+    db_sess.commit()
+    db_sess.close()
+
+    return True
+
+
+def delete_login_data(user, current_user=None, check_permission=True):
+    if not isinstance(user, (User, int)):  # noqa
+        raise TypeError
+
+    db_sess = create_session()
+    if isinstance(user, int):
+        user = db_sess.query(User).filter(User.id == user).first()  # noqa
+
+    if check_permission and current_user is not None:
+        if max(list(map(int, user.statuses.split(", ")))) == 1:
+            permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
+            permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
+            permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+
+            if not ((allowed_permission(current_user, permission2) or (
+                    allowed_permission(current_user, permission1) and current_user.class_id == user.class_id)) and (
+                            current_user.school_id == user.school_id or allowed_permission(current_user, permission3))):
+                db_sess.close()
+                return 403
+        elif max(list(map(int, user.statuses.split(", ")))) in [2, 3, 4]:
+            permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_school").first()  # noqa
+            permission2 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+
+            if not (allowed_permission(current_user, permission2) or (
+                    allowed_permission(current_user, permission1) and current_user.school_id == user.school_id)):
+                db_sess.close()
+                return 403
+
+    user.login = None
+    user.hashed_password = None
+    user.generate_key()
+
     db_sess.commit()
     db_sess.close()
 
