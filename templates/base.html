@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>
         {% block title %}
-        {% endblock %} | Мой класс
+        {% endblock %} — Мой класс
     </title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
           rel="stylesheet"
@@ -13,12 +13,52 @@
           crossorigin="anonymous">
 </head>
 <header>
-    <nav class="navbar navbar-expand-lg bg-dark" data-bs-theme="dark">
+    {#    <nav class="navbar navbar-expand-lg bg-dark" data-bs-theme="dark">#}
+    {#        <div class="container-fluid">#}
+    {#            <a class="navbar-brand mb-0 h1" href="{{ url_for("home") }}">Мой класс</a>#}
+    {#            {% if current_user.is_authenticated %}#}
+    {#                <div class="nav-item" data-bs-theme="light">#}
+    {#                    <a class="nav-link active" aria-current="page"#}
+    {#                       href="{{ url_for("school_info", school_id=current_user.school_id) }}">#}
+    {#                        Моя школа#}
+    {#                    </a>#}
+    {#                </div>#}
+    {#                <ul class="navbar-nav">#}
+    {#                    <li class="nav-item dropdown">#}
+    {#                        <a class="nav-link dropdown-toggle" role="button"#}
+    {#                           data-bs-toggle="dropdown" aria-expanded="false">#}
+    {#                            {{ current_user.fullname }}#}
+    {#                        </a>#}
+    {#                        <ul class="dropdown-menu">#}
+    {#                            <li>#}
+    {#                                <a class="dropdown-item" href="{{ url_for("profile") }}">Профиль</a>#}
+    {#                            </li>#}
+    {#                            <li>#}
+    {#                                <hr class="dropdown-divider">#}
+    {#                            </li>#}
+    {#                            <li>#}
+    {#                                <a class="dropdown-item" href="{{ url_for("logout") }}">Выйти</a>#}
+    {#                            </li>#}
+    {#                        </ul>#}
+    {#                    </li>#}
+    {#                </ul>#}
+    {#            {% endif %}#}
+    {#        </div>#}
+    {#    </nav>#}
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
-            <a class="navbar-brand mb-0 h1" href="{{ url_for("home") }}">Мой класс</a>
-            {% if current_user.is_authenticated %}
-                <ul class="navbar-nav">
-                    <li class="nav-item dropdown">
+            <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+                <a class="navbar-brand mb-0 h1" href="{{ url_for("home") }}">Мой класс</a>
+                {% if current_user.is_authenticated %}
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page"
+                               href="{{ url_for("school_info", school_id=current_user.school_id) }}">
+                                Моя школа
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" role="button"
                            data-bs-toggle="dropdown" aria-expanded="false">
                             {{ current_user.fullname }}
@@ -34,9 +74,9 @@
                                 <a class="dropdown-item" href="{{ url_for("logout") }}">Выйти</a>
                             </li>
                         </ul>
-                    </li>
-                </ul>
-            {% endif %}
+                    </div>
+                {% endif %}
+            </div>
         </div>
     </nav>
 </header>
@@ -48,11 +88,5 @@
         integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
         crossorigin="anonymous"></script>
 </body>
-
-<footer class="bg-grey text-black">
-    <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
-        © 2023 Copyright
-    </div>
-</footer>
 
 </html>
