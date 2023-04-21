@@ -536,6 +536,53 @@ def school_info(school_id):
     return render_template("school_info.html", **data)
 
 
+@app.route('/schools/school/<school_id>/download_excel', methods=['GET', 'POST'])
+@login_required
+def download_school_excel(school_id):
+    school_id = int(school_id)
+
+    db_sess = create_session()
+
+    permission1 = db_sess.query(Permission).filter(Permission.title == "view_self_school").first()  # noqa
+    permission2 = db_sess.query(Permission).filter(Permission.title == "view_schools").first()  # noqa
+    if not (allowed_permission(current_user, permission2) or (
+            allowed_permission(current_user, permission1) and current_user.school_id == school_id)):
+        db_sess.close()
+        abort(403)
+
+    tmp_path = "static/tmp/table.xlsx"
+    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
+    classes = db_sess.query(Class).filter(Class.school_id == school_id).all()  # noqa
+
+    with Workbook(tmp_path) as workbook:
+        for school_class in classes:
+            worksheet = workbook.add_worksheet(f"{school_class.class_number}{school_class.letter}")
+
+            students = [user for user in db_sess.query(User).filter(User.class_id == school_class.id).all() if  # noqa
+                        db_sess.query(Status).filter(Status.title == "Ученик").first().id in set(  # noqa
+                            map(int, user.statuses.split(", ")))]
+
+            header_row_format = workbook.add_format({'bold': True})  # noqa
+            worksheet.set_row(0, None, header_row_format)
+
+            headers = ["ФИО", "В школе?", "Дата и время прибытия"]
+
+            for col, header in enumerate(headers):
+                worksheet.write(0, col, header)
+
+            for row, student in enumerate(students, start=1):
+                worksheet.write(row, 0, student.fullname)
+                if student.is_arrived:
+                    worksheet.write(row, 1, "Да")
+                elif student.is_arrived is not None:
+                    worksheet.write(row, 1, "Нет")
+                if student.arrival_time:
+                    worksheet.write(row, 2, student.arrival_time.strftime("%d.%m.%Y %H:%M"))
+
+    return send_file(tmp_path, as_attachment=True,
+                     download_name=f"{school.name}.xlsx")
+
+
 @app.route('/schools/school/<school_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_school(school_id):
@@ -812,14 +859,14 @@ def download_excel(school_id, class_id):
         abort(403)
 
     tmp_path = "static/tmp/table.xlsx"
-    students = [user for user in db_sess.query(User).filter(User.class_id == 1).all() if  # noqa
+    students = [user for user in db_sess.query(User).filter(User.class_id == class_id).all() if  # noqa
                 db_sess.query(Status).filter(Status.title == "Ученик").first().id in set(  # noqa
                     map(int, user.statuses.split(", ")))]
 
     with Workbook(tmp_path) as workbook:
-        worksheet = workbook.add_worksheet()
+        worksheet = workbook.add_worksheet(f"{school_class.class_number}{school_class.letter}")
 
-        header_row_format = workbook.add_format({'bold': True})
+        header_row_format = workbook.add_format({'bold': True})  # noqa
         worksheet.set_row(0, None, header_row_format)
 
         headers = ["ФИО", "В школе?", "Дата и время прибытия"]
