@@ -811,8 +811,8 @@ def download_excel(school_id, class_id):
         db_sess.close()
         abort(403)
 
-    temp = TemporaryFile()
-    with Workbook(temp.name) as workbook:
+    tmp_path = "static/tmp/table.xlsx"
+    with Workbook(tmp_path) as workbook:
         worksheet = workbook.add_worksheet()
 
         header_row_format = workbook.add_format({'bold': True})
@@ -823,7 +823,8 @@ def download_excel(school_id, class_id):
         for col, header in enumerate(headers):
             worksheet.write(0, col, header)
 
-    return send_file(temp, as_attachment=True, download_name=f"{school_class.class_number}{school_class.letter}.xlsx")
+    return send_file(tmp_path, as_attachment=True,
+                     download_name=f"{school_class.class_number}{school_class.letter}.xlsx")
 
 
 @app.route('/enter_to_class/<class_id>', methods=['GET', 'POST'])
