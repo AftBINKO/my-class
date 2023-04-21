@@ -1,4 +1,5 @@
 from shutil import make_archive
+from tempfile import TemporaryFile
 
 import qrcode
 
@@ -8,9 +9,11 @@ from string import ascii_letters, punctuation
 from datetime import datetime
 from pytz import timezone
 
-from flask import Flask, render_template, redirect, url_for, abort, jsonify, current_app, send_from_directory, request
+from flask import Flask, render_template, redirect, url_for, abort, jsonify, current_app, send_from_directory, request, \
+    send_file
 from flask_login import LoginManager, current_user, login_user, login_required, logout_user
 from waitress import serve
+from xlsxwriter import Workbook
 
 from data.config import Config
 from data.db_session import create_session, global_init
@@ -787,6 +790,40 @@ def class_info(school_id, class_id):
 
     db_sess.close()
     return render_template("class_info.html", **data)
+
+
+@app.route('/schools/school/<school_id>/classes/class/<class_id>/download_excel', methods=['GET', 'POST'])
+@login_required
+def download_excel(school_id, class_id):
+    school_id, class_id = int(school_id), int(class_id)  # noqa
+
+    db_sess = create_session()
+
+    school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
+
+    permission1 = db_sess.query(Permission).filter(Permission.title == "view_self_details_class").first()  # noqa
+    permission2 = db_sess.query(Permission).filter(Permission.title == "view_details_classes").first()  # noqa
+    permission3 = db_sess.query(Permission).filter(Permission.title == "view_schools").first()  # noqa
+
+    if not ((allowed_permission(current_user, permission2) or (
+            allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
+                    current_user.school_id == school_id or allowed_permission(current_user, permission3))):
+        db_sess.close()
+        abort(403)
+
+    temp = TemporaryFile()
+    with Workbook(temp.name) as workbook:
+        worksheet = workbook.add_worksheet()
+
+        header_row_format = workbook.add_format({'bold': True})
+        worksheet.set_row(0, None, header_row_format)
+
+        headers = ["ФИО", "В школе?", "Дата и время прибытия"]
+
+        for col, header in enumerate(headers):
+            worksheet.write(0, col, header)
+
+    return send_file(temp, as_attachment=True, download_name=f"{school_class.class_number}{school_class.letter}.xlsx")
 
 
 @app.route('/enter_to_class/<class_id>', methods=['GET', 'POST'])
