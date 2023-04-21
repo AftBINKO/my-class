@@ -83,6 +83,7 @@
                                 </form>
                             </div>
                         </th>
+                        <th scope="col">Время прибытия</th>
                         <th scope="col">Ключ</th>
                     {% endif %}
                     <th scope="col"></th>
@@ -103,6 +104,11 @@
                                     Да
                                 {% elif student.is_arrived == False %}
                                     Нет
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if student.arrival_time %}
+                                    {{ student.arrival_time.time().strftime("%H:%M") }}
                                 {% endif %}
                             </td>
                             <td>

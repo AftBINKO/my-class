@@ -5,6 +5,9 @@ import qrcode
 from os import path, remove
 from string import ascii_letters, punctuation
 
+from datetime import datetime
+from pytz import timezone
+
 from flask import Flask, render_template, redirect, url_for, abort, jsonify, current_app, send_from_directory, request
 from flask_login import LoginManager, current_user, login_user, login_required, logout_user
 from waitress import serve
@@ -768,6 +771,7 @@ def class_info(school_id, class_id):
     if request.method == "POST":
         for student in students:
             student.is_arrived = False
+            student.arrival_time = None
         db_sess.commit()
         db_sess.close()
 
@@ -801,6 +805,7 @@ def enter_to_class(class_id):
 
     user = db_sess.query(User).filter(User.id == current_user.id).first()
     user.is_arrived = True
+    user.arrival_time = datetime.now().astimezone(timezone("Europe/Moscow"))
 
     db_sess.commit()
     db_sess.close()

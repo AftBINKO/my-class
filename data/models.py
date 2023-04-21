@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Boolean, Text, ForeignKey, orm
+from sqlalchemy import Column, String, Integer, Boolean, Text, ForeignKey, orm, DateTime
 from sqlalchemy_serializer import SerializerMixin
 
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -24,7 +24,10 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     key = Column(String, unique=True)
 
     is_registered = Column(Boolean, nullable=False, default=False)
+
     is_arrived = Column(Boolean)
+    arrival_time = Column(DateTime)
+
     statuses = Column(String, nullable=False, default="1")
 
     user_class = orm.relationship('Class')
