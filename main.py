@@ -812,6 +812,10 @@ def download_excel(school_id, class_id):
         abort(403)
 
     tmp_path = "static/tmp/table.xlsx"
+    students = [user for user in db_sess.query(User).filter(User.class_id == 1).all() if  # noqa
+                db_sess.query(Status).filter(Status.title == "Ученик").first().id in set(  # noqa
+                    map(int, user.statuses.split(", ")))]
+
     with Workbook(tmp_path) as workbook:
         worksheet = workbook.add_worksheet()
 
@@ -822,6 +826,15 @@ def download_excel(school_id, class_id):
 
         for col, header in enumerate(headers):
             worksheet.write(0, col, header)
+
+        for row, student in enumerate(students, start=1):
+            worksheet.write(row, 0, student.fullname)
+            if student.is_arrived:
+                worksheet.write(row, 1, "Да")
+            elif student.is_arrived is not None:
+                worksheet.write(row, 1, "Нет")
+            if student.arrival_time:
+                worksheet.write(row, 2, student.arrival_time.strftime("%d.%m.%Y %H:%M"))
 
     return send_file(tmp_path, as_attachment=True,
                      download_name=f"{school_class.class_number}{school_class.letter}.xlsx")
