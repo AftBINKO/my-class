@@ -30,8 +30,8 @@
             <p>Классный руководитель: {{ class_teacher.fullname }}</p>
             {% if ("editing_classes" in permissions or ("editing_self_class" in permissions and current_user.class_id == class.id) or current_user.id == class_teacher.id) %}
                 <a href="{{ url_for("profile_user", user_id=class_teacher.id) }}"
-                   class="btn btn-secondary">
-                    Подробнее
+                   class="btn btn-primary">
+                    Открыть
                 </a>
             {% endif %}
         {% else %}
@@ -99,7 +99,7 @@
                         <td>
                             {{ student.fullname }}
                             {% if student.id == current_user.id %}
-                                <span class="badge bg-primary">вы</span>
+                                <span class="badge bg-secondary">вы</span>
                             {% endif %}
                         </td>
                         {% if "editing_classes" in permissions or ("editing_self_class" in permissions and current_user.class_id == class.id) %}
@@ -125,8 +125,8 @@
                             {% if ("editing_classes" in permissions or ("editing_self_class" in permissions and current_user.class_id == class.id) or current_user.id == student.id) %}
                                 <form action="" method="post">
                                     <a href="{{ url_for("profile_user", user_id=student.id) }}"
-                                       class="btn btn-secondary">
-                                        Подробнее
+                                       class="btn btn-primary">
+                                        Открыть
                                     </a>
                                 </form>
                             {% endif %}
