@@ -253,8 +253,22 @@ def profile_user(user_id):
         return redirect(url_for("finish_register"))
     db_sess = create_session()
     user = db_sess.query(User).filter(User.id == user_id).first()
+    school_class = db_sess.query(Class).filter(Class.id == user.class_id).first()  # noqa
+    school = db_sess.query(School).filter(School.id == user.school_id).first()  # noqa
     statuses = list(sorted(db_sess.query(Status).filter(Status.id.in_(user.statuses.split(", "))).all(),  # noqa
-                           key=lambda status: status.id, reverse=True))
+                           key=lambda s: s.id, reverse=True))
+    statuses_titles = []
+    for status in statuses:
+        if status.title in ["Классный руководитель", "Ученик"]:
+            if school_class:
+                title = f"{status.title} {school_class.class_number}-го"
+                if school_class.letter:
+                    title += f' "{school_class.letter}" '
+                title += " класса"
+                statuses_titles.append(title)
+                continue
+
+        statuses_titles.append(status.title)
     permissions = None
     permission3 = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
     if current_user.id == int(user_id):
@@ -282,11 +296,11 @@ def profile_user(user_id):
     db_sess.close()
 
     data = {
-        "statuses": statuses,
+        "statuses_titles": statuses_titles,
         "permissions": permissions,
         "user": user,
         "admin": allowed_permission(current_user, permission3),
-        "class_name": ""  # TODO: дописать
+        "school": school
     }
 
     return render_template("profile.html", **data)
