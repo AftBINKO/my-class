@@ -20,7 +20,7 @@ def global_init(db_file, echo=False):
     conn_str = f'sqlite:///{db_file.strip()}?check_same_thread=False'
 
     if echo:
-        print(f"Connecting to the database at {conn_str}")
+        print(f"Подключение к базе данных по адресу {conn_str}")
 
     engine = sa.create_engine(conn_str, echo=echo)
     __factory = orm.sessionmaker(bind=engine)
