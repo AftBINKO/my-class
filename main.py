@@ -11,14 +11,15 @@ from pytz import timezone
 from flask import Flask, render_template, redirect, url_for, abort, current_app, send_from_directory, request, \
     send_file
 from flask_login import LoginManager, current_user, login_user, login_required, logout_user
-from waitress import serve
+# from waitress import serve
+from flask_apscheduler import APScheduler
 from xlsxwriter import Workbook
 
 from data.config import Config
 from data.db_session import create_session, global_init
 from data.forms import LoginForm, LoginKeyForm, FinishRegisterForm, ChangeFullnameForm, ChangeLoginForm, \
     ChangePasswordForm, EditSchoolForm, EditClassForm, SelectUser
-from data.functions import all_permissions, allowed_permission, delete_login_data
+from data.functions import all_permissions, allowed_permission, delete_login_data, check_status
 from data.functions import delete_classes, delete_schools
 from data.functions import delete_user as del_user
 from data.models import *
@@ -28,6 +29,10 @@ app.config.from_object(Config)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+scheduler = APScheduler()
+scheduler.init_app(app)
+scheduler.start()
 
 global_init("db/data.sqlite3")
 RUSSIAN_ALPHABET = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"
@@ -1035,14 +1040,14 @@ def class_info(school_id, class_id):
 
     students.sort(key=lambda st: st.fullname.split()[0])
 
-    if request.method == "POST":
-        for student in students:
-            student.is_arrived = False
-            student.arrival_time = None
-        db_sess.commit()
-        db_sess.close()
-
-        return redirect(url_for("class_info", school_id=school_id, class_id=class_id))
+    # if request.method == "POST":
+    #     for student in students:
+    #         student.is_arrived = False
+    #         student.arrival_time = None
+    #     db_sess.commit()
+    #     db_sess.close()
+    #
+    #     return redirect(url_for("class_info", school_id=school_id, class_id=class_id))
 
     data = {
         "school": school,
@@ -1054,6 +1059,18 @@ def class_info(school_id, class_id):
 
     db_sess.close()
     return render_template("class_info.html", **data)
+
+
+@scheduler.task("cron", id="everyday", hour="00", minute="00")
+def everyday():
+    db_sess = create_session()
+    users = db_sess.query(User).all()
+    for user in users:
+        if check_status(user, "Ученик"):
+            user.is_arrived = False
+            user.arrival_time = None
+    db_sess.commit()
+    db_sess.close()
 
 
 @app.route('/schools/school/<school_id>/classes/class/<class_id>/download_excel', methods=['GET', 'POST'])
@@ -1447,4 +1464,4 @@ def crash(error):
 
 
 if __name__ == '__main__':
-    serve(app, host='0.0.0.0', port=5000)
+    app.run(host='127.0.0.1', port=5000)

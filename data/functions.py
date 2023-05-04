@@ -273,3 +273,21 @@ def delete_login_data(user, current_user=None, check_permission=True):
     db_sess.close()
 
     return True
+
+
+def check_status(user, status):
+    db_sess = create_session()
+
+    if not isinstance(user, (User, int)):  # noqa
+        raise TypeError
+    if not isinstance(status, (Status, str, int)):  # noqa
+        raise TypeError
+
+    if isinstance(user, int):
+        user = db_sess.query(User).filter(User.id == user).first()  # noqa
+
+    if isinstance(status, str):
+        status = db_sess.query(Status).filter(Status.title == status).first().id  # noqa
+    elif isinstance(status, Status):
+        status = status.id
+    return status in set(map(int, user.statuses.split(", ")))
