@@ -68,7 +68,7 @@
                     Добавить ученика
                 </a>
                 <a href="{{ url_for("download_excel", school_id=school.id, class_id=class.id) }}"
-                   class="btn btn-secondary">
+                   class="btn btn-outline-success">
                     Скачать таблицу в формате Excel
                 </a>
             </div>
@@ -83,7 +83,7 @@
                             <div style="display:inline-block">
                                 <form action="" method="post">
                                     В школе?
-                                    <button class="btn btn-info" type="submit">Обнулить</button>
+                                    <button class="btn btn-light" type="submit">Обнулить</button>
                                 </form>
                             </div>
                         </th>
