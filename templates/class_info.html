@@ -43,12 +43,14 @@
                     </button>
                     <ul class="dropdown-menu">
                         <li>
-                            <a href="{{ url_for("add_class_teacher", class_id=class.id, school_id=school.id) }}" class="dropdown-item">
+                            <a href="{{ url_for("add_class_teacher", class_id=class.id, school_id=school.id) }}"
+                               class="dropdown-item">
                                 Создать новый аккаунт
                             </a>
                         </li>
                         <li>
-                            <a href="" class="dropdown-item">
+                            <a href="{{ url_for("add_existing_class_teacher", class_id=class.id, school_id=school.id) }}"
+                               class="dropdown-item">
                                 Добавить из существующих учителей/модераторов
                             </a>
                         </li>

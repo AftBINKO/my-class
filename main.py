@@ -18,7 +18,7 @@ from xlsxwriter import Workbook
 from data.config import Config
 from data.db_session import create_session, global_init
 from data.forms import LoginForm, LoginKeyForm, FinishRegisterForm, ChangeFullnameForm, ChangeLoginForm, \
-    ChangePasswordForm, EditSchoolForm, EditClassForm
+    ChangePasswordForm, EditSchoolForm, EditClassForm, SelectUser
 from data.functions import all_permissions, allowed_permission, delete_login_data
 from data.functions import delete_classes, delete_schools
 from data.functions import delete_user as del_user
@@ -685,6 +685,63 @@ def add_moderator(school_id):
     return render_template('add_moderator.html', **data)
 
 
+@app.route('/schools/school/<school_id>/moderators/add_existing', methods=['GET', 'POST'])
+@login_required
+def add_existing_moderator(school_id):
+    school_id = int(school_id)  # noqa
+
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
+
+    db_sess = create_session()
+
+    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
+
+    permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_school").first()  # noqa
+    permission2 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+
+    if not (allowed_permission(current_user, permission2) or (
+            allowed_permission(current_user, permission1) and current_user.school_id == school_id)):
+        db_sess.close()
+        abort(403)
+
+    form = SelectUser()
+
+    school_users = db_sess.query(User).filter(User.school_id == school_id).all()  # noqa
+    users = [(0, "Выбрать...")]
+    for us in school_users:
+        status = list(sorted(db_sess.query(Status).filter(Status.id.in_(us.statuses.split(", "))).all(),  # noqa
+                             key=lambda s: s.id, reverse=True))[0]
+        if status.title in ["Учитель", "Классный руководитель"]:
+            users.append((us.id, us.fullname))
+
+    form.select.choices = users
+
+    data = {
+        'form': form,
+        'school': school,
+        'role': "модератора",
+        'message': None
+    }
+
+    if form.validate_on_submit():
+        user_id = int(form.select.data)
+        if user_id:
+            user = db_sess.query(User).filter(User.id == user_id).first()  # noqa
+            user.statuses = ", ".join(list(map(str, (list(sorted(list(map(int, user.statuses.split(", "))) + [  # noqa
+                db_sess.query(Status).filter(Status.title == "Модератор").first().id]))))))  # noqa
+
+            db_sess.commit()
+            db_sess.close()
+
+            return redirect(url_for("school_info", school_id=school_id))
+        data["message"] = "Вы не выбрали пользователя"
+
+    db_sess.close()
+
+    return render_template('add_existing.html', **data)
+
+
 @app.route('/schools/school/<school_id>/teachers/add', methods=['GET', 'POST'])
 @login_required
 def add_teacher(school_id):
@@ -732,6 +789,64 @@ def add_teacher(school_id):
     db_sess.close()
 
     return render_template('add_teacher.html', **data)
+
+
+@app.route('/schools/school/<school_id>/teachers/add_existing', methods=['GET', 'POST'])
+@login_required
+def add_existing_teacher(school_id):
+    school_id = int(school_id)  # noqa
+
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
+
+    db_sess = create_session()
+
+    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
+
+    permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_school").first()  # noqa
+    permission2 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+
+    if not (allowed_permission(current_user, permission2) or (
+            allowed_permission(current_user, permission1) and current_user.school_id == school_id)):
+        db_sess.close()
+        abort(403)
+
+    form = SelectUser()
+
+    school_users = db_sess.query(User).filter(User.school_id == school_id).all()  # noqa
+    users = [(0, "Выбрать...")]
+    for us in school_users:
+        statuses = db_sess.query(Status).filter(Status.id.in_(us.statuses.split(", "))).all()  # noqa
+        status = list(sorted(statuses, key=lambda s: s.id, reverse=True))[0]
+        if status.title in ["Модератор", "Классный руководитель"] and "Учитель" not in list(
+                map(lambda s: s.title, statuses)):
+            users.append((us.id, us.fullname))
+
+    form.select.choices = users
+
+    data = {
+        'form': form,
+        'school': school,
+        'role': "учителя",
+        'message': None
+    }
+
+    if form.validate_on_submit():
+        user_id = int(form.select.data)
+        if user_id:
+            user = db_sess.query(User).filter(User.id == user_id).first()  # noqa
+            user.statuses = ", ".join(list(map(str, (list(sorted(list(map(int, user.statuses.split(", "))) + [  # noqa
+                db_sess.query(Status).filter(Status.title == "Учитель").first().id]))))))  # noqa
+
+            db_sess.commit()
+            db_sess.close()
+
+            return redirect(url_for("school_info", school_id=school_id))
+        data["message"] = "Вы не выбрали пользователя"
+
+    db_sess.close()
+
+    return render_template('add_existing.html', **data)
 
 
 @app.route('/schools/school/<school_id>/delete', methods=['GET', 'POST'])
@@ -1095,6 +1210,65 @@ def add_class_teacher(school_id, class_id):
     return render_template('add_class_teacher.html', **data)
 
 
+@app.route('/schools/school/<school_id>/classes/class/<class_id>/class_teacher/add_existing', methods=['GET', 'POST'])
+@login_required
+def add_existing_class_teacher(school_id, class_id):
+    school_id, class_id = int(school_id), int(class_id)  # noqa
+
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
+
+    db_sess = create_session()
+
+    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
+
+    permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_school").first()  # noqa
+    permission2 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+
+    if not (allowed_permission(current_user, permission2) or (
+            allowed_permission(current_user, permission1) and current_user.school_id == school_id)):
+        db_sess.close()
+        abort(403)
+
+    form = SelectUser()
+
+    school_users = db_sess.query(User).filter(User.school_id == school_id).all()  # noqa
+    users = [(0, "Выбрать...")]
+    for us in school_users:
+        statuses = db_sess.query(Status).filter(Status.id.in_(us.statuses.split(", "))).all()  # noqa
+        status = list(sorted(statuses, key=lambda s: s.id, reverse=True))[0]
+        if status.title in ["Модератор", "Учитель"] and "Классный руководитель" not in list(
+                map(lambda s: s.title, statuses)):
+            users.append((us.id, us.fullname))
+
+    form.select.choices = users
+
+    data = {
+        'form': form,
+        'school': school,
+        'role': "классного руководителя",
+        'message': None
+    }
+
+    if form.validate_on_submit():
+        user_id = int(form.select.data)
+        if user_id:
+            user = db_sess.query(User).filter(User.id == user_id).first()  # noqa
+            user.statuses = ", ".join(list(map(str, (list(sorted(list(map(int, user.statuses.split(", "))) + [  # noqa
+                db_sess.query(Status).filter(Status.title == "Классный руководитель").first().id]))))))  # noqa
+            user.class_id = class_id
+
+            db_sess.commit()
+            db_sess.close()
+
+            return redirect(url_for("class_info", school_id=school_id, class_id=class_id))
+        data["message"] = "Вы не выбрали пользователя"
+
+    db_sess.close()
+
+    return render_template('add_existing.html', **data)
+
+
 @app.route('/schools/school/<school_id>/classes/class/<class_id>/get_qr', methods=['GET', 'POST'])
 @login_required
 def generate_qrcode(school_id, class_id):
@@ -1176,4 +1350,4 @@ def crash(error):
 
 if __name__ == '__main__':
     # serve(app, host='0.0.0.0', port=5000)
-    app.run()
+    app.run(debug=True)
