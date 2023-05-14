@@ -26,6 +26,9 @@
                     {% for error in form.password.errors %}
                         <div class="alert alert-danger" role="alert">{{ error }}</div>
                     {% endfor %}
+                    <div class="form-text">
+                        Забыли пароль? Попросите учителя/модератора/администратора удалить авторизационные данные
+                    </div>
                 </div>
                 <div class="mb-3 form-check">
                     {{ form.remember_me(class="form-check-input") }}
@@ -36,7 +39,7 @@
                 </div>
                 <div>
                     <a href="{{ url_for("login_with_key", class_id=class_id) }}">
-                        Меня пригласил учитель/администратор
+                        У меня есть ключ
                     </a>
                 </div>
                 <div>

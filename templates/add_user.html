@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-    Добавить модератора в {{ school.name }}
+    {{ title }}
 {% endblock %}
 
 {% block content %}
@@ -10,7 +10,7 @@
             <form action="" method="post">
                 {{ form.hidden_tag() }}
                 <legend style="text-align: center">
-                    Добавить модератора в {{ school.name }}
+                    {{ title }}
                 </legend>
                 {% if message %}
                     <div class="alert alert-danger">{{ message }}</div>
@@ -19,8 +19,8 @@
                     {{ form.fullname.label(class="form-label") }}*
                     {{ form.fullname(class="form-control", placeholder='Иванов Иван Иванович') }}
                     <div class="form-text">
-                        Логин и пароль создаются модератором. Чтобы он мог их установить, вам надо предоставить
-                        модератору ключ, который сгенерируется после добавления модератора
+                        Логин и пароль создаются пользователем. Чтобы он мог их установить, вам надо предоставить
+                        пользователю ключ, который сгенерируется после добавления пользователя
                     </div>
                     {% for error in form.fullname.errors %}
                         <div class="alert alert-danger" role="alert">{{ error }}</div>
@@ -29,7 +29,7 @@
                 <div>
                     {{ form.submit(type="submit", class="btn btn-success") }}
                     <div class="form-text">
-                        Нажимая на кнопку "Подтвердить", вы подтверждаете согласие модератора на обработку и хранение
+                        Нажимая на кнопку "Подтвердить", вы подтверждаете согласие пользователя на обработку и хранение
                         персональных данных
                     </div>
                 </div>

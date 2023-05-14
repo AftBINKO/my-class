@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, SelectField
 from wtforms.validators import DataRequired
 
 
@@ -50,3 +50,7 @@ class EditClassForm(FlaskForm):
     letter = StringField('Литера')
     submit = SubmitField('Подтвердить')
 
+
+class SelectUser(FlaskForm):
+    select = SelectField('Выберите пользователя')
+    submit = SubmitField('Подтвердить')

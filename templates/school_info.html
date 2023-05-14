@@ -24,9 +24,25 @@
         </div>
         {% if "editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) %}
             <div class="container" style="margin-top: 25px">
-                <a href="{{ url_for("add_moderator", school_id=school.id) }}" class="btn btn-success">
-                    Добавить модератора
-                </a>
+                <div class="dropdown">
+                    <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        Добавить модератора
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="{{ url_for('add_moderator', school_id=school.id) }}" class="dropdown-item">
+                                Создать новый аккаунт
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('add_existing_moderator', school_id=school.id) }}"
+                               class="dropdown-item">
+                                Добавить из существующих учителей
+                            </a>
+                        </li>
+                    </ul>
+                </div>
                 <p>Вы можете добавить директора, информатика, завуча или другого управляющего лица</p>
             </div>
         {% endif %}
@@ -123,11 +139,26 @@
     </div>
     <div class="container" style="margin-top: 50px">
         <div class="container" style="margin-top: 25px">
-            <h3 style="text-align: center">Преподавательский коллектив </h3>
+            <h3 style="text-align: center">Преподавательский коллектив</h3>
         </div>
         {% if "editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) %}
-            <div class="container" style="margin-top: 25px">
-                <a href="{{ url_for("add_teacher", school_id=school.id) }}" class="btn btn-success">Добавить учителя</a>
+            <div class="dropdown">
+                <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                    Добавить учителя
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a href="{{ url_for('add_teacher', school_id=school.id) }}" class="dropdown-item">
+                            Создать новый аккаунт
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('add_existing_teacher', school_id=school.id) }}" class="dropdown-item">
+                            Добавить из существующих модераторов/классных руководителей
+                        </a>
+                    </li>
+                </ul>
             </div>
         {% endif %}
         <div class="container" style="margin-top: 25px">

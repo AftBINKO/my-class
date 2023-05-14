@@ -36,10 +36,26 @@
             {% endif %}
         {% else %}
             {% if ("editing_classes" in permissions or ("editing_self_class" in permissions and current_user.class_id == class.id) or current_user.id == class_teacher.id) %}
-                <a href="{{ url_for("add_class_teacher", class_id=class.id, school_id=school.id) }}"
-                   class="btn btn-success">
-                    Добавить классного руководителя
-                </a>
+                <div class="dropdown">
+                    <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        Добавить классного руководителя
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="{{ url_for("add_class_teacher", class_id=class.id, school_id=school.id) }}"
+                               class="dropdown-item">
+                                Создать новый аккаунт
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for("add_existing_class_teacher", class_id=class.id, school_id=school.id) }}"
+                               class="dropdown-item">
+                                Добавить из существующих учителей/модераторов
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             {% endif %}
         {% endif %}
     </div>
