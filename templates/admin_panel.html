@@ -6,7 +6,7 @@
 
 {% block content %}
     <div class="container" style="margin-top: 25px">
-        <h1 style="text-align: center">Образовательные учреждения</h1>
+        <h3 style="text-align: center">Образовательные учреждения</h3>
     </div>
     <div class="container" style="margin-top: 25px">
         <a href="{{ url_for("add_school") }}" class="btn btn-success">Добавить образовательное учреждение</a>
@@ -29,6 +29,67 @@
                         <a href="{{ url_for("school_info", school_id=school.id) }}" class="btn btn-primary">
                             Открыть
                         </a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="container" style="margin-top: 25px">
+        <h3 style="text-align: center">Администраторы</h3>
+    </div>
+    <div class="container" style="margin-top: 25px">
+        <div class="dropdown">
+            <button class="btn btn-dark dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                Добавить администратора
+            </button>
+            <ul class="dropdown-menu">
+                <li>
+                    <a href="{{ url_for("add_admin") }}"
+                       class="dropdown-item">
+                        Создать новый аккаунт
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for("add_existing_admin") }}"
+                       class="dropdown-item">
+                        Добавить из существующих пользователей
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="container" style="margin-top: 25px">
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">Фамилия Имя Отчество</th>
+                <th scope="col">Ключ</th>
+                <th scope="col"></th>
+            </tr>
+            </thead>
+            <tbody class="table-group-divider">
+            {% for admin in admins %}
+                <tr>
+                    <td>
+                        {{ admin.fullname }}
+                        {% if admin.id == current_user.id %}
+                            <span class="badge bg-secondary">вы</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if admin.key %}
+                            {{ admin.key }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form action="" method="post">
+                            <a href="{{ url_for("profile_user", user_id=admin.id) }}"
+                               class="btn btn-primary">
+                                Открыть
+                            </a>
+                        </form>
                     </td>
                 </tr>
             {% endfor %}
