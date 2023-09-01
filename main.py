@@ -1,5 +1,4 @@
 from shutil import make_archive
-from tempfile import TemporaryFile
 
 import qrcode
 
