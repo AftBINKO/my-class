@@ -27,6 +27,7 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
 
     is_arrived = Column(Boolean)
     arrival_time = Column(DateTime)
+    list_times = Column(Text)
 
     statuses = Column(String, nullable=False, default="1")
 

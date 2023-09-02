@@ -1130,14 +1130,26 @@ def enter_to_class(class_id):
 
     db_sess = create_session()
 
-    if not (current_user.class_id == class_id and db_sess.query(Status).filter(
-            Status.title == "Ученик").first().id in set(map(int, current_user.statuses.split(", ")))):  # noqa
+    if not (current_user.class_id == class_id and check_status(current_user, "Ученик")):  # noqa
         db_sess.close()
         abort(403)
 
     user = db_sess.query(User).filter(User.id == current_user.id).first()
+
+    if user.is_arrived:
+        return redirect(url_for("enter_error"))
+
     user.is_arrived = True
-    user.arrival_time = datetime.now().astimezone(timezone("Europe/Moscow"))
+    arrival_time = datetime.now().astimezone(timezone("Europe/Moscow"))
+
+    user.arrival_time = arrival_time
+
+    list_times = []
+    if user.list_times:
+        list_times = user.list_times.split(', ')
+    list_times.append(arrival_time.strftime("%Y-%m-%d %H:%M:%S.%f"))
+
+    user.list_times = ", ".join(list_times)
 
     db_sess.commit()
     db_sess.close()
@@ -1149,6 +1161,13 @@ def enter_to_class(class_id):
 def enter_success():
     return render_template("alert.html", title="Успешный вход",
                            message="Можете заходить в класс, вы отмечены, как присутствующий"), {
+        "Refresh": f"3; url={url_for('home')}"}
+
+
+@app.route('/enter_to_class/error')
+def enter_error():
+    return render_template("alert.html", title="Вы уже отмечены",
+                           message="Вам сейчас не нужно отмечаться, вы уже отмечены в системе как присутствующий"), {
         "Refresh": f"3; url={url_for('home')}"}
 
 

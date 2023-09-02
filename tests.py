@@ -1,1 +1,3 @@
-print([1, 2] + [3])
+from datetime import datetime
+
+print(datetime.now().strftime())
