@@ -1102,6 +1102,11 @@ def weekly_schedule(school_id, class_id):
             dates.append(date.date())
         date += timedelta(days=1)
 
+    presence = {}
+    total_presence = 0
+    for w in WEEKDAYS:
+        presence[w] = 0
+
     schedule = {}
     for student in students:
         schedule[student.fullname] = {}
@@ -1117,6 +1122,8 @@ def weekly_schedule(school_id, class_id):
             for dt2 in student_datetimes:
                 if dt1 == dt2.date():
                     schedule[student.fullname][WEEKDAYS[w]] = dt2.strftime("%H:%M")
+                    presence[WEEKDAYS[w]] += 1
+                    total_presence += 1
 
     data = {
         "school": school,
@@ -1124,7 +1131,9 @@ def weekly_schedule(school_id, class_id):
         "class": school_class,
         "wd": weekday,
         "weekdays": WEEKDAYS,
-        "schedule": schedule
+        "schedule": schedule,
+        "presence": presence,
+        "total_presence": total_presence
     }
 
     db_sess.close()
