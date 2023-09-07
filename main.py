@@ -1044,15 +1044,6 @@ def class_info(school_id, class_id):
 
     students.sort(key=lambda st: st.fullname.split()[0])
 
-    # if request.method == "POST":
-    #     for student in students:
-    #         student.is_arrived = False
-    #         student.arrival_time = None
-    #     db_sess.commit()
-    #     db_sess.close()
-    #
-    #     return redirect(url_for("class_info", school_id=school_id, class_id=class_id))
-
     data = {
         "school": school,
         "permissions": permissions,
@@ -1092,7 +1083,7 @@ def weekly_schedule(school_id, class_id):
     students = list(sorted([user for user in db_sess.query(User).filter(User.class_id == class_id).all() if  # noqa
                             check_status(user, "Ученик")], key=lambda st: st.fullname.split()[0]))
 
-    today = datetime.today()
+    today = datetime.now().astimezone(timezone("Europe/Moscow"))
     weekday = today.weekday()
 
     dates = []
@@ -1121,9 +1112,10 @@ def weekly_schedule(school_id, class_id):
         for w, dt1 in enumerate(dates):
             for dt2 in student_datetimes:
                 if dt1 == dt2.date():
-                    schedule[student.fullname][WEEKDAYS[w]] = dt2.strftime("%H:%M")
+                    schedule[student.fullname][WEEKDAYS[w]] = dt2.time().strftime("%H:%M")
                     presence[WEEKDAYS[w]] += 1
                     total_presence += 1
+                    break
 
     data = {
         "school": school,
@@ -1138,6 +1130,74 @@ def weekly_schedule(school_id, class_id):
 
     db_sess.close()
     return render_template("weekly_schedule.html", **data)
+
+
+@app.route('/schools/school/<school_id>/classes/class/<class_id>/schedule/annual')
+@app.route('/schools/school/<school_id>/classes/class/<class_id>/schedule/annual/current')
+@login_required
+def current_annual_schedule(school_id, class_id):
+    current_date = datetime.now().astimezone(timezone("Europe/Moscow")).strftime("%d.%m.%y")
+    return redirect(url_for("annual_schedule", school_id=school_id, class_id=class_id, date=current_date))
+
+
+@app.route('/schools/school/<school_id>/classes/class/<class_id>/schedule/annual/<date>', methods=['GET', 'POST'])
+@login_required
+def annual_schedule(school_id, class_id, date):
+    school_id, class_id = int(school_id), int(class_id)  # noqa
+
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
+
+    db_sess = create_session()
+    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
+
+    permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
+    permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
+    permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+
+    if not ((allowed_permission(current_user, permission2) or (
+            allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
+                    current_user.school_id == school_id or allowed_permission(current_user, permission3))):
+        db_sess.close()
+        abort(403)
+
+    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
+    school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
+
+    students = list(sorted([user for user in db_sess.query(User).filter(User.class_id == class_id).all() if  # noqa
+                            check_status(user, "Ученик")], key=lambda st: st.fullname.split()[0]))
+
+    date = datetime.strptime(date, "%d.%m.%y").date()
+
+    presence = 0
+    schedule = {}
+    for student in students:
+        schedule[student.fullname] = {}
+        schedule[student.fullname]["is_arrived"] = False
+
+        if student.list_times:
+            student_datetimes = list(
+                map(lambda d: datetime.strptime(d, "%Y-%m-%d %H:%M:%S.%f"), student.list_times.split(", ")))
+
+            for dt in student_datetimes:
+                if date == dt.date():
+                    schedule[student.fullname]["is_arrived"] = True
+                    presence += 1
+                    schedule[student.fullname]["arrival_time"] = dt.time().strftime("%H:%M")
+                    break
+
+    data = {
+        "school": school,
+        "students": students,
+        "class": school_class,
+        "date": date,
+        "weekdays": WEEKDAYS,
+        "schedule": schedule,
+        "presence": presence,
+    }
+
+    db_sess.close()
+    return render_template("annual_schedule.html", **data)
 
 
 @scheduler.task("cron", id="everyday", hour="00", minute="00")
@@ -1557,10 +1617,6 @@ def crash(error):
 if __name__ == '__main__':
     with open(CONFIG_PATH) as config:
         cfg = load(config)
-
-    # if "update_times" in cfg.keys() and cfg["update_keys"] is not None and (datetime.now() - datetime.strptime(
-    #         cfg["update_keys"], "%Y-%m-%d %H:%M:%S.%f")).days >= 1:
-    #     clear_times(echo=DEBUG)
 
     clear = False
     if "update_times" in cfg.keys():

@@ -1,6 +1,6 @@
 from datetime import datetime
 from json import load, dump
-from os import path
+from pytz import timezone
 
 from .db_session import create_session
 from .models import User, Status, Permission, Class, School
