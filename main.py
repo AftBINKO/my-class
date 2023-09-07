@@ -7,7 +7,7 @@ from string import ascii_letters, punctuation
 
 from datetime import datetime, timedelta
 from xlsxwriter import Workbook
-from json import load
+from json import load, dump
 from pytz import timezone
 
 from flask import Flask, render_template, redirect, url_for, abort, current_app, send_from_directory, request, \
@@ -1186,14 +1186,35 @@ def annual_schedule(school_id, class_id, date):
                     schedule[student.fullname]["arrival_time"] = dt.time().strftime("%H:%M")
                     break
 
+    d1 = date
+    d2 = date
+    with open(CONFIG_PATH) as json:
+        start_date = datetime.strptime(load(json)["clear_times"], "%Y-%m-%d %H:%M:%S.%f").date()
+    today = datetime.now().date()
+    pagination = [d1.strftime("%d.%m.%y")]
+    n, m = 1, 5
+    while n < m:
+        if d1 - timedelta(days=1) >= start_date:
+            d1 -= timedelta(days=1)
+            pagination.insert(0, d1.strftime("%d.%m.%y"))
+            n += 1
+        if n < m and d2 + timedelta(days=1) <= today:
+            d2 += timedelta(days=1)
+            pagination.append(d2.strftime("%d.%m.%y"))
+            n += 1
+
     data = {
         "school": school,
         "students": students,
         "class": school_class,
         "date": date,
-        "weekdays": WEEKDAYS,
         "schedule": schedule,
         "presence": presence,
+        "pagination": pagination,
+        "start_date": start_date,
+        "today": today,
+        "previous": date - timedelta(days=1),
+        "next": date + timedelta(days=1),
     }
 
     db_sess.close()

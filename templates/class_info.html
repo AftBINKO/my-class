@@ -98,7 +98,7 @@
                     {% if "editing_classes" in permissions or ("editing_self_class" in permissions and current_user.class_id == class.id) %}
                         <th scope="col">В школе?</th>
                         <th scope="col">Время явки <a
-                                href="{{ url_for("weekly_schedule", school_id=school.id, class_id=class.id) }}"
+                                href="{{ url_for("current_annual_schedule", school_id=school.id, class_id=class.id) }}"
                                 class="bi bi-list" style="color: #000000"></a></th>
                         <th scope="col">Ключ</th>
                     {% endif %}

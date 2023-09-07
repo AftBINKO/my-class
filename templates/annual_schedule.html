@@ -77,29 +77,68 @@
         </table>
         <nav aria-label="Даты">
             <ul class="pagination justify-content-end">
-                <li class="page-item">
-                    <a class="page-link">
-                        <i class="bi bi-chevron-double-left"></i>
-                    </a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link">
-                        <i class="bi bi-arrow-left"></i>
-                    </a>
-                </li>
-                <li class="page-item"><a class="page-link" href="#">1</a></li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                <li class="page-item">
-                    <a class="page-link" href="#">
-                        <i class="bi bi-arrow-right"></i>
-                    </a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link">
-                        <i class="bi bi-chevron-double-right"></i>
-                    </a>
-                </li>
+                {% if date.strftime("%d.%m.%y") == start_date.strftime("%d.%m.%y") %}
+                    <li class="page-item disabled">
+                        <a class="page-link">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link">
+                            <i class="bi bi-arrow-left"></i>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{{ url_for("annual_schedule", school_id=school.id, class_id=class.id, date=start_date.strftime("%d.%m.%y")) }}">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{{ url_for("annual_schedule", school_id=school.id, class_id=class.id, date=previous.strftime("%d.%m.%y")) }}">
+                            <i class="bi bi-arrow-left"></i>
+                        </a>
+                    </li>
+                {% endif %}
+                {% for p in pagination %}
+                    {% if p == date.strftime("%d.%m.%y") %}
+                        <li class="page-item active" aria-current="page"><a class="page-link" href="#">{{ p }}</a></li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="{{ url_for("annual_schedule", school_id=school.id, class_id=class.id, date=p) }}">
+                                {{ p }}
+                            </a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                {% if date.strftime("%d.%m.%y") == today.strftime("%d.%m.%y") %}
+                    <li class="page-item disabled">
+                        <a class="page-link">
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{{ url_for("annual_schedule", school_id=school.id, class_id=class.id, date=next.strftime("%d.%m.%y")) }}">
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{{ url_for("annual_schedule", school_id=school.id, class_id=class.id, date=today.strftime("%d.%m.%y")) }}">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
             </ul>
         </nav>
     </div>

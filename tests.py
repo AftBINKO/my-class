@@ -1,3 +1,3 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
-print((datetime.now() - datetime.strptime("07.09.2022", "%d.%m.%Y")).days)
+print(datetime.now().date() <= datetime.now().date())
