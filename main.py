@@ -1205,6 +1205,11 @@ def everyday():
     clear_times(CONFIG_PATH, echo=DEBUG)
 
 
+@scheduler.task("cron", id="everyyear", month="09", day="01")
+def everyyear():
+    clear_times(CONFIG_PATH, echo=DEBUG, all_times=True)
+
+
 @app.route('/schools/school/<school_id>/classes/class/<class_id>/download_excel', methods=['GET', 'POST'])
 @login_required
 def download_excel(school_id, class_id):
@@ -1618,17 +1623,30 @@ if __name__ == '__main__':
     with open(CONFIG_PATH) as config:
         cfg = load(config)
 
-    clear = False
-    if "update_times" in cfg.keys():
-        if cfg["update_times"] is not None:
-            if (datetime.now() - datetime.strptime(cfg["update_times"], "%Y-%m-%d %H:%M:%S.%f")).days >= 1:
+    all_clear = False
+    if "clear_times" in cfg.keys():
+        if cfg["clear_times"] is not None:
+            if (datetime.now() - datetime.strptime(cfg["clear_times"], "%Y-%m-%d %H:%M:%S.%f")).days >= 365:
+                all_clear = True
+        else:
+            all_clear = True
+    else:
+        all_clear = True
+
+    if all_clear:
+        clear_times(CONFIG_PATH, echo=DEBUG, all_times=True)
+    else:
+        clear = False
+        if "update_times" in cfg.keys():
+            if cfg["update_times"] is not None:
+                if (datetime.now() - datetime.strptime(cfg["update_times"], "%Y-%m-%d %H:%M:%S.%f")).days >= 1:
+                    clear = True
+            else:
                 clear = True
         else:
             clear = True
-    else:
-        clear = True
 
-    if clear:
-        clear_times(CONFIG_PATH, echo=DEBUG)
+        if clear:
+            clear_times(CONFIG_PATH, echo=DEBUG)
 
     app.run(host='127.0.0.1', port=5000, debug=DEBUG)

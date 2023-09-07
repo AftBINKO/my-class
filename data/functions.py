@@ -298,22 +298,27 @@ def check_status(user, status):
     return status in set(map(int, user.statuses.split(", ")))
 
 
-def clear_times(config_path, echo=False):
+def clear_times(config_path, echo=False, all_times=False):
     db_sess = create_session()
     users = db_sess.query(User).all()
     for user in users:
         if check_status(user, "Ученик"):
             user.is_arrived = False
             user.arrival_time = None
+            if all_times:
+                user.list_times = None
     db_sess.commit()
     db_sess.close()
 
     with open(config_path, 'r') as config:
         cfg = load(config)
     cfg["update_times"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
+    if all_times:
+        cfg["clear_times"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
     with open(config_path, 'w') as config:
         dump(cfg, config)
 
     if echo:
         print("Время явки учеников обнулено")
-
+        if all_times:
+            print("Списки явки учеников очищены")
