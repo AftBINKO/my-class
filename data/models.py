@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy import Column, String, Integer, Boolean, Text, ForeignKey, orm, DateTime
 from sqlalchemy_serializer import SerializerMixin
 
@@ -36,6 +38,15 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
 
     def __repr__(self):
         return f"<User {self.fullname}>"
+
+    def arrival_time_for(self, date: datetime.date):
+        if self.list_times:
+            user_datetimes = list(
+                map(lambda d: datetime.strptime(d, "%Y-%m-%d %H:%M:%S.%f"), self.list_times.split(", ")))
+
+            for dt in user_datetimes:
+                if date == dt.date():
+                    return dt.time()
 
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)

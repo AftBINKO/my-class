@@ -1104,18 +1104,12 @@ def weekly_schedule(school_id, class_id):
         for wd in WEEKDAYS:
             schedule[student.fullname][wd] = None
 
-        student_datetimes = []
-        if student.list_times:
-            student_datetimes = list(
-                map(lambda d: datetime.strptime(d, "%Y-%m-%d %H:%M:%S.%f"), student.list_times.split(", ")))
-
-        for w, dt1 in enumerate(dates):
-            for dt2 in student_datetimes:
-                if dt1 == dt2.date():
-                    schedule[student.fullname][WEEKDAYS[w]] = dt2.time().strftime("%H:%M")
-                    presence[WEEKDAYS[w]] += 1
-                    total_presence += 1
-                    break
+        for w, dt in enumerate(dates):
+            arrival_time = student.arrival_time_for(dt)
+            if arrival_time:
+                schedule[student.fullname][WEEKDAYS[w]] = arrival_time.strftime("%H:%M")
+                presence[WEEKDAYS[w]] += 1
+                total_presence += 1
 
     data = {
         "school": school,
@@ -1175,16 +1169,11 @@ def annual_schedule(school_id, class_id, date):
         schedule[student.fullname] = {}
         schedule[student.fullname]["is_arrived"] = False
 
-        if student.list_times:
-            student_datetimes = list(
-                map(lambda d: datetime.strptime(d, "%Y-%m-%d %H:%M:%S.%f"), student.list_times.split(", ")))
-
-            for dt in student_datetimes:
-                if date == dt.date():
-                    schedule[student.fullname]["is_arrived"] = True
-                    presence += 1
-                    schedule[student.fullname]["arrival_time"] = dt.time().strftime("%H:%M")
-                    break
+        arrival_time = student.arrival_time_for(date)
+        if arrival_time:
+            schedule[student.fullname]["is_arrived"] = True
+            presence += 1
+            schedule[student.fullname]["arrival_time"] = arrival_time.strftime("%H:%M")
 
     d1 = date
     d2 = date
