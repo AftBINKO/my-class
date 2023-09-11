@@ -13,6 +13,7 @@ from pytz import timezone
 from flask import Flask, render_template, redirect, url_for, abort, current_app, send_from_directory, request, \
     send_file
 from flask_login import LoginManager, current_user, login_user, login_required, logout_user
+from flask_bootstrap import Bootstrap
 # from waitress import serve
 from flask_apscheduler import APScheduler
 
@@ -27,6 +28,8 @@ from data.models import *
 
 app = Flask(__name__)
 app.config.from_object(Config)
+
+bootstrap = Bootstrap(app)
 
 DEBUG = True
 CONFIG_PATH = path.join("data", "config.json")
