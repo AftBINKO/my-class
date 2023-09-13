@@ -31,7 +31,7 @@ app.config.from_object(Config)
 
 bootstrap = Bootstrap(app)
 
-DEBUG = True
+DEBUG = False
 CONFIG_PATH = path.join("data", "config.json")
 
 login_manager = LoginManager()
