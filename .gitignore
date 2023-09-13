@@ -1,2 +1,5 @@
 /tests.py
 /db/data.sqlite3
+/static/files/qrcodes/classes/*
+/static/tmp/*
+/tmp/*
