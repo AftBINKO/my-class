@@ -1,37 +1,49 @@
 from shutil import make_archive
-from tempfile import TemporaryFile
 
 import qrcode
 
 from os import path, remove
 from string import ascii_letters, punctuation
 
-from datetime import datetime
+from datetime import datetime, timedelta
+from xlsxwriter import Workbook
+from json import load, dump
 from pytz import timezone
 
 from flask import Flask, render_template, redirect, url_for, abort, current_app, send_from_directory, request, \
     send_file
 from flask_login import LoginManager, current_user, login_user, login_required, logout_user
-from waitress import serve
-from xlsxwriter import Workbook
+from flask_bootstrap import Bootstrap
+# from waitress import serve
+from flask_apscheduler import APScheduler
 
 from data.config import Config
 from data.db_session import create_session, global_init
 from data.forms import LoginForm, LoginKeyForm, FinishRegisterForm, ChangeFullnameForm, ChangeLoginForm, \
     ChangePasswordForm, EditSchoolForm, EditClassForm, SelectUser
-from data.functions import all_permissions, allowed_permission, delete_login_data
-from data.functions import delete_classes, delete_schools
+from data.functions import all_permissions, allowed_permission, delete_login_data, check_status, delete_classes, \
+    delete_schools, clear_times
 from data.functions import delete_user as del_user
 from data.models import *
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
+bootstrap = Bootstrap(app)
+
+DEBUG = True
+CONFIG_PATH = path.join("data", "config.json")
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-global_init("db/data.sqlite3")
+scheduler = APScheduler()
+scheduler.init_app(app)
+scheduler.start()
+
+global_init("db/data.sqlite3", echo=DEBUG)
 RUSSIAN_ALPHABET = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"
+WEEKDAYS = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"]
 
 
 @login_manager.user_loader
@@ -1001,7 +1013,7 @@ def add_class(school_id):
 @app.route('/schools/school/<school_id>/classes/class/<class_id>', methods=['GET', 'POST'])
 @login_required
 def class_info(school_id, class_id):
-    school_id, class_id = int(school_id), int(class_id)
+    school_id, class_id = int(school_id), int(class_id)  # noqa
 
     if not current_user.is_registered:
         return redirect(url_for("finish_register"))
@@ -1013,8 +1025,9 @@ def class_info(school_id, class_id):
     permission1 = db_sess.query(Permission).filter(Permission.title == "view_self_details_class").first()  # noqa
     permission2 = db_sess.query(Permission).filter(Permission.title == "view_details_classes").first()  # noqa
     permission3 = db_sess.query(Permission).filter(Permission.title == "view_schools").first()  # noqa
+    permission4 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
 
-    if not ((allowed_permission(current_user, permission2) or (
+    if not ((allowed_permission(current_user, permission2) or (  # noqa
             allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
                     current_user.school_id == school_id or allowed_permission(current_user, permission3))):
         db_sess.close()
@@ -1027,23 +1040,12 @@ def class_info(school_id, class_id):
     class_teacher = None
 
     for user in db_sess.query(User).filter(User.class_id == class_id).all():  # noqa
-        if db_sess.query(Status).filter(Status.title == "Ученик").first().id in set(  # noqa
-                map(int, user.statuses.split(", "))):
+        if check_status(user, "Ученик"):
             students.append(user)
-        elif db_sess.query(Status).filter(Status.title == "Классный руководитель").first().id in set(  # noqa
-                map(int, user.statuses.split(", "))):
+        elif check_status(user, "Классный руководитель"):
             class_teacher = user
 
     students.sort(key=lambda st: st.fullname.split()[0])
-
-    if request.method == "POST":
-        for student in students:
-            student.is_arrived = False
-            student.arrival_time = None
-        db_sess.commit()
-        db_sess.close()
-
-        return redirect(url_for("class_info", school_id=school_id, class_id=class_id))
 
     data = {
         "school": school,
@@ -1057,6 +1059,170 @@ def class_info(school_id, class_id):
     return render_template("class_info.html", **data)
 
 
+@app.route('/schools/school/<school_id>/classes/class/<class_id>/schedule/week', methods=['GET', 'POST'])
+@login_required
+def weekly_schedule(school_id, class_id):
+    school_id, class_id = int(school_id), int(class_id)  # noqa
+
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
+
+    db_sess = create_session()
+    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
+
+    permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
+    permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
+    permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+
+    if not ((allowed_permission(current_user, permission2) or (
+            allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
+                    current_user.school_id == school_id or allowed_permission(current_user, permission3))):
+        db_sess.close()
+        abort(403)
+
+    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
+    school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
+
+    students = list(sorted([user for user in db_sess.query(User).filter(User.class_id == class_id).all() if  # noqa
+                            check_status(user, "Ученик")], key=lambda st: st.fullname.split()[0]))
+
+    today = datetime.now().astimezone(timezone("Europe/Moscow"))
+    weekday = today.weekday()
+
+    dates = []
+    date = today - timedelta(days=weekday)
+    for i in range(weekday + 1):
+        if date.weekday() != 6:
+            dates.append(date.date())
+        date += timedelta(days=1)
+
+    presence = {}
+    total_presence = 0
+    for w in WEEKDAYS:
+        presence[w] = 0
+
+    schedule = {}
+    for student in students:
+        schedule[student.fullname] = {}
+        for wd in WEEKDAYS:
+            schedule[student.fullname][wd] = None
+
+        for w, dt in enumerate(dates):
+            arrival_time = student.arrival_time_for(dt)
+            if arrival_time:
+                schedule[student.fullname][WEEKDAYS[w]] = arrival_time.strftime("%H:%M")
+                presence[WEEKDAYS[w]] += 1
+                total_presence += 1
+
+    data = {
+        "school": school,
+        "students": students,
+        "class": school_class,
+        "wd": weekday,
+        "weekdays": WEEKDAYS,
+        "schedule": schedule,
+        "presence": presence,
+        "total_presence": total_presence
+    }
+
+    db_sess.close()
+    return render_template("weekly_schedule.html", **data)
+
+
+@app.route('/schools/school/<school_id>/classes/class/<class_id>/schedule/annual')
+@app.route('/schools/school/<school_id>/classes/class/<class_id>/schedule/annual/current')
+@login_required
+def current_annual_schedule(school_id, class_id):
+    current_date = datetime.now().astimezone(timezone("Europe/Moscow")).strftime("%d.%m.%y")
+    return redirect(url_for("annual_schedule", school_id=school_id, class_id=class_id, date=current_date))
+
+
+@app.route('/schools/school/<school_id>/classes/class/<class_id>/schedule/annual/<date>', methods=['GET', 'POST'])
+@login_required
+def annual_schedule(school_id, class_id, date):
+    school_id, class_id = int(school_id), int(class_id)  # noqa
+
+    if not current_user.is_registered:
+        return redirect(url_for("finish_register"))
+
+    db_sess = create_session()
+    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
+
+    permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
+    permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
+    permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+
+    if not ((allowed_permission(current_user, permission2) or (
+            allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
+                    current_user.school_id == school_id or allowed_permission(current_user, permission3))):
+        db_sess.close()
+        abort(403)
+
+    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
+    school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
+
+    students = list(sorted([user for user in db_sess.query(User).filter(User.class_id == class_id).all() if  # noqa
+                            check_status(user, "Ученик")], key=lambda st: st.fullname.split()[0]))
+
+    date = datetime.strptime(date, "%d.%m.%y").date()
+
+    presence = 0
+    schedule = {}
+    for student in students:
+        schedule[student.fullname] = {}
+        schedule[student.fullname]["is_arrived"] = False
+
+        arrival_time = student.arrival_time_for(date)
+        if arrival_time:
+            schedule[student.fullname]["is_arrived"] = True
+            presence += 1
+            schedule[student.fullname]["arrival_time"] = arrival_time.strftime("%H:%M")
+
+    d1 = date
+    d2 = date
+    with open(CONFIG_PATH) as json:
+        start_date = datetime.strptime(load(json)["clear_times"], "%Y-%m-%d %H:%M:%S.%f").date()
+    today = datetime.now().date()
+    pagination = [d1.strftime("%d.%m.%y")]
+    n, m = 1, 5
+    while n < m:
+        if d1 - timedelta(days=1) >= start_date:
+            d1 -= timedelta(days=1)
+            pagination.insert(0, d1.strftime("%d.%m.%y"))
+            n += 1
+        if n < m and d2 + timedelta(days=1) <= today:
+            d2 += timedelta(days=1)
+            pagination.append(d2.strftime("%d.%m.%y"))
+            n += 1
+
+    data = {
+        "school": school,
+        "students": students,
+        "class": school_class,
+        "date": date,
+        "schedule": schedule,
+        "presence": presence,
+        "pagination": pagination,
+        "start_date": start_date,
+        "today": today,
+        "previous": date - timedelta(days=1),
+        "next": date + timedelta(days=1),
+    }
+
+    db_sess.close()
+    return render_template("annual_schedule.html", **data)
+
+
+@scheduler.task("cron", id="everyday", hour="00", minute="00")
+def everyday():
+    clear_times(CONFIG_PATH, echo=DEBUG)
+
+
+@scheduler.task("cron", id="everyyear", month="09", day="01")
+def everyyear():
+    clear_times(CONFIG_PATH, echo=DEBUG, all_times=True)
+
+
 @app.route('/schools/school/<school_id>/classes/class/<class_id>/download_excel', methods=['GET', 'POST'])
 @login_required
 def download_excel(school_id, class_id):
@@ -1066,9 +1232,9 @@ def download_excel(school_id, class_id):
 
     school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
 
-    permission1 = db_sess.query(Permission).filter(Permission.title == "view_self_details_class").first()  # noqa
-    permission2 = db_sess.query(Permission).filter(Permission.title == "view_details_classes").first()  # noqa
-    permission3 = db_sess.query(Permission).filter(Permission.title == "view_schools").first()  # noqa
+    permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
+    permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
+    permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
 
     if not ((allowed_permission(current_user, permission2) or (
             allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
@@ -1114,14 +1280,26 @@ def enter_to_class(class_id):
 
     db_sess = create_session()
 
-    if not (current_user.class_id == class_id and db_sess.query(Status).filter(
-            Status.title == "Ученик").first().id in set(map(int, current_user.statuses.split(", ")))):  # noqa
+    if not (current_user.class_id == class_id and check_status(current_user, "Ученик")):  # noqa
         db_sess.close()
         abort(403)
 
     user = db_sess.query(User).filter(User.id == current_user.id).first()
+
+    if user.is_arrived:
+        return redirect(url_for("enter_error"))
+
     user.is_arrived = True
-    user.arrival_time = datetime.now().astimezone(timezone("Europe/Moscow"))
+    arrival_time = datetime.now().astimezone(timezone("Europe/Moscow"))
+
+    user.arrival_time = arrival_time
+
+    list_times = []
+    if user.list_times:
+        list_times = user.list_times.split(', ')
+    list_times.append(arrival_time.strftime("%Y-%m-%d %H:%M:%S.%f"))
+
+    user.list_times = ", ".join(list_times)
 
     db_sess.commit()
     db_sess.close()
@@ -1133,6 +1311,13 @@ def enter_to_class(class_id):
 def enter_success():
     return render_template("alert.html", title="Успешный вход",
                            message="Можете заходить в класс, вы отмечены, как присутствующий"), {
+        "Refresh": f"3; url={url_for('home')}"}
+
+
+@app.route('/enter_to_class/error')
+def enter_error():
+    return render_template("alert.html", title="Вы уже отмечены",
+                           message="Вам сейчас не нужно отмечаться, вы уже отмечены в системе как присутствующий"), {
         "Refresh": f"3; url={url_for('home')}"}
 
 
@@ -1448,4 +1633,33 @@ def crash(error):
 
 
 if __name__ == '__main__':
-    serve(app, host='0.0.0.0', port=5000)
+    with open(CONFIG_PATH) as config:
+        cfg = load(config)
+
+    all_clear = False
+    if "clear_times" in cfg.keys():
+        if cfg["clear_times"] is not None:
+            if (datetime.now() - datetime.strptime(cfg["clear_times"], "%Y-%m-%d %H:%M:%S.%f")).days >= 365:
+                all_clear = True
+        else:
+            all_clear = True
+    else:
+        all_clear = True
+
+    if all_clear:
+        clear_times(CONFIG_PATH, echo=DEBUG, all_times=True)
+    else:
+        clear = False
+        if "update_times" in cfg.keys():
+            if cfg["update_times"] is not None:
+                if (datetime.now() - datetime.strptime(cfg["update_times"], "%Y-%m-%d %H:%M:%S.%f")).days >= 1:
+                    clear = True
+            else:
+                clear = True
+        else:
+            clear = True
+
+        if clear:
+            clear_times(CONFIG_PATH, echo=DEBUG)
+
+    app.run(host='127.0.0.1', port=5000, debug=DEBUG)

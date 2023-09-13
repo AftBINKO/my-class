@@ -1,3 +1,7 @@
+from datetime import datetime
+from json import load, dump
+from pytz import timezone
+
 from .db_session import create_session
 from .models import User, Status, Permission, Class, School
 
@@ -90,7 +94,7 @@ def all_permissions(user):
 
 
 def allowed_permission(user, permission, allow_default=True):
-    if not (isinstance(user, (User, int)) or isinstance(permission, (Permission, int, str))):
+    if not (isinstance(user, (User, int)) or isinstance(permission, (Permission, int, str))):  # noqa
         raise TypeError
 
     db_sess = create_session()  # noqa
@@ -273,3 +277,48 @@ def delete_login_data(user, current_user=None, check_permission=True):
     db_sess.close()
 
     return True
+
+
+def check_status(user, status):
+    if not (isinstance(user, (User, int)) and isinstance(status, (Status, str, int))):
+        raise TypeError
+
+    db_sess = create_session()
+
+    if isinstance(user, int):
+        user = db_sess.query(User).filter(User.id == user).first()  # noqa
+
+    if isinstance(status, str):
+        status = db_sess.query(Status).filter(Status.title == status).first().id  # noqa
+    elif isinstance(status, Status):
+        status = status.id
+
+    db_sess.close()
+
+    return status in set(map(int, user.statuses.split(", ")))
+
+
+def clear_times(config_path, echo=False, all_times=False):
+    db_sess = create_session()
+    users = db_sess.query(User).all()
+    for user in users:
+        if check_status(user, "Ученик"):
+            user.is_arrived = False
+            user.arrival_time = None
+            if all_times:
+                user.list_times = None
+    db_sess.commit()
+    db_sess.close()
+
+    with open(config_path, 'r') as config:
+        cfg = load(config)
+    cfg["update_times"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
+    if all_times:
+        cfg["clear_times"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
+    with open(config_path, 'w') as config:
+        dump(cfg, config)
+
+    if echo:
+        print("Время явки учеников обнулено")
+        if all_times:
+            print("Списки явки учеников очищены")

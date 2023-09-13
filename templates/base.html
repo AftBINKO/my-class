@@ -12,31 +12,83 @@
           rel="stylesheet"
           integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD"
           crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 </head>
 <header>
-    <nav class="navbar bg-primary" data-bs-theme="dark">
+    {#    <nav class="navbar bg-primary" data-bs-theme="dark">#}
+    {#        <div class="container-fluid">#}
+    {#            <a class="navbar-brand mb-0 h1" href="{{ url_for("home") }}">Мой класс</a>#}
+    {#            {% if current_user.is_authenticated %}#}
+    {#                <ul class="navbar-nav">#}
+    {#                    <li class="nav-item dropdown">#}
+    {#                        <a class="nav-link dropdown-toggle" role="button"#}
+    {#                           data-bs-toggle="dropdown" aria-expanded="false">#}
+    {#                            {{ current_user.fullname }}#}
+    {#                        </a>#}
+    {#                        <ul class="dropdown-menu">#}
+    {#                            <li>#}
+    {#                                <a class="dropdown-item" href="{{ url_for("profile") }}">Профиль</a>#}
+    {#                            </li>#}
+    {#                            <li>#}
+    {#                                <hr class="dropdown-divider">#}
+    {#                            </li>#}
+    {#                            <li>#}
+    {#                                <a class="dropdown-item" href="{{ url_for("logout") }}">Выйти</a>#}
+    {#                            </li>#}
+    {#                        </ul>#}
+    {#                    </li>#}
+    {#                </ul>#}
+    {#            {% endif %}#}
+    {#        </div>#}
+    {#    </nav>#}
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
             <a class="navbar-brand mb-0 h1" href="{{ url_for("home") }}">Мой класс</a>
             {% if current_user.is_authenticated %}
-                <ul class="navbar-nav">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" role="button"
-                           data-bs-toggle="dropdown" aria-expanded="false">
-                            {{ current_user.fullname }}
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <a class="dropdown-item" href="{{ url_for("profile") }}">Профиль</a>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        {% if "5" in current_user.statuses.split(", ") %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for("admin_panel") }}">Панель администратора</a>
                             </li>
-                            <li>
-                                <hr class="dropdown-divider">
+                        {% endif %}
+                        {% if current_user.school_id %}
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   href="{{ url_for("school_info", school_id=current_user.school_id) }}">
+                                    Моя школа
+                                </a>
                             </li>
-                            <li>
-                                <a class="dropdown-item" href="{{ url_for("logout") }}">Выйти</a>
+                        {% endif %}
+                        {% if current_user.class_id %}
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   href="{{ url_for("class_info", school_id=current_user.school_id, class_id=current_user.class_id) }}">
+                                    Мой класс
+                                </a>
                             </li>
-                        </ul>
-                    </li>
-                </ul>
+                        {% endif %}
+                    </ul>
+                    <div class="d-flex">
+                        <div class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" role="button"
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                {{ current_user.fullname }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for("profile") }}">Профиль</a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for("logout") }}">Выйти</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             {% endif %}
         </div>
     </nav>

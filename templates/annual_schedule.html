@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% set wds = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"] %}
+
+{% block title %}
+    Таблица явки учеников на {{ date.strftime("%d.%m.%y") }}
+    {% if class.letter %}
+        {{ class.class_number }}-го "{{ class.letter }}" класса {{ school.name }}
+    {% else %}
+        {{ class.class_number }}-го класса {{ school.name }}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="container" style="margin-top: 25px">
+        <h1 style="text-align: center">
+            Таблица явки учеников на {{ date.strftime("%d.%m.%y") }}
+            {% if class.letter %}
+                {{ class.class_number }}-го "{{ class.letter }}" класса {{ school.name }}
+            {% else %}
+                {{ class.class_number }}-го класса {{ school.name }}
+            {% endif %}
+            <span class="badge bg-secondary">β</span>
+        </h1>
+    </div>
+    <div class="container" style="margin-top: 25px">
+        <ul class="nav nav-pills nav-fill">
+            <li class="nav-item">
+                <a class="nav-link active" aria-disabled="true" href="#">По дням</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" aria-current="page"
+                   href="{{ url_for("weekly_schedule", class_id=class.id, school_id=school.id) }}">Неделя</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" aria-disabled="true">Месяц</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" aria-disabled="true">Год</a>
+            </li>
+        </ul>
+    </div>
+    <div class="container" style="margin-top: 25px">
+        <p class="fs-5 fw-bold">Количество явок: {{ presence }}</p>
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">Фамилия Имя Отчество</th>
+                <th scope="col">Был в школе?</th>
+                <th scope="col">Время явки</th>
+            </tr>
+            </thead>
+            <tbody class="table-group-divider">
+            {% for student in students %}
+                <tr>
+                    <td>
+                        {{ student.fullname }}
+                        {% if student.id == current_user.id %}
+                            <span class="badge bg-secondary">вы</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if schedule[student.fullname]["is_arrived"] %}
+                            Да
+                        {% else %}
+                            Нет
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if schedule[student.fullname]["is_arrived"] %}
+                            {{ schedule[student.fullname]["arrival_time"] }}
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <nav aria-label="Даты">
+            <ul class="pagination justify-content-end">
+                {% if date.strftime("%d.%m.%y") == start_date.strftime("%d.%m.%y") %}
+                    <li class="page-item disabled">
+                        <a class="page-link">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link">
+                            <i class="bi bi-arrow-left"></i>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{{ url_for("annual_schedule", school_id=school.id, class_id=class.id, date=start_date.strftime("%d.%m.%y")) }}">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{{ url_for("annual_schedule", school_id=school.id, class_id=class.id, date=previous.strftime("%d.%m.%y")) }}">
+                            <i class="bi bi-arrow-left"></i>
+                        </a>
+                    </li>
+                {% endif %}
+                {% for p in pagination %}
+                    {% if p == date.strftime("%d.%m.%y") %}
+                        <li class="page-item active" aria-current="page"><a class="page-link" href="#">{{ p }}</a></li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="{{ url_for("annual_schedule", school_id=school.id, class_id=class.id, date=p) }}">
+                                {{ p }}
+                            </a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                {% if date.strftime("%d.%m.%y") == today.strftime("%d.%m.%y") %}
+                    <li class="page-item disabled">
+                        <a class="page-link">
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{{ url_for("annual_schedule", school_id=school.id, class_id=class.id, date=next.strftime("%d.%m.%y")) }}">
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{{ url_for("annual_schedule", school_id=school.id, class_id=class.id, date=today.strftime("%d.%m.%y")) }}">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+{% endblock %}
