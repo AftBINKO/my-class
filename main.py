@@ -31,7 +31,7 @@ app.config.from_object(Config)
 
 bootstrap = Bootstrap(app)
 
-DEBUG = False
+DEBUG = True
 CONFIG_PATH = path.join("data", "config.json")
 
 login_manager = LoginManager()
@@ -1213,16 +1213,23 @@ def annual_schedule(school_id, class_id, date):
         start_date = datetime.strptime(load(json)["clear_times"], "%Y-%m-%d %H:%M:%S.%f").date()
     today = datetime.now().date()
     pagination = [d1.strftime("%d.%m.%y")]
-    n, m = 1, 5
+    n, m, f1, f2 = 1, 5, True, True
     while n < m:
-        if d1 - timedelta(days=1) >= start_date:
+        if f1 and d1 - timedelta(days=1) >= start_date:
             d1 -= timedelta(days=1)
             pagination.insert(0, d1.strftime("%d.%m.%y"))
             n += 1
-        if n < m and d2 + timedelta(days=1) <= today:
+        else:
+            f1 = False
+        if f2 and n < m and d2 + timedelta(days=1) <= today:
             d2 += timedelta(days=1)
             pagination.append(d2.strftime("%d.%m.%y"))
             n += 1
+        else:
+            f2 = False
+
+        if not f1 and not f2:
+            break
 
     data = {
         "school": school,
@@ -1662,5 +1669,5 @@ def crash(error):
 
 
 if __name__ == '__main__':
-    # app.run(host='127.0.0.1', port=5000, debug=DEBUG)
-    serve(app, host='0.0.0.0', port=5000)
+    app.run(host='127.0.0.1', port=5000, debug=DEBUG)
+    # serve(app, host='0.0.0.0', port=5000)
