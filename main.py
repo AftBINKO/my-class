@@ -14,7 +14,7 @@ from flask import Flask, render_template, redirect, url_for, abort, current_app,
     send_file
 from flask_login import LoginManager, current_user, login_user, login_required, logout_user
 from flask_bootstrap import Bootstrap
-# from waitress import serve
+from waitress import serve
 from flask_apscheduler import APScheduler
 
 from data.config import Config
@@ -1662,4 +1662,5 @@ if __name__ == '__main__':
         if clear:
             clear_times(CONFIG_PATH, echo=DEBUG)
 
-    app.run(host='127.0.0.1', port=5000, debug=DEBUG)
+    # app.run(host='127.0.0.1', port=5000, debug=DEBUG)
+    serve(app, host='0.0.0.0', port=5000)
