@@ -45,6 +45,35 @@ global_init("db/data.sqlite3", echo=DEBUG)
 RUSSIAN_ALPHABET = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"
 WEEKDAYS = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"]
 
+with open(CONFIG_PATH) as config:
+    cfg = load(config)
+
+all_clear = False
+if "clear_times" in cfg.keys():
+    if cfg["clear_times"] is not None:
+        if (datetime.now() - datetime.strptime(cfg["clear_times"], "%Y-%m-%d %H:%M:%S.%f")).days >= 365:
+            all_clear = True
+    else:
+        all_clear = True
+else:
+    all_clear = True
+
+if all_clear:
+    clear_times(CONFIG_PATH, echo=DEBUG, all_times=True)
+else:
+    clear = False
+    if "update_times" in cfg.keys():
+        if cfg["update_times"] is not None:
+            if (datetime.now() - datetime.strptime(cfg["update_times"], "%Y-%m-%d %H:%M:%S.%f")).days >= 1:
+                clear = True
+        else:
+            clear = True
+    else:
+        clear = True
+
+    if clear:
+        clear_times(CONFIG_PATH, echo=DEBUG)
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -1633,34 +1662,5 @@ def crash(error):
 
 
 if __name__ == '__main__':
-    with open(CONFIG_PATH) as config:
-        cfg = load(config)
-
-    all_clear = False
-    if "clear_times" in cfg.keys():
-        if cfg["clear_times"] is not None:
-            if (datetime.now() - datetime.strptime(cfg["clear_times"], "%Y-%m-%d %H:%M:%S.%f")).days >= 365:
-                all_clear = True
-        else:
-            all_clear = True
-    else:
-        all_clear = True
-
-    if all_clear:
-        clear_times(CONFIG_PATH, echo=DEBUG, all_times=True)
-    else:
-        clear = False
-        if "update_times" in cfg.keys():
-            if cfg["update_times"] is not None:
-                if (datetime.now() - datetime.strptime(cfg["update_times"], "%Y-%m-%d %H:%M:%S.%f")).days >= 1:
-                    clear = True
-            else:
-                clear = True
-        else:
-            clear = True
-
-        if clear:
-            clear_times(CONFIG_PATH, echo=DEBUG)
-
     # app.run(host='127.0.0.1', port=5000, debug=DEBUG)
     serve(app, host='0.0.0.0', port=5000)
