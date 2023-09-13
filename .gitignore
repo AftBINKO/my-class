@@ -3,3 +3,4 @@
 /static/files/qrcodes/classes/*
 /static/tmp/*
 /tmp/*
+/data/config.json
