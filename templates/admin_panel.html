@@ -64,6 +64,7 @@
         <table class="table">
             <thead>
             <tr>
+                <th scope="col">ID</th>
                 <th scope="col">Фамилия Имя Отчество</th>
                 <th scope="col">Ключ</th>
                 <th scope="col"></th>
@@ -72,6 +73,7 @@
             <tbody class="table-group-divider">
             {% for admin in admins %}
                 <tr>
+                    <td>{{ admin.id }}</td>
                     <td>
                         {{ admin.fullname }}
                         {% if admin.id == current_user.id %}
@@ -96,12 +98,12 @@
             </tbody>
         </table>
     </div>
-    <div class="container-fluid" style="margin-top: 25px; justify-content: center; display: inline-flex">
-        <a href="{{ url_for("download_db") }}" class="btn btn-success">
-            Скачать базу данных
-        </a>
-        <a href="{{ url_for("download_files") }}" class="btn btn-outline-success">
-            Скачать файлы
-        </a>
-    </div>
+    {#    <div class="container-fluid" style="margin-top: 25px; justify-content: center; display: inline-flex">#}
+    {#        <a href="{{ url_for("download_db") }}" class="btn btn-success">#}
+    {#            Скачать базу данных#}
+    {#        </a>#}
+    {#        <a href="{{ url_for("download_files") }}" class="btn btn-outline-success">#}
+    {#            Скачать файлы#}
+    {#        </a>#}
+    {#    </div>#}
 {% endblock %}

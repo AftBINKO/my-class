@@ -2,24 +2,29 @@
 
 {% block title %}
     {% if class.letter %}
-        Редактировать {{ class.class_number }} "{{ class.letter }}" класс {{ school.name }}
+        Управление {{ class.class_number }} "{{ class.letter }}" классом {{ school.name }}
     {% else %}
-        Редактировать {{ class.class_number }} класс {{ school.name }}
+        Управление {{ class.class_number }} классом {{ school.name }}
     {% endif %}
 {% endblock %}
 
 {% block content %}
-    <div class="container">
+    <div class="container" style="margin-top: 25px">
+        <h1 style="text-align: center">
+            {% if class.letter %}
+                Управление {{ class.class_number }} "{{ class.letter }}" классом {{ school.name }}
+            {% else %}
+                Управление {{ class.class_number }} классом {{ school.name }}
+            {% endif %}
+        </h1>
+    </div>
+    <div class="container" style="margin-top: 25px">
+        <h3 style="text-align: center">
+            Редактировать класс
+        </h3>
         <div class="row justify-content-center align-items-center">
             <form action="" method="post">
                 {{ form.hidden_tag() }}
-                <legend style="text-align: center">
-                    {% if class.letter %}
-                        Редактировать {{ class.class_number }} "{{ class.letter }}" класс {{ school.name }}
-                    {% else %}
-                        Редактировать {{ class.class_number }} класс {{ school.name }}
-                    {% endif %}
-                </legend>
                 <div class="mb-3">
                     {{ form.class_number.label(class="form-label") }}*
                     {{ form.class_number(class="form-control", placeholder='11') }}
@@ -41,4 +46,16 @@
             </form>
         </div>
     </div>
+    {% if is_deleting_class %}
+        <div class="container" style="margin-top: 25px">
+            <h3 style="text-align: center">
+                Управлять классом
+            </h3>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{{ url_for("delete_class", school_id=school.id, class_id=class.id) }}" class="btn btn-danger">
+                    Удалить класс
+                </a>
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}

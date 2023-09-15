@@ -738,17 +738,23 @@ def edit_school(school_id):
 
     permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_school").first()  # noqa
     permission2 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+    permission3 = db_sess.query(Permission).filter(Permission.title == "deleting_school").first()  # noqa
+    permission4 = db_sess.query(Permission).filter(Permission.title == "deleting_self_school").first()  # noqa
 
     if not (allowed_permission(current_user, permission2) or (
             allowed_permission(current_user, permission1) and current_user.school_id == school_id)):
         db_sess.close()
         abort(403)
 
+    is_deleting_school = allowed_permission(current_user, permission3) or (
+            allowed_permission(current_user, permission4) and current_user.school_id == school_id)
+
     form = EditSchoolForm()
     school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
     data = {
         'form': form,
-        'school': school
+        'school': school,
+        "is_deleting_school": is_deleting_school
     }
 
     if form.validate_on_submit():
@@ -1370,6 +1376,11 @@ def edit_class(school_id, class_id):
     permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
     permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
     permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+    permission4 = db_sess.query(Permission).filter(Permission.title == "deleting_classes").first()  # noqa
+    permission5 = db_sess.query(Permission).filter(Permission.title == "deleting_self_class").first()  # noqa
+
+    is_deleting_class = allowed_permission(current_user, permission4) or (
+            allowed_permission(current_user, permission5) and current_user.class_id == class_id)
 
     if not ((allowed_permission(current_user, permission2) or (
             allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
@@ -1383,7 +1394,8 @@ def edit_class(school_id, class_id):
     data = {
         'form': form,
         'school': school,
-        'class': school_class
+        'class': school_class,
+        'is_deleting_class': is_deleting_class
     }
 
     if form.validate_on_submit():
