@@ -31,7 +31,7 @@ app.config.from_object(Config)
 
 bootstrap = Bootstrap(app)
 
-DEBUG = True
+DEBUG = False
 CONFIG_PATH = path.join("data", "config.json")
 
 login_manager = LoginManager()
@@ -1669,5 +1669,5 @@ def crash(error):
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000, debug=DEBUG)
-    # serve(app, host='0.0.0.0', port=5000)
+    # app.run(host='127.0.0.1', port=5000, debug=DEBUG)
+    serve(app, host='0.0.0.0', port=5000)
