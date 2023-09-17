@@ -1,6 +1,6 @@
 /tests.py
-/db/data.sqlite3
-/static/files/qrcodes/classes/*
-/static/tmp/*
+/app/db/data.sqlite3
+/app/static/files/qrcodes/classes/*
+/app/static/tmp/*
 /tmp/*
-/data/config.json
+/app/data/config.json

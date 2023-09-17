@@ -5,10 +5,10 @@ from json import dump, load
 
 import sqlalchemy.orm.decl_api
 
-from data.db_session import *
-import data.models as models
+from app.data.db_session import *
+import app.data.models as models
 
-path, tmp = "db/data.sqlite3", "tmp/tmp.json"
+path, tmp = "app/db/data.sqlite3", "tmp/tmp.json"
 
 
 def migrate():

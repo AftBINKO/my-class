@@ -322,3 +322,34 @@ def clear_times(config_path, echo=False, all_times=False):
         print("Время явки учеников обнулено")
         if all_times:
             print("Списки явки учеников очищены")
+
+
+def check_and_clear_times(config_path, echo=False):
+    with open(config_path) as config:
+        cfg = load(config)
+
+    all_clear = False
+    if "clear_times" in cfg.keys():
+        if cfg["clear_times"] is not None:
+            if (datetime.now() - datetime.strptime(cfg["clear_times"], "%Y-%m-%d %H:%M:%S.%f")).days >= 365:
+                all_clear = True
+        else:
+            all_clear = True
+    else:
+        all_clear = True
+
+    if all_clear:
+        clear_times(config_path, echo=echo, all_times=True)
+    else:
+        clear = False
+        if "update_times" in cfg.keys():
+            if cfg["update_times"] is not None:
+                if (datetime.now() - datetime.strptime(cfg["update_times"], "%Y-%m-%d %H:%M:%S.%f")).days >= 1:
+                    clear = True
+            else:
+                clear = True
+        else:
+            clear = True
+
+        if clear:
+            clear_times(config_path, echo=echo)
