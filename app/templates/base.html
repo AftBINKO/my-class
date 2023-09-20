@@ -28,13 +28,15 @@
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         {% if "5" in current_user.statuses.split(", ") %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for("admin_panel") }}">Панель администратора</a>
+                                <a class="nav-link" href="{{ url_for("admin_tools.admin_panel") }}">
+                                    Панель администратора
+                                </a>
                             </li>
                         {% endif %}
                         {% if current_user.school_id %}
                             <li class="nav-item">
                                 <a class="nav-link"
-                                   href="{{ url_for("school_info", school_id=current_user.school_id) }}">
+                                   href="{{ url_for("schools.school.school_info", school_id=current_user.school_id) }}">
                                     Моя школа
                                 </a>
                             </li>
@@ -42,7 +44,7 @@
                         {% if current_user.class_id %}
                             <li class="nav-item">
                                 <a class="nav-link"
-                                   href="{{ url_for("class_info", school_id=current_user.school_id, class_id=current_user.class_id) }}">
+                                   href="{{ url_for("schools.school.classes.school_class.class_info", school_id=current_user.school_id, class_id=current_user.class_id) }}">
                                     Мой класс
                                 </a>
                             </li>
@@ -56,13 +58,13 @@
                             </a>
                             <ul class="dropdown-menu">
                                 <li>
-                                    <a class="dropdown-item" href="{{ url_for("profile") }}">Профиль</a>
+                                    <a class="dropdown-item" href="{{ url_for("profile.profile") }}">Профиль</a>
                                 </li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="{{ url_for("logout") }}">Выйти</a>
+                                    <a class="dropdown-item" href="{{ url_for("auth.logout") }}">Выйти</a>
                                 </li>
                             </ul>
                         </div>

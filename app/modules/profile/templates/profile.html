@@ -37,7 +37,7 @@
                     <ul class="dropdown-menu">
                         {% if "changing_fullname" in permissions %}
                             <li>
-                                <a href="{{ url_for('change_fullname', user_id=user.id) }}" class="dropdown-item">
+                                <a href="{{ url_for('.change_fullname', user_id=user.id) }}" class="dropdown-item">
                                     Изменить ФИО
                                 </a>
                             </li>
@@ -47,14 +47,14 @@
                         {% endif %}
                         {% if "changing_login" in permissions %}
                             <li>
-                                <a href="{{ url_for('change_login', user_id=user.id) }}" class="dropdown-item">
+                                <a href="{{ url_for('.change_login', user_id=user.id) }}" class="dropdown-item">
                                     Изменить логин
                                 </a>
                             </li>
                         {% endif %}
                         {% if "changing_password" in permissions %}
                             <li>
-                                <a href="{{ url_for('change_password', user_id=user.id) }}" class="dropdown-item">
+                                <a href="{{ url_for('.change_password', user_id=user.id) }}" class="dropdown-item">
                                     Изменить пароль
                                 </a>
                             </li>
@@ -70,13 +70,13 @@
                 </button>
                 <ul class="dropdown-menu">
                     <li>
-                        <a href="{{ url_for('change_fullname', user_id=user.id) }}" class="dropdown-item">
+                        <a href="{{ url_for('.change_fullname', user_id=user.id) }}" class="dropdown-item">
                             Изменить ФИО
                         </a>
                     </li>
                     {% if user.login and user.hashed_password %}
                         <li>
-                            <a href="{{ url_for('delete_login', user_id=user.id) }}" class="dropdown-item">
+                            <a href="{{ url_for('.delete_login', user_id=user.id) }}" class="dropdown-item">
                                 Удалить авторизационные данные
                             </a>
                         </li>
@@ -85,7 +85,7 @@
                         <hr class="dropdown-divider">
                     </li>
                     <li>
-                        <a href="{{ url_for("delete_user", user_id=user.id) }}" class="dropdown-item">
+                        <a href="{{ url_for(".delete_user", user_id=user.id) }}" class="dropdown-item">
                             Удалить пользователя
                         </a>
                     </li>

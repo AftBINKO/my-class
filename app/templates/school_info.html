@@ -9,7 +9,7 @@
         <h1 style="text-align: center">
             {{ school.name }}
             {% if "editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) %}
-                <a href="{{ url_for("edit_school", school_id=school.id) }}" class="bi bi-gear"
+                <a href="{{ url_for("schools.school.edit_school", school_id=school.id) }}" class="bi bi-gear"
                    style="color: #000000"></a>
             {% endif %}
         </h1>
@@ -30,12 +30,13 @@
                     </button>
                     <ul class="dropdown-menu">
                         <li>
-                            <a href="{{ url_for('add_moderator', school_id=school.id) }}" class="dropdown-item">
+                            <a href="{{ url_for('schools.school.moderators.add_moderator', school_id=school.id) }}"
+                               class="dropdown-item">
                                 Создать новый аккаунт
                             </a>
                         </li>
                         <li>
-                            <a href="{{ url_for('add_existing_moderator', school_id=school.id) }}"
+                            <a href="{{ url_for('schools.school.moderators.add_existing_moderator', school_id=school.id) }}"
                                class="dropdown-item">
                                 Добавить из существующих учителей
                             </a>
@@ -75,7 +76,8 @@
                         <td>
                             {% if ("editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) or current_user.id == moder.id) %}
                                 <form action="" method="post">
-                                    <a href="{{ url_for("profile_user", user_id=moder.id) }}" class="btn btn-primary">
+                                    <a href="{{ url_for("profile.profile_user", user_id=moder.id) }}"
+                                       class="btn btn-primary">
                                         Открыть
                                     </a>
                                 </form>
@@ -93,10 +95,12 @@
         </div>
         <div class="container-fluid" style="margin-top: 25px">
             {% if "adding_classes" in permissions %}
-                <a href="{{ url_for("add_class", school_id=school.id) }}" class="btn btn-success">Добавить класс</a>
+                <a href="{{ url_for("schools.school.classes.add_class", school_id=school.id) }}"
+                   class="btn btn-success">Добавить класс</a>
             {% endif %}
             {% if "editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) %}
-                <a href="{{ url_for("download_school_excel", school_id=school.id) }}" class="btn btn-outline-success">
+                <a href="{{ url_for("schools.school.download_school_excel", school_id=school.id) }}"
+                   class="btn btn-outline-success">
                     Скачать таблицу всех учеников в формате Excel
                 </a>
             {% endif %}
@@ -124,10 +128,8 @@
                         </td>
                         <td>
                             {% if "view_details_classes" in permissions or ("view_self_details_class" in permissions and current_user.class_id == class.id) %}
-                                <a href="{{ url_for("class_info", school_id=school.id, class_id=class.id) }}"
-                                   class="btn btn-primary">
-                                    Открыть
-                                </a>
+                                <a href="{{ url_for("schools.school.classes.school_class.class_info", school_id=school.id, class_id=class.id) }}"
+                                   class="btn btn-primary">Открыть</a>
                             {% endif %}
                         </td>
                     </tr>
@@ -148,12 +150,14 @@
                 </button>
                 <ul class="dropdown-menu">
                     <li>
-                        <a href="{{ url_for('add_teacher', school_id=school.id) }}" class="dropdown-item">
+                        <a href="{{ url_for('schools.school.teachers.add_teacher', school_id=school.id) }}"
+                           class="dropdown-item">
                             Создать новый аккаунт
                         </a>
                     </li>
                     <li>
-                        <a href="{{ url_for('add_existing_teacher', school_id=school.id) }}" class="dropdown-item">
+                        <a href="{{ url_for('schools.school.teachers.add_existing_teacher', school_id=school.id) }}"
+                           class="dropdown-item">
                             Добавить из существующих модераторов/классных руководителей
                         </a>
                     </li>
@@ -190,7 +194,7 @@
                         <td>
                             {% if ("editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) or current_user.id == teacher.id) %}
                                 <form action="" method="post">
-                                    <a href="{{ url_for("profile_user", user_id=teacher.id) }}"
+                                    <a href="{{ url_for("profile.profile_user", user_id=teacher.id) }}"
                                        class="btn btn-primary">
                                         Открыть
                                     </a>

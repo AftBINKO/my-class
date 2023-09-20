@@ -30,7 +30,7 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link" aria-current="page"
-                   href="{{ url_for("weekly_schedule", class_id=class.id, school_id=school.id) }}">Неделя</a>
+                   href="{{ url_for("schools.school.classes.school_class.schedule.weekly_schedule", class_id=class.id, school_id=school.id) }}">Неделя</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link disabled" aria-disabled="true">Месяц</a>
@@ -91,13 +91,13 @@
                 {% else %}
                     <li class="page-item">
                         <a class="page-link"
-                           href="{{ url_for("annual_schedule", school_id=school.id, class_id=class.id, date=start_date.strftime("%d.%m.%y")) }}">
+                           href="{{ url_for("schools.school.classes.school_class.schedule.annual_schedule", school_id=school.id, class_id=class.id, date=start_date.strftime("%d.%m.%y")) }}">
                             <i class="bi bi-chevron-double-left"></i>
                         </a>
                     </li>
                     <li class="page-item">
                         <a class="page-link"
-                           href="{{ url_for("annual_schedule", school_id=school.id, class_id=class.id, date=previous.strftime("%d.%m.%y")) }}">
+                           href="{{ url_for("schools.school.classes.school_class.schedule.annual_schedule", school_id=school.id, class_id=class.id, date=previous.strftime("%d.%m.%y")) }}">
                             <i class="bi bi-arrow-left"></i>
                         </a>
                     </li>
@@ -108,7 +108,7 @@
                     {% else %}
                         <li class="page-item">
                             <a class="page-link"
-                               href="{{ url_for("annual_schedule", school_id=school.id, class_id=class.id, date=p) }}">
+                               href="{{ url_for("schools.school.classes.school_class.schedule.annual_schedule", school_id=school.id, class_id=class.id, date=p) }}">
                                 {{ p }}
                             </a>
                         </li>
@@ -128,13 +128,13 @@
                 {% else %}
                     <li class="page-item">
                         <a class="page-link"
-                           href="{{ url_for("annual_schedule", school_id=school.id, class_id=class.id, date=next.strftime("%d.%m.%y")) }}">
+                           href="{{ url_for("schools.school.classes.school_class.schedule.annual_schedule", school_id=school.id, class_id=class.id, date=next.strftime("%d.%m.%y")) }}">
                             <i class="bi bi-arrow-right"></i>
                         </a>
                     </li>
                     <li class="page-item">
                         <a class="page-link"
-                           href="{{ url_for("annual_schedule", school_id=school.id, class_id=class.id, date=today.strftime("%d.%m.%y")) }}">
+                           href="{{ url_for("schools.school.classes.school_class.schedule.annual_schedule", school_id=school.id, class_id=class.id, date=today.strftime("%d.%m.%y")) }}">
                             <i class="bi bi-chevron-double-right"></i>
                         </a>
                     </li>
