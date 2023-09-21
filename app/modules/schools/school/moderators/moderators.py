@@ -31,7 +31,7 @@ def add_moderator(school_id):
 
     form = ChangeFullnameForm()
     data = {
-        'title': f'Добавить модератора в {school.name}',
+        'title': f'Создать модератора в {school.name}',
         'form': form,
         'message': None
     }
@@ -55,7 +55,7 @@ def add_moderator(school_id):
 
     db_sess.close()
 
-    return render_template('add_user.html', **data)
+    return render_template('add_moderator.html', **data)  # noqa
 
 
 @bp.route('/add_existing', methods=['GET', 'POST'])
@@ -112,4 +112,4 @@ def add_existing_moderator(school_id):
 
     db_sess.close()
 
-    return render_template('add_existing.html', **data)
+    return render_template('add_existing_moderator.html', **data)  # noqa

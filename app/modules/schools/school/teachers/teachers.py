@@ -31,7 +31,7 @@ def add_teacher(school_id):
 
     form = ChangeFullnameForm()
     data = {
-        'title': f'Добавить учителя в {school.name}',
+        'title': f'Создать учителя в {school.name}',
         'form': form,
         'school': school,
         'message': None
@@ -56,7 +56,7 @@ def add_teacher(school_id):
 
     db_sess.close()
 
-    return render_template('add_user.html', **data)
+    return render_template('add_teacher.html', **data)  # noqa
 
 
 @bp.route('/add_existing', methods=['GET', 'POST'])
@@ -114,4 +114,4 @@ def add_existing_teacher(school_id):
 
     db_sess.close()
 
-    return render_template('add_existing.html', **data)
+    return render_template('add_existing_teacher.html', **data)  # noqa

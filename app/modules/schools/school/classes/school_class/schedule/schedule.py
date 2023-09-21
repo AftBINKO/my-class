@@ -79,7 +79,7 @@ def weekly_schedule(school_id, class_id):
     }
 
     db_sess.close()
-    return render_template("weekly_schedule.html", **data)
+    return render_template("weekly_schedule.html", **data)  # noqa
 
 
 @bp.route('/')
@@ -171,4 +171,4 @@ def annual_schedule(school_id, class_id, date):
     }
 
     db_sess.close()
-    return render_template("annual_schedule.html", **data)
+    return render_template("annual_schedule.html", **data)  # noqa

@@ -33,8 +33,15 @@ def add_class_teacher(school_id, class_id):
         abort(403)
 
     form = ChangeFullnameForm()
+
+    title = f"Создать классного руководителя в {school_class.class_number} "
+    if school_class.letter:
+        title += f'"{school_class.letter}" '
+    title += f"класс {school.name}"
+
     data = {
         'form': form,
+        'title': title,
         'school': school,
         'class': school_class,
         'message': None
@@ -62,7 +69,7 @@ def add_class_teacher(school_id, class_id):
 
     db_sess.close()
 
-    return render_template('add_class_teacher.html', **data)
+    return render_template('add_class_teacher.html', **data)  # noqa
 
 
 @bp.route('/add_existing', methods=['GET', 'POST'])

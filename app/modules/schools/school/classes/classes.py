@@ -3,8 +3,8 @@ from flask_login import login_required, current_user
 
 from app.modules.schools.school.classes.school_class.forms import EditClassForm
 from app.data.models import Class, Permission, School
-from app.data.functions import allowed_permission
 from app.modules.schools.school.classes import bp
+from app.data.functions import allowed_permission
 from app.data.db_session import create_session
 
 
@@ -53,4 +53,4 @@ def add_class(school_id):
 
     db_sess.close()
 
-    return render_template('add_class.html', **data)
+    return render_template('add_class.html', **data)  # noqa

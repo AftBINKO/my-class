@@ -34,7 +34,7 @@ def admin_panel():
         "admins": admins
     }
 
-    return render_template("admin_panel.html", **data)
+    return render_template("admin_panel.html", **data)  # noqa
 
 
 @bp.route('/admin_panel/admins/add', methods=['GET', 'POST'])
@@ -53,7 +53,7 @@ def add_admin():
     form = ChangeFullnameForm()
     data = {
         'form': form,
-        'title': 'Добавить администратора',
+        'title': 'Создать администратора',
         'message': None
     }
 
@@ -75,7 +75,7 @@ def add_admin():
 
     db_sess.close()
 
-    return render_template('add_user.html', **data)
+    return render_template('add_admin.html', **data)  # noqa
 
 
 @bp.route('/admin_panel/admins/add_existing', methods=['GET', 'POST'])
@@ -120,4 +120,4 @@ def add_existing_admin():
 
     db_sess.close()
 
-    return render_template('add_existing.html', **data)
+    return render_template('add_existing_admin.html', **data)  # noqa

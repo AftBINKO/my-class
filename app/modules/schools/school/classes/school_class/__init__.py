@@ -1,6 +1,6 @@
 from flask import Blueprint
 
-bp = Blueprint('school_class', __name__, url_prefix='/<class_id>')
+bp = Blueprint('school_class', __name__, url_prefix='/<class_id>', template_folder='templates')
 
 from app.modules.schools.school.classes.school_class import school_class
 

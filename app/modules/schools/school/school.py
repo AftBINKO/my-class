@@ -8,8 +8,8 @@ from xlsxwriter import Workbook
 from app.data.models import School, Permission, User, Status, Class
 from app.data.functions import all_permissions, allowed_permission
 from app.modules.schools.school.functions import delete_schools
-from app.data.db_session import create_session
 from app.modules.schools.forms import EditSchoolForm
+from app.data.db_session import create_session
 from app.modules.schools.school import bp
 
 
@@ -57,7 +57,7 @@ def school_info(school_id):
         "teachers": teachers
     }
 
-    return render_template("school_info.html", **data)
+    return render_template("school_info.html", **data)  # noqa
 
 
 @bp.route('/download_excel', methods=['GET', 'POST'])
@@ -151,7 +151,7 @@ def edit_school(school_id):
 
     db_sess.close()
 
-    return render_template('edit_school.html', **data)
+    return render_template('edit_school.html', **data)  # noqa
 
 
 @bp.route('/delete', methods=['GET', 'POST'])

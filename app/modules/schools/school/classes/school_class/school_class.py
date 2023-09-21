@@ -59,7 +59,7 @@ def class_info(school_id, class_id):
     }
 
     db_sess.close()
-    return render_template("class_info.html", **data)
+    return render_template("class_info.html", **data)  # noqa
 
 
 @bp.route('/edit', methods=['GET', 'POST'])
@@ -109,7 +109,7 @@ def edit_class(school_id, class_id):
 
     db_sess.close()
 
-    return render_template('edit_class.html', **data)
+    return render_template('edit_class.html', **data)  # noqa
 
 
 @bp.route('/delete', methods=['GET', 'POST'])

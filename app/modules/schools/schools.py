@@ -43,4 +43,4 @@ def add_school():
 
     db_sess.close()
 
-    return render_template('add_school.html', **data)
+    return render_template('add_school.html', **data)  # noqa
