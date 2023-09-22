@@ -109,12 +109,18 @@ def annual_schedule(school_id, class_id,
         db_sess.close()
         abort(403)
 
+    date = datetime.strptime(date, "%d.%m.%y").date()
+    with open(CONFIG_PATH) as json:
+        start_date = datetime.strptime(load(json)["clear_times"], "%Y-%m-%d %H:%M:%S.%f").date()
+    today = datetime.now().date()
+
+    if not (start_date <= date <= today):
+        abort(404)
+
     school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
 
     students = list(sorted([user for user in db_sess.query(User).filter(User.class_id == class_id).all() if  # noqa
                             check_status(user, "Ученик")], key=lambda st: st.fullname.split()[0]))
-
-    date = datetime.strptime(date, "%d.%m.%y").date()
 
     presence = 0
     schedule = {}
@@ -130,9 +136,7 @@ def annual_schedule(school_id, class_id,
 
     d1 = date
     d2 = date
-    with open(CONFIG_PATH) as json:
-        start_date = datetime.strptime(load(json)["clear_times"], "%Y-%m-%d %H:%M:%S.%f").date()
-    today = datetime.now().date()
+
     pagination = [d1.strftime("%d.%m.%y")]
     n, m, f1, f2 = 1, 5, True, True
     while n < m:
