@@ -1,4 +1,5 @@
-from os import path, environ, getcwd
+from os import path, environ
+from locale import setlocale, LC_TIME
 
 from flask_apscheduler import APScheduler
 from flask_bootstrap import Bootstrap
@@ -23,6 +24,8 @@ global_init(DB_PATH, echo=app.config["DEBUG"])
 bootstrap = Bootstrap(app)
 
 login_manager = LoginManager(app)
+
+setlocale(LC_TIME, 'ru')
 
 scheduler = APScheduler(app=app)
 scheduler.start()

@@ -1,3 +1,5 @@
+import calendar
+
 from datetime import datetime, timedelta
 from json import load
 
@@ -85,15 +87,10 @@ def weekly_schedule(school_id, class_id):
 @bp.route('/')
 @bp.route('/annual')
 @bp.route('/annual/current')
-@login_required
-def current_annual_schedule(school_id, class_id):
-    current_date = datetime.now().astimezone(timezone("Europe/Moscow")).strftime("%d.%m.%y")
-    return redirect(url_for(".annual_schedule", school_id=school_id, class_id=class_id, date=current_date))
-
-
 @bp.route('/annual/<date>', methods=['GET', 'POST'])
 @login_required
-def annual_schedule(school_id, class_id, date):
+def annual_schedule(school_id, class_id,
+                    date=datetime.now().astimezone(timezone("Europe/Moscow")).strftime("%d.%m.%y")):
     school_id, class_id = int(school_id), int(class_id)  # noqa
 
     if not current_user.is_registered:
@@ -112,7 +109,6 @@ def annual_schedule(school_id, class_id, date):
         db_sess.close()
         abort(403)
 
-    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
     school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
 
     students = list(sorted([user for user in db_sess.query(User).filter(User.class_id == class_id).all() if  # noqa
@@ -172,3 +168,80 @@ def annual_schedule(school_id, class_id, date):
 
     db_sess.close()
     return render_template("annual_schedule.html", **data)  # noqa
+
+
+@bp.route('/month')
+def month_schedule(school_id, class_id):
+    school_id, class_id = int(school_id), int(class_id)  # noqa
+
+    if not current_user.is_registered:
+        return redirect(url_for("auth.finish_register"))
+
+    db_sess = create_session()
+    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
+    school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
+
+    permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
+    permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
+    permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+
+    if not ((allowed_permission(current_user, permission2) or (
+            allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
+                    current_user.school_id == school_id or allowed_permission(current_user, permission3))):
+        db_sess.close()
+        abort(403)
+
+    students = list(sorted([user for user in db_sess.query(User).filter(User.class_id == class_id).all() if  # noqa
+                            check_status(user, "Ученик")], key=lambda st: st.fullname.split()[0]))
+
+    now = datetime.today()
+    list_calendar = calendar.month(now.year, now.month).split('\n')[2:-1]
+    cal = []
+    for i, c in enumerate(list_calendar):
+        c = c.split()
+
+        if i == 0:
+            for j in range(len(c), 7):
+                c.insert(0, " ")
+        elif i == len(list_calendar) - 1:
+            for j in range(len(c), 7):
+                c.append(" ")
+
+        c = c[:-1]
+
+        for j, num in enumerate(c):
+            if num.isdigit():
+                day = int(num)
+                date = datetime(now.year, now.month, int(num)).strftime("%d.%m.%y")
+                presence = 0
+
+                with open(CONFIG_PATH) as json:
+                    start_date = datetime.strptime(load(json)["clear_times"], "%Y-%m-%d %H:%M:%S.%f").date()
+                today = datetime.now().date()
+
+                if start_date <= datetime.strptime(date, "%d.%m.%y").date() <= today:
+                    for student in students:
+                        arrival_time = student.arrival_time_for(datetime.strptime(date, "%d.%m.%y").date())
+                        if arrival_time:
+                            presence += 1
+                else:
+                    date = None
+
+                c[j] = {
+                    'day': day,
+                    'date': date,
+                    'presence': presence
+                }
+
+        cal.append(c)
+
+    data = {
+        'date': now,
+        'class': school_class,
+        'school': school,
+        'class_id': class_id,
+        'school_id': school_id,
+        'calendar': cal
+    }
+
+    return render_template('month_schedule.html', **data)  # noqa
