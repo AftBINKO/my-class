@@ -78,5 +78,71 @@
             {% endfor %}
             </tbody>
         </table>
+        <nav aria-label="Месяцы">
+            <ul class="pagination justify-content-end">
+                {% if date.strftime("%m.%y") == start_date.strftime("%m.%y") %}
+                    <li class="page-item disabled">
+                        <a class="page-link">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link">
+                            <i class="bi bi-arrow-left"></i>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{{ url_for(".month_schedule", school_id=school.id, class_id=class.id, month=start_date.strftime("%m.%y")) }}">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{{ url_for(".month_schedule", school_id=school.id, class_id=class.id, month=previous.strftime("%m.%y")) }}">
+                            <i class="bi bi-arrow-left"></i>
+                        </a>
+                    </li>
+                {% endif %}
+                {% for p in pagination %}
+                    {% if p == date.strftime("%m.%y") %}
+                        <li class="page-item active" aria-current="page"><a class="page-link" href="#">{{ p }}</a></li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="{{ url_for(".month_schedule", school_id=school.id, class_id=class.id, month=p) }}">
+                                {{ p }}
+                            </a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                {% if date.strftime("%m.%y") == today.strftime("%m.%y") %}
+                    <li class="page-item disabled">
+                        <a class="page-link">
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{{ url_for(".month_schedule", school_id=school.id, class_id=class.id, month=next.strftime("%m.%y")) }}">
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{{ url_for(".month_schedule", school_id=school.id, class_id=class.id, month=today.strftime("%m.%y")) }}">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
     </div>
 {% endblock %}

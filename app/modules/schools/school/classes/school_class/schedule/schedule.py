@@ -112,7 +112,7 @@ def annual_schedule(school_id, class_id,
     date = datetime.strptime(date, "%d.%m.%y").date()
     with open(CONFIG_PATH) as json:
         start_date = datetime.strptime(load(json)["clear_times"], "%Y-%m-%d %H:%M:%S.%f").date()
-    today = datetime.now().date()
+    today = datetime.now().astimezone(timezone("Europe/Moscow")).date()
 
     if not (start_date <= date <= today):
         abort(404)
@@ -175,7 +175,9 @@ def annual_schedule(school_id, class_id,
 
 
 @bp.route('/month')
-def month_schedule(school_id, class_id):
+@bp.route('/month/current')
+@bp.route('/month/<month>')
+def month_schedule(school_id, class_id, month=datetime.now().astimezone(timezone("Europe/Moscow")).strftime("%m.%y")):
     school_id, class_id = int(school_id), int(class_id)  # noqa
 
     if not current_user.is_registered:
@@ -195,11 +197,22 @@ def month_schedule(school_id, class_id):
         db_sess.close()
         abort(403)
 
+    date = datetime.strptime(month, "%m.%y").date()
+
+    with open(CONFIG_PATH) as json:
+        start_date = datetime.strptime(load(json)["clear_times"], "%Y-%m-%d %H:%M:%S.%f").date()
+    today = datetime.now().astimezone(timezone("Europe/Moscow")).date()
+
+    start_month = datetime(date.year, date.month, 1).date()
+    end_month = datetime(date.year, date.month, calendar.monthrange(date.year, date.month)[-1]).date()
+
+    if not (today >= start_month and start_date <= end_month):
+        abort(404)
+
     students = list(sorted([user for user in db_sess.query(User).filter(User.class_id == class_id).all() if  # noqa
                             check_status(user, "Ученик")], key=lambda st: st.fullname.split()[0]))
 
-    now = datetime.today()
-    list_calendar = calendar.month(now.year, now.month).split('\n')[2:-1]
+    list_calendar = calendar.month(date.year, date.month).split('\n')[2:-1]
     cal = []
     for i, c in enumerate(list_calendar):
         c = c.split()
@@ -213,39 +226,72 @@ def month_schedule(school_id, class_id):
 
         c = c[:-1]
 
+        ap = False
         for j, num in enumerate(c):
             if num.isdigit():
+                ap = True
                 day = int(num)
-                date = datetime(now.year, now.month, int(num)).strftime("%d.%m.%y")
+                d = datetime(date.year, date.month, int(num)).strftime("%d.%m.%y")
                 presence = 0
 
-                with open(CONFIG_PATH) as json:
-                    start_date = datetime.strptime(load(json)["clear_times"], "%Y-%m-%d %H:%M:%S.%f").date()
-                today = datetime.now().date()
-
-                if start_date <= datetime.strptime(date, "%d.%m.%y").date() <= today:
+                if start_date <= datetime.strptime(d, "%d.%m.%y").date() <= today:
                     for student in students:
-                        arrival_time = student.arrival_time_for(datetime.strptime(date, "%d.%m.%y").date())
+                        arrival_time = student.arrival_time_for(datetime.strptime(d, "%d.%m.%y").date())
                         if arrival_time:
                             presence += 1
                 else:
-                    date = None
+                    d = None
 
                 c[j] = {
                     'day': day,
-                    'date': date,
+                    'date': d,
                     'presence': presence
                 }
 
-        cal.append(c)
+        if ap:  # на случай, если первый день месяца — воскресение
+            cal.append(c)
+
+    d1 = start_month
+    d2 = end_month
+
+    pagination = [d1.strftime("%m.%y")]
+    n, m, f1, f2 = 1, 5, True, True
+    while n < m:
+        d1 = d1 - timedelta(days=1)
+        d1 = datetime(d1.year, d1.month, 1).date()
+        d11 = d1
+        d12 = datetime(d1.year, d1.month, calendar.monthrange(d1.year, d1.month)[-1]).date()
+        if f1 and today >= d11 and start_date <= d12:
+            pagination.insert(0, d1.strftime("%m.%y"))
+            n += 1
+        else:
+            f1 = False
+
+        d2 = d2 + timedelta(days=1)
+        d2 = datetime(d2.year, d2.month, calendar.monthrange(d2.year, d2.month)[-1]).date()
+        d21 = datetime(d2.year, d2.month, 1).date()
+        d22 = d2
+        if f2 and today >= d21 and start_date <= d22:
+            pagination.append(d2.strftime("%m.%y"))
+            n += 1
+        else:
+            f2 = False
+
+        if not f1 and not f2:
+            break
 
     data = {
-        'date': now,
+        'date': date,
         'class': school_class,
         'school': school,
         'class_id': class_id,
         'school_id': school_id,
-        'calendar': cal
+        'calendar': cal,
+        'pagination': pagination,
+        "start_date": start_date,
+        "today": today,
+        "previous": start_month - timedelta(days=1),
+        "next": end_month + timedelta(days=1)
     }
 
     return render_template('month_schedule.html', **data)  # noqa
