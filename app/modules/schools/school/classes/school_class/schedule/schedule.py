@@ -14,9 +14,11 @@ from app.data.db_session import create_session
 from app import WEEKDAYS, CONFIG_PATH
 
 
-@bp.route('/week', methods=['GET', 'POST'])
+@bp.route('/week')
+@bp.route('/week/current')
+@bp.route('/week/<int:week>')
 @login_required
-def weekly_schedule(school_id, class_id):
+def weekly_schedule(school_id, class_id, week=None):
     school_id, class_id = int(school_id), int(class_id)  # noqa
 
     if not current_user.is_registered:
@@ -35,21 +37,40 @@ def weekly_schedule(school_id, class_id):
         db_sess.close()
         abort(403)
 
+    with open(CONFIG_PATH) as json:
+        start_date = datetime.strptime(load(json)["clear_times"], "%Y-%m-%d %H:%M:%S.%f").date()
+        monday_start_date = start_date - timedelta(days=start_date.weekday())
+
+    today = datetime.now().astimezone(timezone("Europe/Moscow")).date()
+    now_monday = today - timedelta(days=today.weekday())
+    now_saturday = now_monday + timedelta(days=5)
+
+    today_week = int((now_monday - monday_start_date).days / 7)
+
+    if week is None:
+        week = today_week
+    else:
+        week -= 1
+
+    monday = monday_start_date + timedelta(days=7 * week)
+    saturday = monday + timedelta(days=5)
+
+    if not (saturday <= now_saturday and monday >= monday_start_date):
+        abort(404)
+
     school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
     school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
 
     students = list(sorted([user for user in db_sess.query(User).filter(User.class_id == class_id).all() if  # noqa
                             check_status(user, "Ученик")], key=lambda st: st.fullname.split()[0]))
 
-    today = datetime.now().astimezone(timezone("Europe/Moscow"))
-    weekday = today.weekday()
-
     dates = []
-    date = today - timedelta(days=weekday)
-    for i in range(weekday + 1):
-        if date.weekday() != 6:
-            dates.append(date.date())
+    date = monday
+    for i in range(6):
+        dates.append(date)
         date += timedelta(days=1)
+
+    weekdays = [(w, dates[i]) for i, w in enumerate(WEEKDAYS)]
 
     presence = {}
     total_presence = 0
@@ -73,10 +94,12 @@ def weekly_schedule(school_id, class_id):
         "school": school,
         "students": students,
         "class": school_class,
-        "wd": weekday,
-        "weekdays": WEEKDAYS,
+        "weekdays": weekdays,
         "schedule": schedule,
         "presence": presence,
+        "today": today,
+        "today_week": today_week,
+        "week": week,
         "total_presence": total_presence
     }
 
@@ -87,7 +110,7 @@ def weekly_schedule(school_id, class_id):
 @bp.route('/')
 @bp.route('/annual')
 @bp.route('/annual/current')
-@bp.route('/annual/<date>', methods=['GET', 'POST'])
+@bp.route('/annual/<date>')
 @login_required
 def annual_schedule(school_id, class_id,
                     date=datetime.now().astimezone(timezone("Europe/Moscow")).strftime("%d.%m.%y")):
@@ -177,7 +200,7 @@ def annual_schedule(school_id, class_id,
 @bp.route('/month')
 @bp.route('/month/current')
 @bp.route('/month/<month>')
-def month_schedule(school_id, class_id, month=datetime.now().astimezone(timezone("Europe/Moscow")).strftime("%m.%y")):
+def monthly_schedule(school_id, class_id, month=datetime.now().astimezone(timezone("Europe/Moscow")).strftime("%m.%y")):
     school_id, class_id = int(school_id), int(class_id)  # noqa
 
     if not current_user.is_registered:
@@ -294,4 +317,4 @@ def month_schedule(school_id, class_id, month=datetime.now().astimezone(timezone
         "next": end_month + timedelta(days=1)
     }
 
-    return render_template('month_schedule.html', **data)  # noqa
+    return render_template('monthly_schedule.html', **data)  # noqa
