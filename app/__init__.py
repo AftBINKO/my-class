@@ -25,7 +25,7 @@ bootstrap = Bootstrap(app)
 
 login_manager = LoginManager(app)
 
-setlocale(LC_TIME, 'ru')
+# setlocale(LC_TIME, 'ru_RU')
 
 scheduler = APScheduler(app=app)
 scheduler.start()

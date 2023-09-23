@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 
 {% set wds = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"] %}
+{% set months = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"] %}
 
 {% block title %}
-    Таблица явки учеников на {{ date.strftime("%B").lower() }} {{ date.year }}-го года
+    Таблица явки учеников на {{ months[date.month - 1].lower() }} {{ date.year }}-го года
     {% if class.letter %}
         {{ class.class_number }}-го "{{ class.letter }}" класса {{ school.name }}
     {% else %}
@@ -14,7 +15,7 @@
 {% block content %}
     <div class="container" style="margin-top: 25px">
         <h1 style="text-align: center">
-            Таблица явки учеников на {{ date.strftime("%B").lower() }} {{ date.year }}-го года
+            Таблица явки учеников на {{ months[date.month - 1].lower() }} {{ date.year }}-го года
             {% if class.letter %}
                 {{ class.class_number }}-го "{{ class.letter }}" класса {{ school.name }}
             {% else %}
