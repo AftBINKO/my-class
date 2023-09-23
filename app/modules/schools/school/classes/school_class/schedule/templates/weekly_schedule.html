@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Таблица явки учеников на неделю
+    {% if class.letter %}
+        {{ class.class_number }}-го "{{ class.letter }}" класса {{ school.name }}
+    {% else %}
+        {{ class.class_number }}-го класса {{ school.name }}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="container" style="margin-top: 25px">
+        <h1 style="text-align: center">
+            Таблица явки учеников на неделю
+            {% if class.letter %}
+                {{ class.class_number }}-го "{{ class.letter }}" класса {{ school.name }}
+            {% else %}
+                {{ class.class_number }}-го класса {{ school.name }}
+            {% endif %}
+            <span class="badge bg-secondary">β</span>
+        </h1>
+    </div>
+    <div class="container" style="margin-top: 25px">
+        <ul class="nav nav-pills nav-fill">
+            <li class="nav-item">
+                <a class="nav-link"
+                   href="{{ url_for(".annual_schedule", class_id=class.id, school_id=school.id) }}">По дням</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="#">Неделя</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for(".monthly_schedule", class_id=class.id, school_id=school.id) }}">
+                    Месяц
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" aria-disabled="true">Год</a>
+            </li>
+        </ul>
+    </div>
+    <div class="container" style="margin-top: 25px">
+        <p class="fs-5 fw-bold">Общее количество явок: {{ total_presence }}</p>
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th scope="col">Фамилия Имя Отчество</th>
+                {% for weekday in weekdays %}
+                    {% if weekday[1] == today %}
+                        <th scope="col" class="table-active">{{ weekday[0] }} ({{ weekday[1].strftime("%d.%m") }})</th>
+                    {% else %}
+                        <th scope="col">{{ weekday[0] }} ({{ weekday[1].strftime("%d.%m") }})</th>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+            </thead>
+            <tbody class="table-group-divider">
+            {% for student in students %}
+                <tr>
+                    <td>
+                        {{ student.fullname }}
+                        {% if student.id == current_user.id %}
+                            <span class="badge bg-secondary">вы</span>
+                        {% endif %}
+                    </td>
+                    {% for weekday in weekdays %}
+                        {% if weekday[1] == today %}
+                            <td class="table-active">
+                                {% if schedule[student.fullname][weekday[0]] %}
+                                    {{ schedule[student.fullname][weekday[0]] }}
+                                {% endif %}
+                            </td>
+                        {% else %}
+                            <td>
+                                {% if schedule[student.fullname][weekday[0]] %}
+                                    {{ schedule[student.fullname][weekday[0]] }}
+                                {% endif %}
+                            </td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            </tbody>
+            <tbody class="table-group-divider">
+            <tr>
+                <td class="fw-bold">
+                    Количество явок
+                </td>
+                {% for wd in weekdays %}
+                    <td>
+                        {% if presence[wd[0]] > 0 %}
+                            {{ presence[wd[0]] }}
+                        {% endif %}
+                    </td>
+                {% endfor %}
+            </tr>
+            </tbody>
+        </table>
+        <nav aria-label="Недели">
+            <div class="d-flex justify-content-between">
+                <ul class="pagination justify-content-start">
+                    {% if not week %}
+                        <li class="page-item disabled">
+                            <a class="page-link">
+                                <i class="bi bi-chevron-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item disabled">
+                            <a class="page-link">
+                                <i class="bi bi-arrow-left"></i>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link"  {# учитывая week -= 1 #}
+                               href="{{ url_for(".weekly_schedule", school_id=school.id, class_id=class.id, week=1)}}">
+                                <i class="bi bi-chevron-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="{{ url_for(".weekly_schedule", school_id=school.id, class_id=class.id, week=week) }}">
+                                <i class="bi bi-arrow-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+                <ul class="pagination justify-content-end">
+                    {% if week == today_week %}
+                        <li class="page-item disabled">
+                            <a class="page-link">
+                                <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item disabled">
+                            <a class="page-link">
+                                <i class="bi bi-chevron-double-right"></i>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link"  {# учитывая week -= 1 #}
+                               href="{{ url_for(".weekly_schedule", school_id=school.id, class_id=class.id, week=week + 2) }}">
+                                <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link"  {# учитывая отсчёт week с нуля #}
+                               href="{{ url_for(".weekly_schedule", school_id=school.id, class_id=class.id, week=today_week + 1) }}">
+                                <i class="bi bi-chevron-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </nav>
+    </div>
+{% endblock %}
