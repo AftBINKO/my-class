@@ -5,7 +5,7 @@ from app.modules.errors import bp
 
 @bp.app_errorhandler(401)
 def unauthorized(error):
-    return redirect(url_for('login'))
+    return redirect(url_for('auth.login'))
 
 
 @bp.app_errorhandler(403)

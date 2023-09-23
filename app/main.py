@@ -23,7 +23,7 @@ def home():
         return redirect(url_for("admin_tools.admin_panel"))
 
     if not current_user.school_id:
-        abort(403)
+        return redirect(url_for("profile.profile"))
 
     if status in [1, 3]:
         if current_user.class_id:
