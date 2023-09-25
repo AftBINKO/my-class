@@ -9,13 +9,16 @@ def delete_user(user, current_user=None, check_permission=True):
 
     db_sess = create_session()
     if isinstance(user, int):
-        user = db_sess.query(User).filter(User.id == user).first()  # noqa
+        user = db_sess.query(User).get(user)
+
+    if not user:
+        return 404
 
     if check_permission and current_user is not None:
         if max(list(map(int, user.statuses.split(", ")))) == 1:
-            permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
-            permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
-            permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+            permission1 = db_sess.query(Permission).filter_by(title="editing_self_class").first()
+            permission2 = db_sess.query(Permission).filter_by(title="editing_classes").first()
+            permission3 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
             if not ((allowed_permission(current_user, permission2) or (
                     allowed_permission(current_user, permission1) and current_user.class_id == user.class_id)) and (
@@ -23,8 +26,8 @@ def delete_user(user, current_user=None, check_permission=True):
                 db_sess.close()
                 return 403
         elif max(list(map(int, user.statuses.split(", ")))) in [2, 3, 4]:
-            permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_school").first()  # noqa
-            permission2 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+            permission1 = db_sess.query(Permission).filter_by(title="editing_self_school").first()
+            permission2 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
             if not (allowed_permission(current_user, permission2) or (
                     allowed_permission(current_user, permission1) and current_user.school_id == user.school_id)):
@@ -44,13 +47,16 @@ def delete_login_data(user, current_user=None, check_permission=True):
 
     db_sess = create_session()
     if isinstance(user, int):
-        user = db_sess.query(User).filter(User.id == user).first()  # noqa
+        user = db_sess.query(User).get(user)
+
+    if not user:
+        return 404
 
     if check_permission and current_user is not None:
         if max(list(map(int, user.statuses.split(", ")))) == 1:
-            permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
-            permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
-            permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+            permission1 = db_sess.query(Permission).filter_by(title="editing_self_class").first()
+            permission2 = db_sess.query(Permission).filter_by(title="editing_classes").first()
+            permission3 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
             if not ((allowed_permission(current_user, permission2) or (
                     allowed_permission(current_user, permission1) and current_user.class_id == user.class_id)) and (
@@ -58,8 +64,8 @@ def delete_login_data(user, current_user=None, check_permission=True):
                 db_sess.close()
                 return 403
         elif max(list(map(int, user.statuses.split(", ")))) in [2, 3, 4]:
-            permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_school").first()  # noqa
-            permission2 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+            permission1 = db_sess.query(Permission).filter_by(title="editing_self_school").first()
+            permission2 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
             if not (allowed_permission(current_user, permission2) or (
                     allowed_permission(current_user, permission1) and current_user.school_id == user.school_id)):

@@ -15,26 +15,32 @@ from app.modules.profile.functions import delete_login_data
 from app.modules.profile import bp
 
 
+@bp.before_request
+@login_required
+def check_register():
+    if not current_user.is_registered:
+        abort(401)
+
+
 @bp.route('/')
 @bp.route('/my')
+@bp.route('/<int:user_id>')
 @login_required
-def profile():
-    if not current_user.is_registered:
-        return redirect(url_for("auth.finish_register"))
-    return redirect(url_for(".profile_user", user_id=current_user.id))
+def profile(user_id=None):
+    if not user_id:
+        user_id = current_user.id
 
-
-@bp.route('/<user_id>')
-@login_required
-def profile_user(user_id):
-    if not current_user.is_registered:
-        return redirect(url_for("auth.finish_register"))
     db_sess = create_session()
-    user = db_sess.query(User).filter(User.id == user_id).first()
-    school_class = db_sess.query(Class).filter(Class.id == user.class_id).first()  # noqa
-    school = db_sess.query(School).filter(School.id == user.school_id).first()  # noqa
+
+    user = db_sess.query(User).get(user_id)
+    if not user:
+        abort(404)
+
+    school_class = db_sess.query(Class).filter_by(id=user.class_id).first()
+    school = db_sess.query(School).filter_by(id=user.school_id).first()
     statuses = list(sorted(db_sess.query(Status).filter(Status.id.in_(user.statuses.split(", "))).all(),  # noqa
                            key=lambda s: s.id, reverse=True))
+
     statuses_titles = []
     for status in statuses:
         if status.title in ["Классный руководитель", "Ученик"]:
@@ -47,15 +53,16 @@ def profile_user(user_id):
                 continue
 
         statuses_titles.append(status.title)
+
     permissions = None
-    permission3 = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa
-    if current_user.id == int(user_id):
+    permission3 = db_sess.query(Permission).filter_by(title="access_admin_panel").first()
+    if current_user.id == user_id:
         permissions = set(map(lambda permission: permission.title, all_permissions(user)))
     else:
         if max(list(map(int, user.statuses.split(", ")))) == 1:
-            permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
-            permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
-            permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+            permission1 = db_sess.query(Permission).filter_by(title="editing_self_class").first()  # noqa
+            permission2 = db_sess.query(Permission).filter_by(title="editing_classes").first()
+            permission3 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
             if not ((allowed_permission(current_user, permission2) or (
                     allowed_permission(current_user, permission1) and current_user.class_id == user.class_id)) and (
@@ -63,8 +70,8 @@ def profile_user(user_id):
                 db_sess.close()
                 abort(403)
         elif max(list(map(int, user.statuses.split(", ")))) in [2, 3, 4]:
-            permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_school").first()  # noqa
-            permission2 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+            permission1 = db_sess.query(Permission).filter_by(title="editing_self_school").first()
+            permission2 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
             if not (allowed_permission(current_user, permission2) or (
                     allowed_permission(current_user, permission1) and current_user.school_id == user.school_id)):
@@ -84,24 +91,27 @@ def profile_user(user_id):
     return render_template("profile.html", **data)  # noqa
 
 
-@bp.route('/<user_id>/edit_fullname', methods=['GET', 'POST'])
+@bp.route('/<int:user_id>/edit_fullname', methods=['GET', 'POST'])
 @login_required
 def change_fullname(user_id):
-    if not current_user.is_registered:
-        return redirect(url_for("auth.finish_register"))
+    if not user_id:
+        user_id = current_user.id
 
     db_sess = create_session()
 
-    user = db_sess.query(User).filter(User.id == user_id).first()
-    if current_user.id == int(user_id):
-        permission = db_sess.query(Permission).filter(Permission.title == "changing_fullname").first()  # noqa
+    user = db_sess.query(User).get(user_id)
+    if not user:
+        abort(404)
+
+    if current_user.id == user_id:
+        permission = db_sess.query(Permission).filter_by(title="changing_fullname").first()
         if not allowed_permission(user, permission):
             db_sess.close()
             abort(405)
     else:
-        permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
-        permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
-        permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+        permission1 = db_sess.query(Permission).filter_by(title="editing_self_class").first()  # noqa
+        permission2 = db_sess.query(Permission).filter_by(title="editing_classes").first()
+        permission3 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
         if not ((allowed_permission(current_user, permission2) or (
                 allowed_permission(current_user, permission1) and current_user.class_id == user.class_id)) and (
@@ -125,24 +135,24 @@ def change_fullname(user_id):
 
             db_sess.commit()
             db_sess.close()
-            return redirect(url_for(".profile_user", user_id=user_id))
+            return redirect(url_for(".profile", user_id=user_id))
     db_sess.close()
     return render_template('change_fullname.html', **data)  # noqa
 
 
-@bp.route('/<user_id>/edit_login', methods=['GET', 'POST'])
+@bp.route('/<int:user_id>/edit_login', methods=['GET', 'POST'])
 @login_required
 def change_login(user_id):
-    if not current_user.is_registered:
-        return redirect(url_for("auth.finish_register"))
-
     db_sess = create_session()
 
-    user = db_sess.query(User).filter(User.id == user_id).first()
-    if current_user.id == int(user_id):
-        permission = db_sess.query(Permission).filter(Permission.title == "changing_login").first()  # noqa
+    user = db_sess.query(User).get(user_id)
+    if not user:
+        abort(404)
+
+    if current_user.id == user_id:
+        permission = db_sess.query(Permission).filter_by(title="changing_login").first()
     else:
-        permission = db_sess.query(Permission).filter(Permission.title == "editing_user").first()  # noqa
+        permission = db_sess.query(Permission).filter_by(title="editing_user").first()
     if not allowed_permission(current_user, permission):
         db_sess.close()
         abort(403)
@@ -163,26 +173,26 @@ def change_login(user_id):
 
             db_sess.commit()
             db_sess.close()
-            return redirect(url_for(".profile_user", user_id=user_id))
+            return redirect(url_for(".profile", user_id=user_id))
 
     db_sess.close()
 
     return render_template('change_login.html', **data)  # noqa
 
 
-@bp.route('/<user_id>/edit_password', methods=['GET', 'POST'])
+@bp.route('/<int:user_id>/edit_password', methods=['GET', 'POST'])
 @login_required
 def change_password(user_id):
-    if not current_user.is_registered:
-        return redirect(url_for("auth.finish_register"))
-
     db_sess = create_session()
 
-    user = db_sess.query(User).filter(User.id == user_id).first()
-    if current_user.id == int(user_id):
-        permission = db_sess.query(Permission).filter(Permission.title == "changing_password").first()  # noqa
+    user = db_sess.query(User).get(user_id)
+    if not user:
+        abort(404)
+
+    if current_user.id == user_id:
+        permission = db_sess.query(Permission).filter_by(title="changing_password").first()
     else:
-        permission = db_sess.query(Permission).filter(Permission.title == "editing_user").first()  # noqa
+        permission = db_sess.query(Permission).filter_by(title="editing_user").first()
     if not allowed_permission(current_user, permission):
         db_sess.close()
         abort(403)
@@ -203,41 +213,45 @@ def change_password(user_id):
             data['message'] = "Пароль содержит некорректные символы"
         elif new_password != new_password_again:
             data['message'] = "Пароли не совпадают"
-        elif not user.check_password(old_password):  # noqa
+        elif not user.check_password(old_password):
             data['message'] = "Неверный пароль"
         elif form.old_password.data == form.new_password.data:
             data['message'] = "Новый пароль совпадает со старым"
         else:
-            user.set_password(new_password)  # noqa
+            user.set_password(new_password)
 
             db_sess.commit()
             db_sess.close()
-            return redirect(url_for(".profile_user", user_id=user_id))
+            return redirect(url_for(".profile", user_id=user_id))
 
     db_sess.close()
 
     return render_template('change_password.html', **data)  # noqa
 
 
-@bp.route('/<user_id>/delete_login', methods=['GET', 'POST'])
+@bp.route('/<int:user_id>/delete_login', methods=['GET', 'POST'])
 @login_required
 def delete_login(user_id):
-    if not current_user.is_registered:
-        return redirect(url_for("auth.finish_register"))
+    status = delete_login_data(user_id, current_user)
 
-    if delete_login_data(int(user_id), current_user) == 403:
-        abort(403)
+    match status:
+        case 403:
+            abort(403)
+        case 404:
+            abort(404)
 
-    return redirect(url_for(".profile_user", user_id=user_id))
+    return redirect(url_for(".profile", user_id=user_id))
 
 
-@bp.route('/<user_id>/delete', methods=['GET', 'POST'])
+@bp.route('/<int:user_id>/delete', methods=['GET', 'POST'])
 @login_required
 def delete_user(user_id):
-    if not current_user.is_registered:
-        return redirect(url_for("auth.finish_register"))
+    status = del_user(user_id, current_user)
 
-    if del_user(int(user_id), current_user) == 403:
-        abort(403)
+    match status:
+        case 403:
+            abort(403)
+        case 404:
+            abort(404)
 
     return redirect(url_for("home"))

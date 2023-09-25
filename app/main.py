@@ -12,7 +12,7 @@ from .data.models import *
 @login_required
 def home():
     if not current_user.is_registered:
-        return redirect(url_for("auth.finish_register"))
+        abort(401)
 
     db_sess = create_session()
     permission = db_sess.query(Permission).filter(Permission.title == "access_admin_panel").first()  # noqa

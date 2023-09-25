@@ -14,28 +14,30 @@ from app.data.db_session import create_session
 from app import WEEKDAYS, CONFIG_PATH
 
 
-@bp.route('/week')
-@bp.route('/week/current')
-@bp.route('/week/<int:week>')
-@login_required
-def weekly_schedule(school_id, class_id, week=None):
-    school_id, class_id = int(school_id), int(class_id)  # noqa
-
-    if not current_user.is_registered:
-        return redirect(url_for("auth.finish_register"))
+@bp.url_value_preprocessor
+def check_permissions(endpoint, values):
+    school_id = values['school_id']  # noqa
+    class_id = values['class_id']
 
     db_sess = create_session()
-    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
 
-    permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
-    permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
-    permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+    permission1 = db_sess.query(Permission).filter_by(title="editing_self_class").first()
+    permission2 = db_sess.query(Permission).filter_by(title="editing_classes").first()
+    permission3 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
     if not ((allowed_permission(current_user, permission2) or (
             allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
                     current_user.school_id == school_id or allowed_permission(current_user, permission3))):
         db_sess.close()
         abort(403)
+
+
+@bp.route('/week')
+@bp.route('/week/current')
+@bp.route('/week/<int:week>')
+@login_required
+def weekly_schedule(school_id, class_id, week=None):
+    db_sess = create_session()
 
     with open(CONFIG_PATH) as json:
         start_date = datetime.strptime(load(json)["clear_times"], "%Y-%m-%d %H:%M:%S.%f").date()
@@ -58,10 +60,10 @@ def weekly_schedule(school_id, class_id, week=None):
     if not (saturday <= now_saturday and monday >= monday_start_date):
         abort(404)
 
-    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
-    school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
+    school = db_sess.query(School).get(school_id)  # noqa
+    school_class = db_sess.query(Class).get(class_id)
 
-    students = list(sorted([user for user in db_sess.query(User).filter(User.class_id == class_id).all() if  # noqa
+    students = list(sorted([user for user in db_sess.query(User).filter_by(class_id=class_id).all() if
                             check_status(user, "Ученик")], key=lambda st: st.fullname.split()[0]))
 
     dates = []
@@ -79,6 +81,7 @@ def weekly_schedule(school_id, class_id, week=None):
 
     schedule = {}
     for student in students:
+        student: User
         schedule[student.fullname] = {}
         for wd in WEEKDAYS:
             schedule[student.fullname][wd] = None
@@ -114,23 +117,7 @@ def weekly_schedule(school_id, class_id, week=None):
 @login_required
 def annual_schedule(school_id, class_id,
                     date=datetime.now().astimezone(timezone("Europe/Moscow")).strftime("%d.%m.%y")):
-    school_id, class_id = int(school_id), int(class_id)  # noqa
-
-    if not current_user.is_registered:
-        return redirect(url_for("auth.finish_register"))
-
     db_sess = create_session()
-    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
-
-    permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
-    permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
-    permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
-
-    if not ((allowed_permission(current_user, permission2) or (
-            allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
-                    current_user.school_id == school_id or allowed_permission(current_user, permission3))):
-        db_sess.close()
-        abort(403)
 
     date = datetime.strptime(date, "%d.%m.%y").date()
     with open(CONFIG_PATH) as json:
@@ -140,14 +127,16 @@ def annual_schedule(school_id, class_id,
     if not (start_date <= date <= today):
         abort(404)
 
-    school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
+    school = db_sess.query(School).get(school_id)  # noqa
+    school_class = db_sess.query(Class).get(class_id)
 
-    students = list(sorted([user for user in db_sess.query(User).filter(User.class_id == class_id).all() if  # noqa
+    students = list(sorted([user for user in db_sess.query(User).filter_by(class_id=class_id).all() if
                             check_status(user, "Ученик")], key=lambda st: st.fullname.split()[0]))
 
     presence = 0
     schedule = {}
     for student in students:
+        student: User
         schedule[student.fullname] = {}
         schedule[student.fullname]["is_arrived"] = False
 
@@ -201,24 +190,7 @@ def annual_schedule(school_id, class_id,
 @bp.route('/month/current')
 @bp.route('/month/<month>')
 def monthly_schedule(school_id, class_id, month=datetime.now().astimezone(timezone("Europe/Moscow")).strftime("%m.%y")):
-    school_id, class_id = int(school_id), int(class_id)  # noqa
-
-    if not current_user.is_registered:
-        return redirect(url_for("auth.finish_register"))
-
     db_sess = create_session()
-    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
-    school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
-
-    permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
-    permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
-    permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
-
-    if not ((allowed_permission(current_user, permission2) or (
-            allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
-                    current_user.school_id == school_id or allowed_permission(current_user, permission3))):
-        db_sess.close()
-        abort(403)
 
     date = datetime.strptime(month, "%m.%y").date()
 
@@ -232,7 +204,7 @@ def monthly_schedule(school_id, class_id, month=datetime.now().astimezone(timezo
     if not (today >= start_month and start_date <= end_month):
         abort(404)
 
-    students = list(sorted([user for user in db_sess.query(User).filter(User.class_id == class_id).all() if  # noqa
+    students = list(sorted([user for user in db_sess.query(User).filter_by(class_id=class_id).all() if
                             check_status(user, "Ученик")], key=lambda st: st.fullname.split()[0]))
 
     list_calendar = calendar.month(date.year, date.month).split('\n')[2:-1]
@@ -302,6 +274,9 @@ def monthly_schedule(school_id, class_id, month=datetime.now().astimezone(timezo
 
         if not f1 and not f2:
             break
+
+    school = db_sess.query(School).get(school_id)
+    school_class = db_sess.query(Class).get(class_id)
 
     data = {
         'date': date,

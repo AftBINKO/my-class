@@ -11,17 +11,12 @@ from app.data.db_session import create_session
 @bp.route('/add', methods=['GET', 'POST'])
 @login_required
 def add_class(school_id):
-    school_id = int(school_id)
-
-    if not current_user.is_registered:
-        return redirect(url_for("auth.finish_register"))
-
     db_sess = create_session()
 
-    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
+    school = db_sess.query(School).get(school_id)
 
-    permission1 = db_sess.query(Permission).filter(Permission.title == "adding_classes").first()  # noqa
-    permission2 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+    permission1 = db_sess.query(Permission).filter_by(title="adding_classes").first()
+    permission2 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
     if not (allowed_permission(current_user, permission1) and (
             current_user.school_id == school_id or allowed_permission(current_user, permission2))):

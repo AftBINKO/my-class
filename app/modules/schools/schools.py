@@ -8,12 +8,16 @@ from app.data.models import School, Permission
 from app.modules.schools import bp
 
 
+@bp.before_request
+@login_required
+def check_register():
+    if not current_user.is_registered:
+        abort(401)
+
+
 @bp.route('/add', methods=['GET', 'POST'])
 @login_required
 def add_school():
-    if not current_user.is_registered:
-        return redirect(url_for("auth.finish_register"))
-
     db_sess = create_session()
 
     permission = db_sess.query(Permission).filter(Permission.title == "adding_school").first()  # noqa

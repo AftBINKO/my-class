@@ -27,8 +27,8 @@ def delete_schools(schools, user=None, check_permission=True):
         schools = ss
 
     if check_permission and user is not None:
-        permission1 = db_sess.query(Permission).filter(Permission.title == "deleting_self_school").first()  # noqa
-        permission2 = db_sess.query(Permission).filter(Permission.title == "deleting_school").first()  # noqa
+        permission1 = db_sess.query(Permission).filter_by(title="deleting_self_school").first()
+        permission2 = db_sess.query(Permission).filter_by(title="deleting_school").first()
         if not (allowed_permission(user, permission2) or (
                 allowed_permission(user, permission1) and user.school_id in schools)):
             db_sess.close()
@@ -36,10 +36,10 @@ def delete_schools(schools, user=None, check_permission=True):
 
     schools = db_sess.query(School).filter(School.id.in_(schools)).all()  # noqa
     for school in schools:
-        classes = db_sess.query(Class).filter(Class.school_id == school.id).all()  # noqa
+        classes = db_sess.query(Class).filter_by(school_id=school.id).all()
         delete_classes(school, classes, check_permission=False)
 
-        users = db_sess.query(User).filter(User.school_id == school.id).all()  # noqa
+        users = db_sess.query(User).filter_by(school_id=school.id).all()
         for user in users:
             user.school_id = None
 

@@ -27,9 +27,9 @@ def delete_classes(school, classes, user=None, check_permission=True):
         classes = cs
 
     if check_permission and user is not None:
-        permission1 = db_sess.query(Permission).filter(Permission.title == "deleting_self_class").first()  # noqa
-        permission2 = db_sess.query(Permission).filter(Permission.title == "deleting_classes").first()  # noqa
-        permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+        permission1 = db_sess.query(Permission).filter_by(title="deleting_self_class").first()
+        permission2 = db_sess.query(Permission).filter_by(title="deleting_classes").first()
+        permission3 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
         if not ((allowed_permission(user, permission2) or (
                 allowed_permission(user, permission1) and user.class_id in classes)) and (

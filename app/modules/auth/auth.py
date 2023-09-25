@@ -1,5 +1,5 @@
 from flask_login import login_required, logout_user, current_user, login_user
-from flask import redirect, url_for, render_template
+from flask import redirect, url_for, render_template, abort
 
 from string import ascii_letters, digits, punctuation
 
@@ -17,7 +17,7 @@ def load_user(user_id):
     db_sess = create_session()
 
     user = db_sess.query(User).get(user_id)
-    permission = db_sess.query(Permission).filter(Permission.title == "login").first()  # noqa
+    permission = db_sess.query(Permission).filter_by(title="login").first()
 
     db_sess.close()
 
@@ -34,12 +34,14 @@ def logout():
 
 
 @bp.route('/login', methods=['GET', 'POST'])
-@bp.route('/enter_to_class/<class_id>/login', methods=['GET', 'POST'])
+@bp.route('/enter_to_class/<int:class_id>/login', methods=['GET', 'POST'])
 def login(class_id=None):
     if current_user.is_authenticated:
         if not current_user.is_registered:
-            return redirect(url_for(".finish_register"))
-        return redirect(url_for("profile"))
+            abort(401)
+        if class_id:
+            return redirect(url_for("qr.enter_to_class", class_id=class_id))
+        return redirect(url_for("home"))
 
     form = LoginForm()
     data = {
@@ -50,14 +52,14 @@ def login(class_id=None):
 
     if form.validate_on_submit():
         db_sess = create_session()
-        user = db_sess.query(User).filter(User.login == form.login.data.lower()).first()
+        user = db_sess.query(User).filter_by(login=form.login.data.lower()).first()
         db_sess.close()
 
         if user:
             if user.check_password(form.password.data):  # noqa
                 login_user(user, remember=form.remember_me.data)
                 if class_id:
-                    return redirect(url_for("enter_to_class", class_id=class_id))
+                    return redirect(url_for("qr.enter_to_class", class_id=class_id))
                 return redirect(url_for("home"))
 
             data["message"] = "Неверный пароль"
@@ -68,12 +70,14 @@ def login(class_id=None):
 
 
 @bp.route('/login_key', methods=['GET', 'POST'])
-@bp.route('/enter_to_class/<class_id>/login_key', methods=['GET', 'POST'])
+@bp.route('/enter_to_class/<int:class_id>/login_key', methods=['GET', 'POST'])
 def login_with_key(class_id=None):
     if current_user.is_authenticated:
         if not current_user.is_registered:
-            return redirect(url_for(".finish_register"))
-        return redirect(url_for("profile"))
+            abort(401)
+        if class_id:
+            return redirect(url_for("qr.enter_to_class", class_id=class_id))
+        return redirect(url_for("home"))
 
     form = LoginKeyForm()
     data = {
@@ -83,7 +87,7 @@ def login_with_key(class_id=None):
 
     if form.validate_on_submit():
         db_sess = create_session()
-        user = db_sess.query(User).filter(User.key == form.key.data).first()
+        user = db_sess.query(User).filter_by(key=form.key.data).first()
         db_sess.close()
 
         if user is not None:
@@ -95,9 +99,14 @@ def login_with_key(class_id=None):
 
 
 @bp.route('/finish_register', methods=['GET', 'POST'])
-@bp.route('/enter_to_class/<class_id>/finish_register', methods=['GET', 'POST'])
+@bp.route('/enter_to_class/<int:class_id>/finish_register', methods=['GET', 'POST'])
 @login_required
 def finish_register(class_id=None):
+    if current_user.is_registered:
+        if class_id:
+            return redirect(url_for("qr.enter_to_class", class_id=class_id))
+        return redirect(url_for("home"))
+
     form = FinishRegisterForm()
     data = {
         "form": form,
@@ -106,7 +115,7 @@ def finish_register(class_id=None):
 
     if form.validate_on_submit():
         db_sess = create_session()
-        user = db_sess.query(User).filter(User.id == current_user.id).first()
+        user = db_sess.query(User).get(current_user.id)
 
         user_login = form.login.data.lower()
         user_password = form.password.data
@@ -121,15 +130,15 @@ def finish_register(class_id=None):
             data['message'] = "Пароли не совпадают"
         else:
             user.login = user_login
-            user.set_password(user_password)  # noqa
+            user.set_password(password=user_password)
             user.is_registered = True
-            user.delete_key()  # noqa
+            user.delete_key()
 
             db_sess.commit()
             db_sess.close()
 
             if class_id:
-                return redirect(url_for("enter_to_class", class_id=class_id))
+                return redirect(url_for("qr.enter_to_class", class_id=class_id))
 
             return redirect(url_for("home"))
         db_sess.close()

@@ -1,8 +1,8 @@
 from datetime import datetime
 from json import load, dump
 
+from .models import User, Status, Permission
 from .db_session import create_session
-from .models import User, Status, Permission, Class, School
 
 
 def all_status_permissions(status):
@@ -77,8 +77,9 @@ def all_permissions(user):
         raise TypeError
 
     db_sess = create_session()  # noqa
-    if isinstance(user, int):
-        user = db_sess.query(User).filter(User.id == user).first()  # noqa
+
+    if isinstance(user, int):  # noqa
+        user = db_sess.query(User).get(user)
     user: User
 
     statuses = db_sess.query(Status).filter(Status.id.in_(user.statuses.split(", "))).all()  # noqa
@@ -98,7 +99,7 @@ def allowed_permission(user, permission, allow_default=True):
 
     db_sess = create_session()  # noqa
     if isinstance(user, int):
-        user = db_sess.query(User).filter(User.id == user).first()  # noqa
+        user = db_sess.query(User).get(user)
     user: User
 
     statuses = db_sess.query(Status).filter(Status.id.in_(user.statuses.split(", "))).all()  # noqa
@@ -120,10 +121,10 @@ def check_status(user, status):
     db_sess = create_session()
 
     if isinstance(user, int):
-        user = db_sess.query(User).filter(User.id == user).first()  # noqa
+        user = db_sess.query(User).get(user)
 
     if isinstance(status, str):
-        status = db_sess.query(Status).filter(Status.title == status).first().id  # noqa
+        status = db_sess.query(Status).filter_by(title=status).first().id
     elif isinstance(status, Status):
         status = status.id
 

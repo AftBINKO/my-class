@@ -1,5 +1,5 @@
-from app.data.functions import clear_times
 from app import scheduler, CONFIG_PATH, app
+from app.data.functions import clear_times
 
 
 @scheduler.task("cron", id="everyday", hour="00", minute="00")

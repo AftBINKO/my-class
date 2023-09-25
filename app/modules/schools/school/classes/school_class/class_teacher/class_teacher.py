@@ -9,28 +9,28 @@ from app.data.db_session import create_session
 from app import RUSSIAN_ALPHABET
 
 
+@bp.url_value_preprocessor
+def check_permissions(endpoint, values):
+    school_id = values['school_id']
+
+    db_sess = create_session()  # noqa
+
+    permission1 = db_sess.query(Permission).filter_by(title="editing_self_school").first()
+    permission2 = db_sess.query(Permission).filter_by(title="editing_school").first()
+
+    if not (allowed_permission(current_user, permission2) or (
+            allowed_permission(current_user, permission1) and current_user.school_id == school_id)):
+        db_sess.close()
+        abort(403)
+
+
 @bp.route('/add', methods=['GET', 'POST'])
 @login_required
 def add_class_teacher(school_id, class_id):
-    school_id, class_id = int(school_id), int(class_id)  # noqa
-
-    if not current_user.is_registered:
-        return redirect(url_for("auth.finish_register"))
-
     db_sess = create_session()
 
-    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
-    school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
-
-    permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
-    permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
-    permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
-
-    if not ((allowed_permission(current_user, permission2) or (
-            allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
-                    current_user.school_id == school_id or allowed_permission(current_user, permission3))):
-        db_sess.close()
-        abort(403)
+    school = db_sess.query(School).get(school_id)
+    school_class = db_sess.query(Class).get(class_id)
 
     form = ChangeFullnameForm()
 
@@ -75,27 +75,14 @@ def add_class_teacher(school_id, class_id):
 @bp.route('/add_existing', methods=['GET', 'POST'])
 @login_required
 def add_existing_class_teacher(school_id, class_id):
-    school_id, class_id = int(school_id), int(class_id)  # noqa
-
-    if not current_user.is_registered:
-        return redirect(url_for("auth.finish_register"))
-
     db_sess = create_session()
 
-    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
-    school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
+    school = db_sess.query(School).get(school_id)
+    school_class = db_sess.query(Class).get(class_id)
 
-    permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_school").first()  # noqa
-    permission2 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+    form = SelectUser()  # noqa
 
-    if not (allowed_permission(current_user, permission2) or (
-            allowed_permission(current_user, permission1) and current_user.school_id == school_id)):
-        db_sess.close()
-        abort(403)
-
-    form = SelectUser()
-
-    school_users = db_sess.query(User).filter(User.school_id == school_id).all()  # noqa
+    school_users = db_sess.query(User).filter_by(school_id=school_id).all()
     users = [(0, "Выбрать...")]
     for us in school_users:
         statuses = db_sess.query(Status).filter(Status.id.in_(us.statuses.split(", "))).all()  # noqa
@@ -121,9 +108,9 @@ def add_existing_class_teacher(school_id, class_id):
     if form.validate_on_submit():
         user_id = int(form.select.data)
         if user_id:
-            user = db_sess.query(User).filter(User.id == user_id).first()  # noqa
-            user.statuses = ", ".join(list(map(str, (list(sorted(list(map(int, user.statuses.split(", "))) + [  # noqa
-                db_sess.query(Status).filter(Status.title == "Классный руководитель").first().id]))))))  # noqa
+            user = db_sess.query(User).get(user_id)
+            user.statuses = ", ".join(list(map(str, (list(sorted(list(map(int, user.statuses.split(", "))) + [
+                db_sess.query(Status).filter_by(title="Классный руководитель").first().id]))))))
             user.class_id = class_id
 
             db_sess.commit()

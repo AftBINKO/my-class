@@ -13,12 +13,10 @@ from app.modules.qr import bp
 from app import app
 
 
-@bp.route('/enter_to_class/<class_id>', methods=['GET', 'POST'])
+@bp.route('/enter_to_class/<int:class_id>', methods=['GET', 'POST'])
 def enter_to_class(class_id):
     if not current_user.is_authenticated:
         return redirect(url_for("auth.login", class_id=class_id))
-
-    class_id = int(class_id)
 
     db_sess = create_session()
 
@@ -26,7 +24,7 @@ def enter_to_class(class_id):
         db_sess.close()
         abort(403)
 
-    user = db_sess.query(User).filter(User.id == current_user.id).first()
+    user = db_sess.query(User).get(current_user.id)
 
     if user.is_arrived:
         return redirect(url_for("enter_error"))
@@ -63,20 +61,19 @@ def enter_error():
         "Refresh": f"3; url={url_for('home')}"}
 
 
-@bp.route('/get_qr/<class_id>', methods=['GET', 'POST'])
+@bp.route('/get_qr/<int:class_id>', methods=['GET', 'POST'])
 @login_required
 def generate_qrcode(class_id):
     if not current_user.is_registered:
-        return redirect(url_for("auth.finish_register"))
+        abort(401)
 
-    db_sess = create_session()
+    db_sess = create_session()  # noqa
 
-    class_id = int(class_id)
-    school_id = db_sess.query(Class).filter(Class.id == class_id).first().school_id  # noqa
+    school_id = db_sess.query(Class).get(class_id).school_id
 
-    permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
-    permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
-    permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+    permission1 = db_sess.query(Permission).filter_by(title="editing_self_class").first()
+    permission2 = db_sess.query(Permission).filter_by(title="editing_classes").first()
+    permission3 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
     if not ((allowed_permission(current_user, permission2) or (
             allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
@@ -90,7 +87,7 @@ def generate_qrcode(class_id):
     qr = make_qr(url_for(".enter_to_class", class_id=class_id, _external=True))
     qr.save(path.join(uploads, name))
 
-    school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
+    school_class = db_sess.query(Class).get(class_id)
     school_class.qr = name
     db_sess.commit()
 
@@ -100,19 +97,18 @@ def generate_qrcode(class_id):
                             school_id=school_id, class_id=class_id))
 
 
-@bp.route('/<class_id>', methods=['GET', 'POST'])
+@bp.route('/<int:class_id>', methods=['GET', 'POST'])
 @login_required
-def view_qrcode(school_id, class_id):
-    school_id, class_id = int(school_id), int(class_id)  # noqa
-
+def view_qrcode(class_id):
     if not current_user.is_registered:
-        return redirect(url_for("auth.finish_register"))
+        abort(401)
 
     uploads = path.join(current_app.root_path, path.join(app.config["UPLOAD_FOLDER"], path.join("qrcodes", "classes")))
 
     db_sess = create_session()
-    qr = db_sess.query(Class).filter(Class.id == class_id).first().qr  # noqa
+    qr = db_sess.query(Class).filter_by(id=class_id).first().qr
     db_sess.close()
+
     if qr is None:
         abort(404)
 

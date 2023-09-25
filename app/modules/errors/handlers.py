@@ -1,11 +1,16 @@
 from flask import redirect, url_for, render_template
+from flask_login import current_user
 
 from app.modules.errors import bp
 
 
 @bp.app_errorhandler(401)
 def unauthorized(error):
-    return redirect(url_for('auth.login'))
+    if current_user.is_authenticated:
+        if not current_user.is_registered:
+            return redirect(url_for("auth.finish_register"))
+    else:
+        return redirect(url_for('auth.login'))
 
 
 @bp.app_errorhandler(403)

@@ -9,28 +9,31 @@ from app.data.forms import ChangeFullnameForm
 from app import RUSSIAN_ALPHABET
 
 
-@bp.route('/add', methods=['GET', 'POST'])
-@login_required
-def add_student(school_id, class_id):
-    school_id, class_id = int(school_id), int(class_id)  # noqa
-
-    if not current_user.is_registered:
-        return redirect(url_for("auth.finish_register"))
+@bp.url_value_preprocessor
+def check_permissions(endpoint, values):
+    school_id = values['school_id']  # noqa
+    class_id = values['class_id']
 
     db_sess = create_session()
 
-    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
-    school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
-
-    permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
-    permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
-    permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+    permission1 = db_sess.query(Permission).filter_by(title="editing_self_class").first()
+    permission2 = db_sess.query(Permission).filter_by(title="editing_classes").first()
+    permission3 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
     if not ((allowed_permission(current_user, permission2) or (
             allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
                     current_user.school_id == school_id or allowed_permission(current_user, permission3))):
         db_sess.close()
         abort(403)
+
+
+@bp.route('/add', methods=['GET', 'POST'])
+@login_required
+def add_student(school_id, class_id):
+    db_sess = create_session()
+
+    school = db_sess.query(School).get(school_id)
+    school_class = db_sess.query(Class).get(class_id)
 
     title = f"Создать ученика в {school_class.class_number} "
     if school_class.letter:

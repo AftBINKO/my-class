@@ -13,36 +13,41 @@ from app.modules.schools.school.classes.school_class import bp
 from app.data.db_session import create_session
 
 
-@bp.route('/', methods=['GET', 'POST'])
-@login_required
-def class_info(school_id, class_id):
-    school_id, class_id = int(school_id), int(class_id)  # noqa
-
-    if not current_user.is_registered:
-        return redirect(url_for("auth.finish_register"))
+@bp.url_value_preprocessor
+def check_permissions(endpoint, values):
+    class_id = values['class_id']
 
     db_sess = create_session()
-    permissions = set(map(lambda permission: permission.title, all_permissions(current_user)))
-    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
 
     permission1 = db_sess.query(Permission).filter(Permission.title == "view_self_details_class").first()  # noqa
     permission2 = db_sess.query(Permission).filter(Permission.title == "view_details_classes").first()  # noqa
-    permission3 = db_sess.query(Permission).filter(Permission.title == "view_schools").first()  # noqa
-    permission4 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
 
-    if not ((allowed_permission(current_user, permission2) or (  # noqa
-            allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
-                    current_user.school_id == school_id or allowed_permission(current_user, permission3))):
+    if not (allowed_permission(current_user, permission2) or (  # noqa
+            allowed_permission(current_user, permission1) and current_user.class_id == class_id)):
         db_sess.close()
         abort(403)
 
-    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
-    school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
+    school_class = db_sess.query(Class).get(class_id)
+    if not school_class:
+        db_sess.close()
+        abort(404)
+
+    db_sess.close()
+
+
+@bp.route('/', methods=['GET', 'POST'])
+@login_required
+def class_info(school_id, class_id):
+    db_sess = create_session()
+    permissions = set(map(lambda permission: permission.title, all_permissions(current_user)))
+
+    school = db_sess.query(School).get(school_id)
+    school_class = db_sess.query(Class).get(class_id)
 
     students = []
     class_teacher = None
 
-    for user in db_sess.query(User).filter(User.class_id == class_id).all():  # noqa
+    for user in db_sess.query(User).filter_by(class_id=class_id).all():
         if check_status(user, "Ученик"):
             students.append(user)
         elif check_status(user, "Классный руководитель"):
@@ -65,18 +70,13 @@ def class_info(school_id, class_id):
 @bp.route('/edit', methods=['GET', 'POST'])
 @login_required
 def edit_class(school_id, class_id):
-    school_id, class_id = int(school_id), int(class_id)  # noqa  # TODO: преобразовать URL к int
-
     db_sess = create_session()
 
-    if not current_user.is_registered:
-        return redirect(url_for("auth.finish_register"))
-
-    permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
-    permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
-    permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
-    permission4 = db_sess.query(Permission).filter(Permission.title == "deleting_classes").first()  # noqa
-    permission5 = db_sess.query(Permission).filter(Permission.title == "deleting_self_class").first()  # noqa
+    permission1 = db_sess.query(Permission).filter_by(title="editing_self_class").first()
+    permission2 = db_sess.query(Permission).filter_by(title="editing_classes").first()
+    permission3 = db_sess.query(Permission).filter_by(title="editing_school").first()
+    permission4 = db_sess.query(Permission).filter_by(title="deleting_classes").first()
+    permission5 = db_sess.query(Permission).filter_by(title="deleting_self_class").first()
 
     is_deleting_class = allowed_permission(current_user, permission4) or (
             allowed_permission(current_user, permission5) and current_user.class_id == class_id)
@@ -88,8 +88,8 @@ def edit_class(school_id, class_id):
         abort(403)
 
     form = EditClassForm()
-    school = db_sess.query(School).filter(School.id == school_id).first()  # noqa
-    school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
+    school = db_sess.query(School).get(school_id)
+    school_class = db_sess.query(Class).get(class_id)
     data = {
         'form': form,
         'school': school,
@@ -115,10 +115,7 @@ def edit_class(school_id, class_id):
 @bp.route('/delete', methods=['GET', 'POST'])
 @login_required
 def delete_class(school_id, class_id):
-    if not current_user.is_registered:
-        return redirect(url_for("auth.finish_register"))
-
-    if delete_classes(int(school_id), int(class_id), current_user) == 405:
+    if delete_classes(school_id, class_id, current_user) == 405:
         abort(403)
 
     return redirect(url_for("schools.school.school_info", school_id=school_id))
@@ -127,15 +124,13 @@ def delete_class(school_id, class_id):
 @bp.route('/download_excel', methods=['GET', 'POST'])
 @login_required
 def download_excel(school_id, class_id):
-    school_id, class_id = int(school_id), int(class_id)  # noqa
+    db_sess = create_session()  # noqa
 
-    db_sess = create_session()
+    school_class = db_sess.query(Class).get(class_id)
 
-    school_class = db_sess.query(Class).filter(Class.id == class_id).first()  # noqa
-
-    permission1 = db_sess.query(Permission).filter(Permission.title == "editing_self_class").first()  # noqa
-    permission2 = db_sess.query(Permission).filter(Permission.title == "editing_classes").first()  # noqa
-    permission3 = db_sess.query(Permission).filter(Permission.title == "editing_school").first()  # noqa
+    permission1 = db_sess.query(Permission).filter_by(title="editing_self_class").first()
+    permission2 = db_sess.query(Permission).filter_by(title="editing_classes").first()
+    permission3 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
     if not ((allowed_permission(current_user, permission2) or (
             allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
@@ -144,9 +139,7 @@ def download_excel(school_id, class_id):
         abort(403)
 
     tmp_path = path.abspath("app/static/tmp/table.xlsx")
-    students = [user for user in db_sess.query(User).filter(User.class_id == class_id).all() if  # noqa
-                db_sess.query(Status).filter(Status.title == "Ученик").first().id in set(  # noqa
-                    map(int, user.statuses.split(", ")))]
+    students = [user for user in db_sess.query(User).filter_by(class_id=class_id).all() if check_status(user, "Ученик")]
 
     with Workbook(tmp_path) as workbook:
         worksheet = workbook.add_worksheet(f"{school_class.class_number}{school_class.letter}")
