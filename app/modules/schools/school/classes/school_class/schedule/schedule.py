@@ -3,8 +3,8 @@ import calendar
 from datetime import datetime, timedelta
 from json import load
 
-from flask import redirect, url_for, abort, render_template
 from flask_login import login_required, current_user
+from flask import abort, render_template
 from pytz import timezone
 
 from app.modules.schools.school.classes.school_class.schedule import bp
