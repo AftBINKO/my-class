@@ -27,7 +27,7 @@ def enter_to_class(class_id):
     user = db_sess.query(User).get(current_user.id)
 
     if user.is_arrived:
-        return redirect(url_for("enter_error"))
+        return redirect(url_for(".enter_error"))
 
     user.is_arrived = True
     arrival_time = datetime.now().astimezone(timezone("Europe/Moscow"))
@@ -44,7 +44,7 @@ def enter_to_class(class_id):
     db_sess.commit()
     db_sess.close()
 
-    return redirect(url_for("enter_success"))
+    return redirect(url_for(".enter_success"))
 
 
 @bp.route('/enter_to_class/success')
