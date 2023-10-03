@@ -9,9 +9,11 @@ from app.modules.schools.school.moderators import bp
 from app import RUSSIAN_ALPHABET
 
 
-@bp.before_request
+@bp.url_value_preprocessor
 @login_required
-def check_permissions(school_id):
+def check_permissions(endpoint, values):
+    school_id = values['school_id']
+    
     db_sess = create_session()  # noqa
 
     permission1 = db_sess.query(Permission).filter_by(title="editing_self_school").first()
