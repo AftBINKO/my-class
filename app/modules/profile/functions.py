@@ -74,7 +74,7 @@ def delete_login_data(user, current_user=None, check_permission=True):
 
     user.login = None
     user.hashed_password = None
-    user.is_registered‎ = False
+    user.is_registered = False
     user.generate_key()
 
     db_sess.commit()
