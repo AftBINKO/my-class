@@ -116,7 +116,7 @@ def weekly_schedule(school_id, class_id, week=None):
 @bp.route('/annual/<date>')
 @login_required
 def annual_schedule(school_id, class_id,
-                    date=datetime.now().astimezone(timezone("Europe/Moscow")).strftime("%d.%m.%y")):
+                    date=datetime.now().astimezone(timezone("Europe/Moscow")).date().strftime("%d.%m.%y")):
     db_sess = create_session()
 
     date = datetime.strptime(date, "%d.%m.%y").date()
@@ -189,7 +189,8 @@ def annual_schedule(school_id, class_id,
 @bp.route('/month')
 @bp.route('/month/current')
 @bp.route('/month/<month>')
-def monthly_schedule(school_id, class_id, month=datetime.now().astimezone(timezone("Europe/Moscow")).strftime("%m.%y")):
+def monthly_schedule(school_id, class_id,
+                     month=datetime.now().astimezone(timezone("Europe/Moscow")).date().strftime("%m.%y")):
     db_sess = create_session()
 
     date = datetime.strptime(month, "%m.%y").date()
