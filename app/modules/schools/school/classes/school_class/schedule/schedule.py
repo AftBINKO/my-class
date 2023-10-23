@@ -37,8 +37,6 @@ def check_permissions(endpoint, values):
 @bp.route('/week/<int:week>')
 @login_required
 def weekly_schedule(school_id, class_id, week=None):
-    db_sess = create_session()
-
     with open(CONFIG_PATH) as json:
         start_date = datetime.strptime(load(json)["clear_times"], "%Y-%m-%d %H:%M:%S.%f").date()
         monday_start_date = start_date - timedelta(days=start_date.weekday())
@@ -60,7 +58,9 @@ def weekly_schedule(school_id, class_id, week=None):
     if not (saturday <= now_saturday and monday >= monday_start_date):
         abort(404)
 
-    school = db_sess.query(School).get(school_id)  # noqa
+    db_sess = create_session()  # noqa
+
+    school = db_sess.query(School).get(school_id)
     school_class = db_sess.query(Class).get(class_id)
 
     students = list(sorted([user for user in db_sess.query(User).filter_by(class_id=class_id).all() if
@@ -115,19 +115,22 @@ def weekly_schedule(school_id, class_id, week=None):
 @bp.route('/annual/current')
 @bp.route('/annual/<date>')
 @login_required
-def annual_schedule(school_id, class_id,
-                    date=datetime.now().astimezone(timezone("Europe/Moscow")).date().strftime("%d.%m.%y")):
-    db_sess = create_session()
-
-    date = datetime.strptime(date, "%d.%m.%y").date()
+def annual_schedule(school_id, class_id, date=None):
     with open(CONFIG_PATH) as json:
         start_date = datetime.strptime(load(json)["clear_times"], "%Y-%m-%d %H:%M:%S.%f").date()
     today = datetime.now().astimezone(timezone("Europe/Moscow")).date()
 
+    if date is None:
+        date = today
+    else:
+        date = datetime.strptime(date, "%d.%m.%y").date()
+
     if not (start_date <= date <= today):
         abort(404)
 
-    school = db_sess.query(School).get(school_id)  # noqa
+    db_sess = create_session()  # noqa
+
+    school = db_sess.query(School).get(school_id)
     school_class = db_sess.query(Class).get(class_id)
 
     students = list(sorted([user for user in db_sess.query(User).filter_by(class_id=class_id).all() if
@@ -189,21 +192,23 @@ def annual_schedule(school_id, class_id,
 @bp.route('/month')
 @bp.route('/month/current')
 @bp.route('/month/<month>')
-def monthly_schedule(school_id, class_id,
-                     month=datetime.now().astimezone(timezone("Europe/Moscow")).date().strftime("%m.%y")):
-    db_sess = create_session()
-
-    date = datetime.strptime(month, "%m.%y").date()
-
+def monthly_schedule(school_id, class_id, month=None):
     with open(CONFIG_PATH) as json:
         start_date = datetime.strptime(load(json)["clear_times"], "%Y-%m-%d %H:%M:%S.%f").date()
     today = datetime.now().astimezone(timezone("Europe/Moscow")).date()
+
+    if month is None:
+        date = today
+    else:
+        date = datetime.strptime(month, "%m.%y").date()
 
     start_month = datetime(date.year, date.month, 1).date()
     end_month = datetime(date.year, date.month, calendar.monthrange(date.year, date.month)[-1]).date()
 
     if not (today >= start_month and start_date <= end_month):
         abort(404)
+
+    db_sess = create_session()
 
     students = list(sorted([user for user in db_sess.query(User).filter_by(class_id=class_id).all() if
                             check_status(user, "Ученик")], key=lambda st: st.fullname.split()[0]))
