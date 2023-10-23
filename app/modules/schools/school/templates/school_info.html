@@ -98,12 +98,12 @@
                 <a href="{{ url_for("schools.school.classes.add_class", school_id=school.id) }}"
                    class="btn btn-success">Добавить класс</a>
             {% endif %}
-            {% if "editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) %}
-                <a href="{{ url_for("schools.school.download_school_excel", school_id=school.id) }}"
-                   class="btn btn-outline-success">
-                    Скачать таблицу всех учеников в формате Excel
-                </a>
-            {% endif %}
+{#            {% if "editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) %}#}
+{#                <a href="{{ url_for("schools.school.download_school_excel", school_id=school.id) }}"#}
+{#                   class="btn btn-outline-success">#}
+{#                    Скачать таблицу всех учеников в формате Excel#}
+{#                </a>#}
+{#            {% endif %}#}
         </div>
         <div class="container" style="margin-top: 25px">
             <table class="table">
