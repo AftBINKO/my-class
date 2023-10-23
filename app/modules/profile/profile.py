@@ -43,7 +43,7 @@ def profile(user_id=None):
 
     statuses_titles = []
     for status in statuses:
-        if status.title in ["Классный руководитель", "Ученик"]:
+        if status.title in ["Классный руководитель", "Ученик", "Староста"]:
             if school_class:
                 title = f"{status.title} {school_class.class_number}-го"
                 if school_class.letter:

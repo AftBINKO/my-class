@@ -2,8 +2,8 @@ from flask import redirect, url_for, abort, render_template
 from flask_login import login_required, current_user
 
 from app.modules.schools.school.classes.school_class.students import bp
-from app.data.models import User, Permission, School, Class
-from app.data.functions import allowed_permission
+from app.data.models import User, Permission, School, Class, Status
+from app.data.functions import allowed_permission, add_status, del_status
 from app.data.db_session import create_session
 from app.data.forms import ChangeFullnameForm
 from app import RUSSIAN_ALPHABET
@@ -11,12 +11,12 @@ from app import RUSSIAN_ALPHABET
 
 @bp.url_value_preprocessor
 def check_permissions(endpoint, values):
-    school_id = values['school_id']  # noqa
+    school_id = values['school_id']
     class_id = values['class_id']
 
     db_sess = create_session()
 
-    permission1 = db_sess.query(Permission).filter_by(title="editing_self_class").first()
+    permission1 = db_sess.query(Permission).filter_by(title="editing_self_class").first()  # noqa
     permission2 = db_sess.query(Permission).filter_by(title="editing_classes").first()
     permission3 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
@@ -69,3 +69,19 @@ def add_student(school_id, class_id):
     db_sess.close()
 
     return render_template('add_student.html', **data)  # noqa
+
+
+@bp.route('/add_elder/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def add_elder(school_id, class_id, user_id):
+    add_status(user_id, "Староста")
+    return redirect(url_for("schools.school.classes.school_class.class_info",
+                            school_id=school_id, class_id=class_id))
+
+
+@bp.route('/del_elder/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def del_elder(school_id, class_id, user_id):
+    del_status(user_id, "Староста")
+    return redirect(url_for("schools.school.classes.school_class.class_info",
+                            school_id=school_id, class_id=class_id))

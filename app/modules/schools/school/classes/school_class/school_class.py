@@ -128,7 +128,7 @@ def download_excel(school_id, class_id):
 
     school_class = db_sess.query(Class).get(class_id)
 
-    permission1 = db_sess.query(Permission).filter_by(title="editing_self_class").first()
+    permission1 = db_sess.query(Permission).filter_by(title="editing_self_class").first()  # noqa
     permission2 = db_sess.query(Permission).filter_by(title="editing_classes").first()
     permission3 = db_sess.query(Permission).filter_by(title="editing_school").first()
 

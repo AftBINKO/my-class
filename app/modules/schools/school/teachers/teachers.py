@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 
 from app.data.models import User, Permission, School, Status
 from app.data.forms import ChangeFullnameForm, SelectUser
-from app.data.functions import allowed_permission
+from app.data.functions import allowed_permission, add_status
 from app.data.db_session import create_session
 from app.modules.schools.school.teachers import bp
 from app import RUSSIAN_ALPHABET
@@ -94,11 +94,7 @@ def add_existing_teacher(school_id):
     if form.validate_on_submit():
         user_id = int(form.select.data)
         if user_id:
-            user = db_sess.query(User).get(user_id)
-            user.statuses = ", ".join(list(map(str, (list(sorted(list(map(int, user.statuses.split(", "))) + [
-                db_sess.query(Status).filter_by(title="Учитель").first().id]))))))
-
-            db_sess.commit()
+            add_status(user_id, "Учитель")
             db_sess.close()
 
             return redirect(url_for("schools.school.school_info", school_id=school_id))

@@ -16,13 +16,13 @@ from app import WEEKDAYS, CONFIG_PATH
 
 @bp.url_value_preprocessor
 def check_permissions(endpoint, values):
-    school_id = values['school_id']  # noqa
+    school_id = values['school_id']
     class_id = values['class_id']
 
     db_sess = create_session()
 
-    permission1 = db_sess.query(Permission).filter_by(title="editing_self_class").first()
-    permission2 = db_sess.query(Permission).filter_by(title="editing_classes").first()
+    permission1 = db_sess.query(Permission).filter_by(title="view_self_arrival_times").first()
+    permission2 = db_sess.query(Permission).filter_by(title="editing_classes").first()  # noqa
     permission3 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
     if not ((allowed_permission(current_user, permission2) or (

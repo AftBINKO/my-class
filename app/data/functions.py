@@ -115,7 +115,7 @@ def allowed_permission(user, permission, allow_default=True):
 
 
 def check_status(user, status):
-    if not (isinstance(user, (User, int)) and isinstance(status, (Status, str, int))):
+    if not (isinstance(user, (User, int)) and isinstance(status, (Status, str, int))):  # noqa
         raise TypeError
 
     db_sess = create_session()
@@ -131,6 +131,52 @@ def check_status(user, status):
     db_sess.close()
 
     return status in set(map(int, user.statuses.split(", ")))
+
+
+def add_status(user, status):
+    if not (isinstance(user, (User, int)) and isinstance(status, (Status, str, int))):  # noqa
+        raise TypeError
+
+    db_sess = create_session()
+
+    if isinstance(user, int):
+        user = db_sess.query(User).get(user)
+
+    if isinstance(status, int):
+        status = db_sess.query(Status).get(status).title
+    elif isinstance(status, Status):
+        status = status.title
+
+    user.statuses = ", ".join(list(map(str, (list(sorted(list(map(int, user.statuses.split(", "))) + [
+        db_sess.query(Status).filter_by(title=status).first().id]))))))
+
+    db_sess.commit()
+    db_sess.close()
+
+
+def del_status(user, status):
+    if not (isinstance(user, (User, int)) and isinstance(status, (Status, str, int))):  # noqa
+        raise TypeError
+
+    db_sess = create_session()
+
+    if isinstance(user, int):
+        user = db_sess.query(User).get(user)
+
+    if isinstance(status, str):
+        status = db_sess.query(Status).filter_by(title=status).first().id
+    elif isinstance(status, Status):
+        status = status.id
+
+    statuses = list(sorted(list(map(int, user.statuses.split(", ")))))
+    if status in statuses:
+        statuses.remove(status)
+    else:
+        return 404
+    user.statuses = ", ".join(list(map(str, statuses)))
+
+    db_sess.commit()
+    db_sess.close()
 
 
 def clear_times(config_path, echo=False, all_times=False):
