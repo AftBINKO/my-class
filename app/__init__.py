@@ -15,10 +15,10 @@ CONFIG_PATH = path.join(dir_name, path.join("data", "config.json"))
 DB_PATH = path.join(dir_name, path.join("db", "data.sqlite3"))
 RUSSIAN_ALPHABET = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"
 WEEKDAYS = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"]
-SERVICE_MODE = True
+SERVICE_MODE = False
 
 app = Flask(__name__)
-app.config.from_object(environ.get('FLASK_ENV') or 'config.ProductionConfig')
+app.config.from_object(environ.get('FLASK_ENV') or 'config.DevelopmentConfig')
 
 global_init(DB_PATH, echo=app.config["DEBUG"])
 

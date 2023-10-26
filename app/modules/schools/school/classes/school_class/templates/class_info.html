@@ -113,52 +113,56 @@
                 {% for student in students %}
                     <tr>
                         <td>
-                            <div class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" role="button"
-                                   data-bs-toggle="dropdown" aria-expanded="false">
-                                    {{ student.fullname }}
-                                    {% if "6" in student.statuses.split(", ") %}
-                                        <i class="bi bi-lightning-charge-fill"></i>
-                                    {% endif %}
-                                    {% if student.id == current_user.id %}
-                                        <span class="badge bg-secondary">вы</span>
-                                    {% endif %}
-                                </a>
-                                <ul class="dropdown-menu">
-                                    <li>
+                            {% if "editing_classes" in permissions or ("editing_self_class" in permissions and current_user.class_id == class.id) %}
+                                <div class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" role="button"
+                                       data-bs-toggle="dropdown" aria-expanded="false">
+                                        {{ student.fullname }}
                                         {% if "6" in student.statuses.split(", ") %}
-                                            <a href="{{ url_for('schools.school.classes.school_class.students.del_elder', school_id=school.id, class_id=class.id, user_id=student.id) }}"
-                                               class="dropdown-item">
-                                                Разжаловать старосту
-                                            </a>
-                                        {% else %}
-                                            <a href="{{ url_for('schools.school.classes.school_class.students.add_elder', school_id=school.id, class_id=class.id, user_id=student.id) }}"
-                                               class="dropdown-item">
-                                                Назначить старостой
-                                            </a>
+                                            <i class="bi bi-lightning-charge-fill"></i>
                                         {% endif %}
-                                    </li>
-                                    {% if student.id != current_user.id %}
+                                        {% if student.id == current_user.id %}
+                                            <span class="badge bg-secondary">вы</span>
+                                        {% endif %}
+                                    </a>
+                                    <ul class="dropdown-menu">
                                         <li>
-                                            <hr class="dropdown-divider">
+                                            {% if "6" in student.statuses.split(", ") %}
+                                                <a href="{{ url_for('schools.school.classes.school_class.students.del_elder', school_id=school.id, class_id=class.id, user_id=student.id) }}"
+                                                   class="dropdown-item">
+                                                    Разжаловать старосту
+                                                </a>
+                                            {% else %}
+                                                <a href="{{ url_for('schools.school.classes.school_class.students.add_elder', school_id=school.id, class_id=class.id, user_id=student.id) }}"
+                                                   class="dropdown-item">
+                                                    Назначить старостой
+                                                </a>
+                                            {% endif %}
                                         </li>
-                                        <li>
-                                            <a href="{{ url_for('profile.change_fullname', user_id=student.id) }}"
-                                               class="dropdown-item">
-                                                Изменить ФИО
-                                            </a>
-                                        </li>
-                                    {% endif %}
-                                    {% if student.login and student.hashed_password and student.id != current_user.id %}
-                                        <li>
-                                            <a href="{{ url_for('profile.delete_login', user_id=student.id) }}"
-                                               class="dropdown-item">
-                                                Удалить авторизационные данные
-                                            </a>
-                                        </li>
-                                    {% endif %}
-                                </ul>
-                            </div>
+                                        {% if student.id != current_user.id %}
+                                            <li>
+                                                <hr class="dropdown-divider">
+                                            </li>
+                                            <li>
+                                                <a href="{{ url_for('profile.change_fullname', user_id=student.id) }}"
+                                                   class="dropdown-item">
+                                                    Изменить ФИО
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                        {% if student.login and student.hashed_password and student.id != current_user.id %}
+                                            <li>
+                                                <a href="{{ url_for('profile.delete_login', user_id=student.id) }}"
+                                                   class="dropdown-item">
+                                                    Удалить авторизационные данные
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            {% else %}
+                                {{ student.fullname }}
+                            {% endif %}
                         </td>
                         {% if "editing_classes" in permissions or ("view_self_arrival_times" in permissions and current_user.class_id == class.id) %}
                             <td>
