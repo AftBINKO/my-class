@@ -31,3 +31,9 @@ def crash(error):
     return render_template("alert.html", title="Ошибка сервера",
                            message="На сервере произошла ошибка"), {
         "Refresh": f"3; url={url_for('home')}"}
+
+
+@bp.app_errorhandler(503)
+def service_mode(error):
+    return render_template("service_mode.html", title="Сервер недоступен", message="Попробуйте вернуться позднее",
+                           without_header=True)

@@ -1,11 +1,17 @@
 from flask_login import current_user, login_required
 from flask import redirect, url_for, abort
 
-from app import app
+from app import app, SERVICE_MODE
 
-from .data.functions import allowed_permission
+from .data.functions import allowed_permission, check_status
 from .data.db_session import create_session
 from .data.models import *
+
+
+@app.before_request
+def check_access():
+    if SERVICE_MODE and current_user.is_authenticated and not check_status(current_user, "Администратор"):
+        abort(503)
 
 
 @app.route('/')
