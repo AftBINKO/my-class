@@ -1,14 +1,17 @@
 import inspect
+
 from os import remove
 from os.path import exists
 from json import dump, load
+from datetime import datetime
 
 import sqlalchemy.orm.decl_api
+from sqlalchemy import DateTime
 
-from app.data.db_session import *
-import app.data.models as models
+from data.db_session import *
+import data.models as models
 
-path, tmp = "app/db/data.sqlite3", "tmp/tmp.json"
+path, tmp = "db/data.sqlite3", "tmp/tmp.json"
 
 
 def migrate():
@@ -28,7 +31,7 @@ def migrate():
         with open(tmp, 'x', encoding='utf-8') as json:
             dump(db, json, indent=4, ensure_ascii=False)
 
-        print("Edit you model and restart the script")
+        print("Отредактируйте модель и перезапустите этот скрипт")
     else:
         if exists(path):
             remove(path)
@@ -42,21 +45,26 @@ def migrate():
         for model_name in db:
             model = bases[model_name]
 
-            columns = model().get_columns()
+            columns = [column for column in model().__table__.columns]
 
             for item in db[model_name]:
                 item: dict
                 item_data = {}
 
                 for key in item.keys():
-                    if key in columns:
-                        item_data[key] = item[key]
+                    for column in columns:
+                        if key == column.key:
+                            if item[key] is not None:
+                                if isinstance(column.type, DateTime):
+                                    item_data[key] = datetime.strptime(item[key], "%Y-%m-%d %H:%M:%S")
+                                else:
+                                    item_data[key] = item[key]
                 item_model = model(**item_data)
                 db_sess.add(item_model)
-            db_sess.commit()
+        db_sess.commit()
 
         remove(tmp)
-        print("Success")
+        print("Успешно")
 
 
 if __name__ == '__main__':
