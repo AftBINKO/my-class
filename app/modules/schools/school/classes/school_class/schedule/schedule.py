@@ -8,7 +8,7 @@ from flask import abort, render_template
 from pytz import timezone
 
 from app.modules.schools.school.classes.school_class.schedule import bp
-from app.data.functions import allowed_permission, check_status
+from app.data.functions import check_permission, check_role
 from app.data.models import User, Permission, School, Class
 from app.data.db_session import create_session
 from app import WEEKDAYS, CONFIG_PATH
@@ -25,9 +25,9 @@ def check_permissions(endpoint, values):
     permission2 = db_sess.query(Permission).filter_by(title="editing_classes").first()  # noqa
     permission3 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
-    if not ((allowed_permission(current_user, permission2) or (
-            allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
-                    current_user.school_id == school_id or allowed_permission(current_user, permission3))):
+    if not ((check_permission(current_user, permission2) or (
+            check_permission(current_user, permission1) and current_user.class_id == class_id)) and (
+                    current_user.school_id == school_id or check_permission(current_user, permission3))):
         db_sess.close()
         abort(403)
 
@@ -64,7 +64,7 @@ def weekly_schedule(school_id, class_id, week=None):
     school_class = db_sess.query(Class).get(class_id)
 
     students = list(sorted([user for user in db_sess.query(User).filter_by(class_id=class_id).all() if
-                            check_status(user, "Ученик")], key=lambda st: st.fullname.split()[0]))
+                            check_role(user, "Ученик")], key=lambda st: st.fullname.split()[0]))
 
     dates = []
     date = monday
@@ -134,7 +134,7 @@ def annual_schedule(school_id, class_id, date=None):
     school_class = db_sess.query(Class).get(class_id)
 
     students = list(sorted([user for user in db_sess.query(User).filter_by(class_id=class_id).all() if
-                            check_status(user, "Ученик")], key=lambda st: st.fullname.split()[0]))
+                            check_role(user, "Ученик")], key=lambda st: st.fullname.split()[0]))
 
     presence = 0
     schedule = {}
@@ -211,7 +211,7 @@ def monthly_schedule(school_id, class_id, month=None):
     db_sess = create_session()
 
     students = list(sorted([user for user in db_sess.query(User).filter_by(class_id=class_id).all() if
-                            check_status(user, "Ученик")], key=lambda st: st.fullname.split()[0]))
+                            check_role(user, "Ученик")], key=lambda st: st.fullname.split()[0]))
 
     list_calendar = calendar.month(date.year, date.month).split('\n')[2:-1]
     cal = []

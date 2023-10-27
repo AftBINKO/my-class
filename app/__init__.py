@@ -34,16 +34,16 @@ scheduler.start()
 check_and_clear_times(CONFIG_PATH, echo=app.config["DEBUG"])
 
 from app.modules.admin_tools import bp as admin_bp
-
 from app.modules.schools import bp as schools_bp
 from app.modules.profile import bp as profile_bp
+from app.modules.admits import bp as admits_bp
 from app.modules.errors import bp as errors_bp
 from app.modules.auth import bp as auth_bp
 from app.modules.qr import bp as qr_bp
 
-app.register_blueprint(profile_bp)
-
 app.register_blueprint(schools_bp)
+app.register_blueprint(profile_bp)
+app.register_blueprint(admits_bp)
 app.register_blueprint(errors_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(auth_bp)

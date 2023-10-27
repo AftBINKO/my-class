@@ -1,34 +1,39 @@
 from datetime import datetime
 from json import load, dump
+from os import path
 
-from .models import User, Status, Permission
+from flask import url_for
+from pytz import timezone
+from qrcode import make
+
+from .models import User, Role, Permission
 from .db_session import create_session
 
 
-def all_status_permissions(status):
+def all_role_permissions(role):
     db_sess = create_session()
     all_perms = db_sess.query(Permission).all()
 
-    if isinstance(status, (int, str)):
-        status = db_sess.query(Status).filter(
-            Status.id == status if isinstance(status, int) else Status.title == status).first()  # noqa
-    status: Status
+    if isinstance(role, (int, str)):
+        role = db_sess.query(Role).filter(
+            Role.id == role if isinstance(role, int) else Role.title == role).first()  # noqa
+    role: Role
     db_sess.close()
 
-    permissions = {perm for perm in all_perms if allowed_status_permission(status, perm)}
+    permissions = {perm for perm in all_perms if check_role_permission(role, perm)}
 
     return permissions
 
 
-def allowed_status_permission(status, permission, allow_default=True):
-    if not (isinstance(status, (Status, (int, str))) or isinstance(permission, (Permission, int, str))):
+def check_role_permission(role, permission, allow_default=True):
+    if not (isinstance(role, (Role, (int, str))) or isinstance(permission, (Permission, int, str))):
         raise TypeError
 
     db_sess = create_session()
-    if isinstance(status, (int, str)):
-        status = db_sess.query(Status).filter(
-            Status.id == status if isinstance(status, int) else Status.title == status).first()  # noqa
-    status: Status
+    if isinstance(role, (int, str)):
+        role = db_sess.query(Role).filter(
+            Role.id == role if isinstance(role, int) else Role.title == role).first()  # noqa
+    role: Role
 
     if isinstance(permission, (int, str)):
         permission = db_sess.query(Permission).filter(
@@ -36,18 +41,18 @@ def allowed_status_permission(status, permission, allow_default=True):
         ).first()
     permission: Permission
 
-    inherited_status = status.inheritance
-    allowed_for_inherited_status = None
-    if inherited_status is not None:
-        allowed_for_inherited_status = allowed_status_permission(inherited_status, permission, allow_default=False)
+    inherited_role = role.inheritance
+    allowed_for_inherited_role = None
+    if inherited_role is not None:
+        allowed_for_inherited_role = check_role_permission(inherited_role, permission, allow_default=False)
 
     allowed_id_perms = {}
-    if status.allowed_permissions:
-        allowed_id_perms = set(status.allowed_permissions.split(", "))
+    if role.allowed_permissions:
+        allowed_id_perms = set(role.allowed_permissions.split(", "))
 
     banned_id_perms = {}
-    if status.banned_permissions:
-        banned_id_perms = set(status.banned_permissions.split(", "))
+    if role.banned_permissions:
+        banned_id_perms = set(role.banned_permissions.split(", "))
 
     all_id_perms = set(map(lambda p: p.id, db_sess.query(Permission).all()))
 
@@ -65,8 +70,8 @@ def allowed_status_permission(status, permission, allow_default=True):
         return False
     elif permission.id in allowed_id_perms:
         return True
-    elif allowed_for_inherited_status is not None:
-        return allowed_for_inherited_status
+    elif allowed_for_inherited_role is not None:
+        return allowed_for_inherited_role
     elif allow_default:
         return permission.is_allowed_default
     return
@@ -82,18 +87,18 @@ def all_permissions(user):
         user = db_sess.query(User).get(user)
     user: User
 
-    statuses = db_sess.query(Status).filter(Status.id.in_(user.statuses.split(", "))).all()  # noqa
+    roles = db_sess.query(Role).filter(Role.id.in_(user.roles.split(", "))).all()  # noqa
     db_sess.close()
 
     permissions = set()
 
-    for status in statuses:
-        permissions = permissions | all_status_permissions(status)  # noqa
+    for role in roles:
+        permissions = permissions | all_role_permissions(role)  # noqa
 
     return permissions
 
 
-def allowed_permission(user, permission, allow_default=True):
+def check_permission(user, permission, allow_default=True):
     if not (isinstance(user, (User, int)) or isinstance(permission, (Permission, int, str))):  # noqa
         raise TypeError
 
@@ -102,20 +107,19 @@ def allowed_permission(user, permission, allow_default=True):
         user = db_sess.query(User).get(user)
     user: User
 
-    statuses = db_sess.query(Status).filter(Status.id.in_(user.statuses.split(", "))).all()  # noqa
+    roles = db_sess.query(Role).filter(Role.id.in_(user.roles.split(", "))).all()  # noqa
     db_sess.close()
 
-    for status in statuses:
-        if allowed_status_permission(status, permission, allow_default=allow_default):
+    for role in roles:
+        if check_role_permission(role, permission, allow_default=allow_default):
             return True
 
     if allow_default:
         return False
-    return
 
 
-def check_status(user, status):
-    if not (isinstance(user, (User, int)) and isinstance(status, (Status, str, int))):  # noqa
+def get_roles(user):
+    if not isinstance(user, (User, int)):  # noqa
         raise TypeError
 
     db_sess = create_session()
@@ -123,18 +127,24 @@ def check_status(user, status):
     if isinstance(user, int):
         user = db_sess.query(User).get(user)
 
-    if isinstance(status, str):
-        status = db_sess.query(Status).filter_by(title=status).first().id
-    elif isinstance(status, Status):
-        status = status.id
+    roles = db_sess.query(Role).filter(Role.id.in_(user.roles.split(", "))).all()  # noqa
+    roles: list
 
     db_sess.close()
 
-    return status in set(map(int, user.statuses.split(", ")))
+    return roles
 
 
-def add_status(user, status):
-    if not (isinstance(user, (User, int)) and isinstance(status, (Status, str, int))):  # noqa
+def get_max_role(user):
+    return sorted(get_roles(user), key=lambda role: role.priority)[-1]
+
+
+def get_min_role(user):
+    return sorted(get_roles(user), key=lambda role: role.priority)[0]
+
+
+def check_role(user, role):
+    if not (isinstance(user, (User, int)) and isinstance(role, (Role, str, int))):  # noqa
         raise TypeError
 
     db_sess = create_session()
@@ -142,20 +152,39 @@ def add_status(user, status):
     if isinstance(user, int):
         user = db_sess.query(User).get(user)
 
-    if isinstance(status, int):
-        status = db_sess.query(Status).get(status).title
-    elif isinstance(status, Status):
-        status = status.title
+    if isinstance(role, str):
+        role = db_sess.query(Role).filter_by(title=role).first().id
+    elif isinstance(role, Role):
+        role = role.id
 
-    user.statuses = ", ".join(list(map(str, (list(sorted(list(map(int, user.statuses.split(", "))) + [
-        db_sess.query(Status).filter_by(title=status).first().id]))))))
+    db_sess.close()
+
+    return role in set(map(int, user.roles.split(", ")))
+
+
+def add_role(user, role):
+    if not (isinstance(user, (User, int)) and isinstance(role, (Role, str, int))):  # noqa
+        raise TypeError
+
+    db_sess = create_session()
+
+    if isinstance(user, int):
+        user = db_sess.query(User).get(user)
+
+    if isinstance(role, int):
+        role = db_sess.query(Role).get(role).title
+    elif isinstance(role, Role):
+        role = role.title
+
+    user.roles = ", ".join(list(map(str, (list(sorted(list(map(int, user.roles.split(", "))) + [
+        db_sess.query(Role).filter_by(title=role).first().id]))))))
 
     db_sess.commit()
     db_sess.close()
 
 
-def del_status(user, status):
-    if not (isinstance(user, (User, int)) and isinstance(status, (Status, str, int))):  # noqa
+def del_role(user, role):
+    if not (isinstance(user, (User, int)) and isinstance(role, (Role, str, int))):  # noqa
         raise TypeError
 
     db_sess = create_session()
@@ -163,17 +192,122 @@ def del_status(user, status):
     if isinstance(user, int):
         user = db_sess.query(User).get(user)
 
-    if isinstance(status, str):
-        status = db_sess.query(Status).filter_by(title=status).first().id
-    elif isinstance(status, Status):
-        status = status.id
+    if isinstance(role, str):
+        role = db_sess.query(Role).filter_by(title=role).first().id
+    elif isinstance(role, Role):
+        role = role.id
 
-    statuses = list(sorted(list(map(int, user.statuses.split(", ")))))
-    if status in statuses:
-        statuses.remove(status)
+    roles = list(sorted(list(map(int, user.roles.split(", ")))))
+    if role in roles:
+        roles.remove(role)
     else:
         return 404
-    user.statuses = ", ".join(list(map(str, statuses)))
+    user.roles = ", ".join(list(map(str, roles)))
+
+    db_sess.commit()
+    db_sess.close()
+
+
+def admit(user, current_user):
+    if not (isinstance(user, (User, int)) and isinstance(current_user, (User, int))):  # noqa
+        raise TypeError
+
+    db_sess = create_session()
+
+    if isinstance(user, int):
+        user = db_sess.query(User).get(user)
+
+    if isinstance(current_user, int):
+        current_user = db_sess.query(User).get(current_user)
+
+    permission1 = db_sess.query(Permission).filter_by(title="admit_school").first()
+    permission2 = db_sess.query(Permission).filter_by(title="admit").first()
+
+    if not ((check_permission(current_user, permission2) or (check_permission(
+            current_user, permission1
+    ) and user.school_id is not None and current_user.school_id == user.school_id)) and get_max_role(
+        current_user
+    ).priority > get_min_role(user).priority):
+        db_sess.close()
+        return 403
+
+    if user.is_arrived:
+        return
+
+    user.is_arrived = True
+    arrival_time = datetime.now().astimezone(timezone("Europe/Moscow"))
+
+    user.arrival_time = arrival_time
+
+    list_times = []
+    if user.list_times:
+        list_times = user.list_times.split(', ')
+    list_times.append(arrival_time.strftime("%Y-%m-%d %H:%M:%S.%f"))
+
+    user.list_times = ", ".join(list_times)
+
+    db_sess.commit()
+    db_sess.close()
+
+    return True
+
+
+def generate_qrs(users, current_user, uploads):
+    if not (isinstance(users, (User, int, list)) and isinstance(current_user, (User, int))):  # noqa
+        raise TypeError
+
+    db_sess = create_session()
+
+    if isinstance(current_user, int):
+        current_user = db_sess.query(User).get(current_user)
+
+    us = []
+    if isinstance(users, int):
+        users = db_sess.query(User).get(users)
+    if isinstance(users, User):
+        users = [users]
+
+    for user in users:
+        if not (isinstance(user, (User, int))):
+            raise TypeError
+
+        if isinstance(user, int):
+            user = db_sess.query(User).get(user)
+        us.append(user)
+
+    for user in us:
+        user: User
+        permission1 = db_sess.query(Permission).filter_by(title="generate_qr_school").first()
+        permission2 = db_sess.query(Permission).filter_by(title="generate_self_qr").first()
+        permission3 = db_sess.query(Permission).filter_by(title="generate_qr_class").first()
+        permission4 = db_sess.query(Permission).filter_by(title="generate_qr").first()
+
+        if user.id == current_user.id:
+            if not check_permission(current_user, permission2):
+                db_sess.close()
+                return 403
+        else:
+
+            if check_permission(current_user, permission4) or (check_permission(
+                    current_user, permission1
+            ) and current_user.school_id is not None and current_user.school_id == user.school_id) or \
+                    (check_permission(
+                        current_user, permission3
+                    ) and current_user.class_id is not None and current_user.class_id == user.class_id):
+
+                if get_max_role(user).priority >= get_max_role(current_user).priority:
+                    db_sess.close()
+                    return 403
+            else:
+                db_sess.close()
+                return 403
+
+        name = f"pass_{user.id}.png"
+        qr = make(url_for("qr.admit", user_id=user.id, _external=True))  # TODO: Добавить картинку
+        qr.save(path.join(uploads, name))
+
+        u = db_sess.query(User).get(user.id)
+        u.qr = name
 
     db_sess.commit()
     db_sess.close()
@@ -183,7 +317,7 @@ def clear_times(config_path, echo=False, all_times=False):
     db_sess = create_session()
     users = db_sess.query(User).all()
     for user in users:
-        if check_status(user, "Ученик"):
+        if check_role(user, "Ученик"):
             user.is_arrived = False
             user.arrival_time = None
             if all_times:

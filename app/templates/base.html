@@ -28,10 +28,18 @@
                     </button>
                     <div class="collapse navbar-collapse" id="navbarSupportedContent">
                         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                            {% if "5" in current_user.statuses.split(", ") %}
+                            {% if "5" in current_user.roles.split(", ") %}
                                 <li class="nav-item">
                                     <a class="nav-link" href="{{ url_for("admin_tools.admin_panel") }}">
                                         Панель администратора
+                                    </a>
+                                </li>
+                            {% endif %}
+                            {% if not (current_user.roles.split(", ") == ["1", "6"] or current_user.roles.split(", ") == ["6", "1"] or current_user.roles.split(", ") == ["1"] or current_user.roles.split(", ") == ["6"]) %}
+                                <li class="nav-item">
+                                    <a class="nav-link"
+                                       href="{{ url_for("admit.admit") }}">
+                                        Отметить присутствующих
                                     </a>
                                 </li>
                             {% endif %}

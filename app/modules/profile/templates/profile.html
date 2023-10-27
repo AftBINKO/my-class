@@ -13,7 +13,7 @@
             {{ user.fullname }}
         </h2>
         <p style="text-align: center">
-            {{ statuses_titles|join(", ") }}
+            {{ roles_titles|join(", ") }}
         </p>
         {% if school %}
             <p class="fs-3" style="text-align: center">
@@ -27,9 +27,23 @@
         {% if user.key %}
             <p class="fs-3" style="text-align: center">Ключ: {{ user.key }}</p>
         {% endif %}
+        <div class="content">
+            {% if user.qr %}
+                <h3 style="text-align: center">QR код</h3>
+                <img src="/static/files/qrcodes/users/{{ user.qr }}" class="rounded mx-auto d-block" alt="QR код">
+            {% elif current_user.id != user.id or "generate_self_qr" in permissions %}
+                <h3 style="text-align: center">QR код</h3>
+                <div style="justify-content: center; display: flex">
+                    <a href="{{ url_for("qr.generate_qrcode", user_id=user.id) }}"
+                       class="btn btn-success">
+                        Сгенерировать QR код
+                    </a>
+                </div>
+            {% endif %}
+        </div>
         {% if current_user.id == user.id %}
             {% if "editing_profile" in permissions %}
-                <div class="dropdown" style="justify-content: center; display: flex">
+                <div class="dropdown" style="justify-content: right; display: flex; margin-top: 50px">
                     <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown"
                             aria-expanded="false">
                         Редактировать

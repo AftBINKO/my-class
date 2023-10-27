@@ -5,7 +5,7 @@ from flask_login import login_required, current_user
 
 from xlsxwriter import Workbook
 
-from app.data.functions import all_permissions, allowed_permission, check_status
+from app.data.functions import all_permissions, check_permission, check_role
 from app.modules.schools.school.functions import delete_schools
 from app.data.models import School, Permission, User, Class
 from app.modules.schools.forms import EditSchoolForm
@@ -21,8 +21,8 @@ def check_permissions(endpoint, values):
 
     permission1 = db_sess.query(Permission).filter_by(title="view_self_school").first()
     permission2 = db_sess.query(Permission).filter_by(title="view_schools").first()
-    if not (allowed_permission(current_user, permission2) or (  # noqa
-            allowed_permission(current_user, permission1) and current_user.school_id == school_id)):
+    if not (check_permission(current_user, permission2) or (  # noqa
+            check_permission(current_user, permission1) and current_user.school_id == school_id)):
         db_sess.close()
         abort(403)
 
@@ -47,10 +47,10 @@ def school_info(school_id):
     moderators = []
     teachers = []
     for user in users:
-        statuses = list(map(int, user.statuses.split(", ")))
-        if 4 in statuses:
+        roles = list(map(int, user.roles.split(", ")))
+        if 4 in roles:
             moderators.append(user)
-        if 2 in statuses:
+        if 2 in roles:
             teachers.append(user)
 
     moderators.sort(key=lambda moder: moder.fullname.split()[0])
@@ -83,7 +83,7 @@ def download_school_excel(school_id):
             worksheet = workbook.add_worksheet(f"{school_class.class_number}{school_class.letter}")
 
             students = [user for user in db_sess.query(User).filter_by(class_id=school_class.id).all() if
-                        check_status(user, "Ученик")]
+                        check_role(user, "Ученик")]
 
             header_row_format = workbook.add_format({'bold': True})  # noqa
             worksheet.set_row(0, None, header_row_format)
@@ -115,13 +115,13 @@ def edit_school(school_id):
     permission3 = db_sess.query(Permission).filter_by(title="deleting_school").first()
     permission4 = db_sess.query(Permission).filter_by(title="deleting_self_school").first()
 
-    if not (allowed_permission(current_user, permission2) or (
-            allowed_permission(current_user, permission1) and current_user.school_id == school_id)):
+    if not (check_permission(current_user, permission2) or (
+            check_permission(current_user, permission1) and current_user.school_id == school_id)):
         db_sess.close()
         abort(403)
 
-    is_deleting_school = allowed_permission(current_user, permission3) or (
-            allowed_permission(current_user, permission4) and current_user.school_id == school_id)
+    is_deleting_school = check_permission(current_user, permission3) or (
+            check_permission(current_user, permission4) and current_user.school_id == school_id)
 
     form = EditSchoolForm()
     school = db_sess.query(School).get(school_id)

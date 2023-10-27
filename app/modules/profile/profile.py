@@ -3,8 +3,8 @@ from string import ascii_letters, digits, punctuation
 from flask import redirect, url_for, abort, render_template
 from flask_login import login_required, current_user
 
-from app.data.models import User, Class, Permission, Status, School
-from app.data.functions import all_permissions, allowed_permission
+from app.data.models import User, Class, Permission, Role, School
+from app.data.functions import all_permissions, check_permission, get_max_role
 from app.data.db_session import create_session
 from app.data.forms import ChangeFullnameForm
 from app import RUSSIAN_ALPHABET
@@ -27,10 +27,10 @@ def check_register():
 @bp.route('/<int:user_id>')
 @login_required
 def profile(user_id=None):
+    db_sess = create_session()
+
     if not user_id:
         user_id = current_user.id
-
-    db_sess = create_session()
 
     user = db_sess.query(User).get(user_id)
     if not user:
@@ -38,53 +38,54 @@ def profile(user_id=None):
 
     school_class = db_sess.query(Class).filter_by(id=user.class_id).first()
     school = db_sess.query(School).filter_by(id=user.school_id).first()
-    statuses = list(sorted(db_sess.query(Status).filter(Status.id.in_(user.statuses.split(", "))).all(),  # noqa
+    roles = list(sorted(db_sess.query(Role).filter(Role.id.in_(user.roles.split(", "))).all(),  # noqa
                            key=lambda s: s.id, reverse=True))
 
-    statuses_titles = []
-    for status in statuses:
-        if status.title in ["Классный руководитель", "Ученик", "Староста"]:
+    roles_titles = []
+    for role in roles:
+        if role.title in ["Классный руководитель", "Ученик", "Староста"]:
             if school_class:
-                title = f"{status.title} {school_class.class_number}-го"
+                title = f"{role.title} {school_class.class_number}-го "
                 if school_class.letter:
-                    title += f' "{school_class.letter}" '
-                title += " класса"
-                statuses_titles.append(title)
+                    title += f'"{school_class.letter}" '
+                title += "класса"
+                roles_titles.append(title)
                 continue
 
-        statuses_titles.append(status.title)
+        roles_titles.append(role.title)
 
     permissions = None
     permission3 = db_sess.query(Permission).filter_by(title="access_admin_panel").first()
     if current_user.id == user_id:
         permissions = set(map(lambda permission: permission.title, all_permissions(user)))
     else:
-        if max(list(map(int, user.statuses.split(", ")))) == 1:
+        max_role_id = get_max_role(user).id
+        if max_role_id == 1:
             permission1 = db_sess.query(Permission).filter_by(title="editing_self_class").first()  # noqa
             permission2 = db_sess.query(Permission).filter_by(title="editing_classes").first()
             permission3 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
-            if not ((allowed_permission(current_user, permission2) or (
-                    allowed_permission(current_user, permission1) and current_user.class_id == user.class_id)) and (
-                            current_user.school_id == user.school_id or allowed_permission(current_user, permission3))):
+            if not ((check_permission(current_user, permission2) or (
+                    check_permission(current_user, permission1) and current_user.class_id == user.class_id)) and (
+                            current_user.school_id == user.school_id or check_permission(current_user, permission3))):
                 db_sess.close()
                 abort(403)
-        elif max(list(map(int, user.statuses.split(", ")))) in [2, 3, 4]:
+        elif max_role_id in [2, 3, 4]:
             permission1 = db_sess.query(Permission).filter_by(title="editing_self_school").first()
             permission2 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
-            if not (allowed_permission(current_user, permission2) or (
-                    allowed_permission(current_user, permission1) and current_user.school_id == user.school_id)):
+            if not (check_permission(current_user, permission2) or (
+                    check_permission(current_user, permission1) and current_user.school_id == user.school_id)):
                 db_sess.close()
                 abort(403)
 
     db_sess.close()
 
     data = {
-        "statuses_titles": statuses_titles,
+        "roles_titles": roles_titles,
         "permissions": permissions,
         "user": user,
-        "admin": allowed_permission(current_user, permission3),
+        "admin": check_permission(current_user, permission3),
         "school": school
     }
 
@@ -92,12 +93,14 @@ def profile(user_id=None):
 
 
 @bp.route('/<int:user_id>/edit_fullname', methods=['GET', 'POST'])
+@bp.route('/my/edit_fullname', methods=['GET', 'POST'])
+@bp.route('/edit_fullname', methods=['GET', 'POST'])
 @login_required
-def change_fullname(user_id):
+def change_fullname(user_id=None):
+    db_sess = create_session()
+
     if not user_id:
         user_id = current_user.id
-
-    db_sess = create_session()
 
     user = db_sess.query(User).get(user_id)
     if not user:
@@ -105,7 +108,7 @@ def change_fullname(user_id):
 
     if current_user.id == user_id:
         permission = db_sess.query(Permission).filter_by(title="changing_fullname").first()
-        if not allowed_permission(user, permission):
+        if not check_permission(user, permission):
             db_sess.close()
             abort(405)
     else:
@@ -113,9 +116,9 @@ def change_fullname(user_id):
         permission2 = db_sess.query(Permission).filter_by(title="editing_classes").first()
         permission3 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
-        if not ((allowed_permission(current_user, permission2) or (
-                allowed_permission(current_user, permission1) and current_user.class_id == user.class_id)) and (
-                        current_user.school_id == user.school_id or allowed_permission(current_user, permission3))):
+        if not ((check_permission(current_user, permission2) or (
+                check_permission(current_user, permission1) and current_user.class_id == user.class_id)) and (
+                        current_user.school_id == user.school_id or check_permission(current_user, permission3))):
             db_sess.close()
             abort(403)
 
@@ -141,19 +144,23 @@ def change_fullname(user_id):
 
 
 @bp.route('/<int:user_id>/edit_login', methods=['GET', 'POST'])
+@bp.route('/my/edit_login', methods=['GET', 'POST'])
+@bp.route('/edit_login', methods=['GET', 'POST'])
 @login_required
-def change_login(user_id):
+def change_login(user_id=None):
     db_sess = create_session()
 
-    user = db_sess.query(User).get(user_id)
-    if not user:
-        abort(404)
+    if not user_id:
+        user_id = current_user.id
 
-    if current_user.id == user_id:
-        permission = db_sess.query(Permission).filter_by(title="changing_login").first()
-    else:
-        permission = db_sess.query(Permission).filter_by(title="editing_user").first()
-    if not allowed_permission(current_user, permission):
+    user = db_sess.query(User).get(user_id)
+
+    if not current_user.id == user_id:
+        db_sess.close()
+        abort(403)
+
+    permission = db_sess.query(Permission).filter_by(title="changing_login").first()
+    if not check_permission(current_user, permission):
         db_sess.close()
         abort(403)
 
@@ -181,19 +188,23 @@ def change_login(user_id):
 
 
 @bp.route('/<int:user_id>/edit_password', methods=['GET', 'POST'])
+@bp.route('/my/edit_password', methods=['GET', 'POST'])
+@bp.route('/edit_password', methods=['GET', 'POST'])
 @login_required
-def change_password(user_id):
+def change_password(user_id=None):
     db_sess = create_session()
 
-    user = db_sess.query(User).get(user_id)
-    if not user:
-        abort(404)
+    if not user_id:
+        user_id = current_user.id
 
-    if current_user.id == user_id:
-        permission = db_sess.query(Permission).filter_by(title="changing_password").first()
-    else:
-        permission = db_sess.query(Permission).filter_by(title="editing_user").first()
-    if not allowed_permission(current_user, permission):
+    user = db_sess.query(User).get(user_id)
+
+    if not current_user.id == user_id:
+        db_sess.close()
+        abort(403)
+
+    permission = db_sess.query(Permission).filter_by(title="changing_password").first()
+    if not check_permission(current_user, permission):
         db_sess.close()
         abort(403)
 
@@ -230,11 +241,16 @@ def change_password(user_id):
 
 
 @bp.route('/<int:user_id>/delete_login', methods=['GET', 'POST'])
+@bp.route('/my/delete_login', methods=['GET', 'POST'])
+@bp.route('/delete_login', methods=['GET', 'POST'])
 @login_required
-def delete_login(user_id):
-    status = delete_login_data(user_id, current_user)
+def delete_login(user_id=None):
+    if not user_id:
+        user_id = current_user.id
 
-    match status:
+    role = delete_login_data(user_id, current_user)
+
+    match role:
         case 403:
             abort(403)
         case 404:
@@ -244,11 +260,16 @@ def delete_login(user_id):
 
 
 @bp.route('/<int:user_id>/delete', methods=['GET', 'POST'])
+@bp.route('/my/delete', methods=['GET', 'POST'])
+@bp.route('/delete_profile', methods=['GET', 'POST'])
 @login_required
-def delete_user(user_id):
-    status = del_user(user_id, current_user)
+def delete_user(user_id=None):
+    if not user_id:
+        user_id = current_user.id
 
-    match status:
+    role = del_user(user_id, current_user)
+
+    match role:
         case 403:
             abort(403)
         case 404:

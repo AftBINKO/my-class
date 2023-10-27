@@ -2,8 +2,8 @@ from flask import redirect, url_for, abort, render_template
 from flask_login import login_required, current_user
 
 from app.modules.schools.school.classes.school_class.students import bp
-from app.data.models import User, Permission, School, Class, Status
-from app.data.functions import allowed_permission, add_status, del_status
+from app.data.models import User, Permission, School, Class, Role
+from app.data.functions import check_permission, add_role, del_role
 from app.data.db_session import create_session
 from app.data.forms import ChangeFullnameForm
 from app import RUSSIAN_ALPHABET
@@ -20,9 +20,9 @@ def check_permissions(endpoint, values):
     permission2 = db_sess.query(Permission).filter_by(title="editing_classes").first()
     permission3 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
-    if not ((allowed_permission(current_user, permission2) or (
-            allowed_permission(current_user, permission1) and current_user.class_id == class_id)) and (
-                    current_user.school_id == school_id or allowed_permission(current_user, permission3))):
+    if not ((check_permission(current_user, permission2) or (
+            check_permission(current_user, permission1) and current_user.class_id == class_id)) and (
+                    current_user.school_id == school_id or check_permission(current_user, permission3))):
         db_sess.close()
         abort(403)
 
@@ -56,7 +56,7 @@ def add_student(school_id, class_id):
             student.fullname = ' '.join(list(map(lambda name: name.lower().capitalize(), form.fullname.data.split())))
             student.school_id = school_id
             student.class_id = class_id
-            student.statuses = 1
+            student.roles = 1
             student.generate_key()
 
             db_sess.add(student)
@@ -74,7 +74,7 @@ def add_student(school_id, class_id):
 @bp.route('/add_elder/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 def add_elder(school_id, class_id, user_id):
-    add_status(user_id, "Староста")
+    add_role(user_id, "Староста")
     return redirect(url_for("schools.school.classes.school_class.class_info",
                             school_id=school_id, class_id=class_id))
 
@@ -82,6 +82,6 @@ def add_elder(school_id, class_id, user_id):
 @bp.route('/del_elder/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 def del_elder(school_id, class_id, user_id):
-    del_status(user_id, "Староста")
+    del_role(user_id, "Староста")
     return redirect(url_for("schools.school.classes.school_class.class_info",
                             school_id=school_id, class_id=class_id))

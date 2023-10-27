@@ -1,10 +1,10 @@
-from app.data.functions import allowed_permission
+from app.data.functions import check_permission as cp, get_max_role
 from app.data.db_session import create_session
 from app.data.models import Permission, User
 
 
-def delete_user(user, current_user=None, check_permission=True):
-    if not isinstance(user, (User, int)):  # noqa
+def delete_user(user, current_user=None, check_permission=True):  # TODO: перепроверить, исправить
+    if not isinstance(user, (User, int)):
         raise TypeError
 
     db_sess = create_session()
@@ -13,24 +13,27 @@ def delete_user(user, current_user=None, check_permission=True):
 
     if not user:
         return 404
+    if user.id == current_user.id:
+        return 403
 
-    if check_permission and current_user is not None:
-        if max(list(map(int, user.statuses.split(", ")))) == 1:
+    if check_permission and current_user is not None:  # noqa
+        max_role_id = get_max_role(user).id
+        if max_role_id == 1:
             permission1 = db_sess.query(Permission).filter_by(title="editing_self_class").first()
             permission2 = db_sess.query(Permission).filter_by(title="editing_classes").first()
             permission3 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
-            if not ((allowed_permission(current_user, permission2) or (
-                    allowed_permission(current_user, permission1) and current_user.class_id == user.class_id)) and (
-                            current_user.school_id == user.school_id or allowed_permission(current_user, permission3))):
+            if not ((cp(current_user, permission2) or (
+                    cp(current_user, permission1) and current_user.class_id == user.class_id)) and (
+                            current_user.school_id == user.school_id or cp(current_user, permission3))):
                 db_sess.close()
                 return 403
-        elif max(list(map(int, user.statuses.split(", ")))) in [2, 3, 4]:
+        elif max_role_id in [2, 3, 4]:
             permission1 = db_sess.query(Permission).filter_by(title="editing_self_school").first()
             permission2 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
-            if not (allowed_permission(current_user, permission2) or (
-                    allowed_permission(current_user, permission1) and current_user.school_id == user.school_id)):
+            if not (cp(current_user, permission2) or (
+                    cp(current_user, permission1) and current_user.school_id == user.school_id)):
                 db_sess.close()
                 return 403
 
@@ -42,7 +45,7 @@ def delete_user(user, current_user=None, check_permission=True):
 
 
 def delete_login_data(user, current_user=None, check_permission=True):
-    if not isinstance(user, (User, int)):  # noqa
+    if not isinstance(user, (User, int)):
         raise TypeError
 
     db_sess = create_session()
@@ -52,23 +55,24 @@ def delete_login_data(user, current_user=None, check_permission=True):
     if not user:
         return 404
 
-    if check_permission and current_user is not None:
-        if max(list(map(int, user.statuses.split(", ")))) == 1:
+    if check_permission and current_user is not None:  # noqa
+        max_role_id = get_max_role(user).id
+        if max_role_id == 1:
             permission1 = db_sess.query(Permission).filter_by(title="editing_self_class").first()
             permission2 = db_sess.query(Permission).filter_by(title="editing_classes").first()
             permission3 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
-            if not ((allowed_permission(current_user, permission2) or (
-                    allowed_permission(current_user, permission1) and current_user.class_id == user.class_id)) and (
-                            current_user.school_id == user.school_id or allowed_permission(current_user, permission3))):
+            if not ((cp(current_user, permission2) or (
+                    cp(current_user, permission1) and current_user.class_id == user.class_id)) and (
+                            current_user.school_id == user.school_id or cp(current_user, permission3))):
                 db_sess.close()
                 return 403
-        elif max(list(map(int, user.statuses.split(", ")))) in [2, 3, 4]:
+        elif max_role_id in [2, 3, 4]:
             permission1 = db_sess.query(Permission).filter_by(title="editing_self_school").first()
             permission2 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
-            if not (allowed_permission(current_user, permission2) or (
-                    allowed_permission(current_user, permission1) and current_user.school_id == user.school_id)):
+            if not (cp(current_user, permission2) or (
+                    cp(current_user, permission1) and current_user.school_id == user.school_id)):
                 db_sess.close()
                 return 403
 

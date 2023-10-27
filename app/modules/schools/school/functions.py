@@ -1,6 +1,6 @@
 from app.modules.schools.school.classes.school_class.functions import delete_classes
 from app.data.models import School, Permission, Class, User
-from app.data.functions import allowed_permission
+from app.data.functions import check_permission
 from app.data.db_session import create_session
 
 
@@ -29,8 +29,8 @@ def delete_schools(schools, user=None, check_permission=True):
     if check_permission and user is not None:
         permission1 = db_sess.query(Permission).filter_by(title="deleting_self_school").first()
         permission2 = db_sess.query(Permission).filter_by(title="deleting_school").first()
-        if not (allowed_permission(user, permission2) or (
-                allowed_permission(user, permission1) and user.school_id in schools)):
+        if not (check_permission(user, permission2) or (
+                check_permission(user, permission1) and user.school_id in schools)):
             db_sess.close()
             return 403
 

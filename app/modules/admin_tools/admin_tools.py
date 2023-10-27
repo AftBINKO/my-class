@@ -1,8 +1,8 @@
 from flask import redirect, url_for, abort, render_template
 from flask_login import login_required, current_user
 
-from app.data.functions import allowed_permission, check_status
-from app.data.models import Permission, School, User, Status
+from app.data.functions import check_permission, check_role, add_role
+from app.data.models import Permission, School, User, Role
 from app.data.forms import ChangeFullnameForm, SelectUser
 from app.data.db_session import create_session
 from app.modules.admin_tools import bp
@@ -18,7 +18,7 @@ def check_permissions():
     db_sess = create_session()
 
     permission = db_sess.query(Permission).filter_by(title="access_admin_panel").first()
-    if not allowed_permission(current_user, permission):
+    if not check_permission(current_user, permission):
         db_sess.close()
         abort(403)
 
@@ -30,7 +30,7 @@ def admin_panel():
     db_sess = create_session()
 
     schools = db_sess.query(School).all()
-    admins = [user for user in db_sess.query(User).all() if check_status(user, "Администратор")]
+    admins = [user for user in db_sess.query(User).all() if check_role(user, "Администратор")]
 
     db_sess.close()
 
@@ -57,7 +57,7 @@ def add_admin():
         else:
             admin = User()
             admin.fullname = ' '.join(list(map(lambda name: name.lower().capitalize(), form.fullname.data.split())))
-            admin.statuses = 5
+            admin.roles = 5
             admin.generate_key()
 
             db_sess = create_session()
@@ -72,12 +72,13 @@ def add_admin():
 
 @bp.route('/admin_panel/admins/add_existing', methods=['GET', 'POST'])
 def add_existing_admin():
-    db_sess = create_session()
-
     form = SelectUser()
+
+    db_sess = create_session()
     form.select.choices = [(0, "Выбрать...")] + [
-        (us.id, us.fullname) for us in db_sess.query(User).all() if not check_status(us, "Администратор")
+        (us.id, us.fullname) for us in db_sess.query(User).all() if not check_role(us, "Администратор")
     ]
+    db_sess.close()
 
     data = {
         'form': form,
@@ -88,13 +89,7 @@ def add_existing_admin():
     if form.validate_on_submit():
         user_id = int(form.select.data)
         if user_id:
-            user = db_sess.query(User).get(user_id)
-            user.statuses = ", ".join(list(map(str, (list(sorted(list(map(int, user.statuses.split(", "))) + [
-                db_sess.query(Status).filter_by(title="Администратор").first().id]))))))
-
-            db_sess.commit()
-            db_sess.close()
-
+            add_role(user_id, "Администратор")
             return redirect(url_for(".admin_panel"))
 
         data["message"] = "Вы не выбрали пользователя"

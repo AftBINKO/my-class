@@ -2,7 +2,7 @@ from flask import redirect, url_for, abort, render_template
 from flask_login import login_required, current_user
 
 from app.modules.schools.forms import EditSchoolForm
-from app.data.functions import allowed_permission
+from app.data.functions import check_permission
 from app.data.db_session import create_session
 from app.data.models import School, Permission
 from app.modules.schools import bp
@@ -20,8 +20,8 @@ def check_register():
 def add_school():
     db_sess = create_session()
 
-    permission = db_sess.query(Permission).filter(Permission.title == "adding_school").first()  # noqa
-    if not allowed_permission(current_user, permission):
+    permission = db_sess.query(Permission).filter_by(title="adding_school").first()
+    if not check_permission(current_user, permission):
         db_sess.close()
         abort(403)
 

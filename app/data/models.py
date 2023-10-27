@@ -27,11 +27,13 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
 
     is_registered = Column(Boolean, nullable=False, default=False)
 
+    qr = Column(String)
+
     is_arrived = Column(Boolean)
     arrival_time = Column(DateTime)
     list_times = Column(Text)
 
-    statuses = Column(String, nullable=False, default="1")
+    roles = Column(String, nullable=False, default="1")
 
     user_class = orm.relationship('Class')
     school = orm.relationship('School')
@@ -65,9 +67,6 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     def delete_key(self):
         self.key = None
 
-    def get_columns(self):
-        return [column.key for column in self.__table__.columns]
-
 
 class Class(SqlAlchemyBase, SerializerMixin):
     __tablename__ = 'classes'
@@ -78,16 +77,13 @@ class Class(SqlAlchemyBase, SerializerMixin):
     class_number = Column(Integer, nullable=False)
     letter = Column(String)
     school_id = Column(Integer, ForeignKey("schools.id"))
-    qr = Column(String)
+    # qr = Column(String)
 
     school = orm.relationship('School')
     user = orm.relationship("User", back_populates="user_class")
 
     def __repr__(self):
         return f"<Class {self.class_number}{self.letter}>"
-
-    def get_columns(self):
-        return [column.key for column in self.__table__.columns]
 
 
 class School(SqlAlchemyBase, SerializerMixin):
@@ -105,24 +101,20 @@ class School(SqlAlchemyBase, SerializerMixin):
     def __repr__(self):
         return f"<School {self.name}>"
 
-    def get_columns(self):
-        return [column.key for column in self.__table__.columns]
 
-
-class Status(SqlAlchemyBase, SerializerMixin):
-    __tablename__ = 'statuses'
+class Role(SqlAlchemyBase, SerializerMixin):
+    __tablename__ = 'roles'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    priority = Column(Integer, autoincrement=True)
+
     title = Column(String, nullable=False)
-    inheritance = Column(Integer, ForeignKey("statuses.id"))
+    inheritance = Column(Integer, ForeignKey("roles.id"))
     allowed_permissions = Column(String)
     banned_permissions = Column(String)
 
     def __repr__(self):
-        return f"<Status {self.title}>"
-
-    def get_columns(self):
-        return [column.key for column in self.__table__.columns]
+        return f"<Role {self.title}>"
 
 
 class Permission(SqlAlchemyBase, SerializerMixin):
@@ -135,6 +127,3 @@ class Permission(SqlAlchemyBase, SerializerMixin):
 
     def __repr__(self):
         return f"<Permission {self.title}>"
-
-    def get_columns(self):
-        return [column.key for column in self.__table__.columns]

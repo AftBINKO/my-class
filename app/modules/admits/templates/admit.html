@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{% block content %}
+    {% if message %}
+        <div class="d-flex justify-content-center">
+            <div class="alert alert-{{ type }}">{{ message }}</div>
+        </div>
+    {% endif %}
+    <div class="content">
+        <h1 style="text-align: center">{{ title }}</h1>
+        <p class="fs-3" style="text-align: center">
+            Сканируйте QR код либо вводите ID здесь, чтобы отметить присутствующих
+        </p>
+        <div class="d-flex justify-content-center">
+            <form action="" method="post" class="row">
+                {{ form.hidden_tag() }}
+                <div class="col">
+                    {{ form.id(class="form-control", placeholder="ID") }}
+                    {% for error in form.id.errors %}
+                        <div class="alert alert-danger" role="alert">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col">
+                    {{ form.submit(type="submit", class="btn btn-success") }}
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

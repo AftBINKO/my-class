@@ -4,7 +4,7 @@ from flask_login import login_required, current_user
 from app.modules.schools.school.classes.school_class.forms import EditClassForm
 from app.data.models import Class, Permission, School
 from app.modules.schools.school.classes import bp
-from app.data.functions import allowed_permission
+from app.data.functions import check_permission
 from app.data.db_session import create_session
 
 
@@ -18,8 +18,8 @@ def add_class(school_id):
     permission1 = db_sess.query(Permission).filter_by(title="adding_classes").first()
     permission2 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
-    if not (allowed_permission(current_user, permission1) and (
-            current_user.school_id == school_id or allowed_permission(current_user, permission2))):
+    if not (check_permission(current_user, permission1) and (
+            current_user.school_id == school_id or check_permission(current_user, permission2))):
         db_sess.close()
         abort(403)
 
