@@ -3,8 +3,8 @@ from string import ascii_letters, digits, punctuation
 from flask import redirect, url_for, abort, render_template
 from flask_login import login_required, current_user
 
-from app.data.models import User, Class, Permission, Role, School
-from app.data.functions import all_permissions, check_permission, get_max_role
+from app.data.functions import all_permissions, check_permission, get_max_role, get_roles
+from app.data.models import User, Class, Permission, School
 from app.data.db_session import create_session
 from app.data.forms import ChangeFullnameForm
 from app import RUSSIAN_ALPHABET
@@ -38,8 +38,7 @@ def profile(user_id=None):
 
     school_class = db_sess.query(Class).filter_by(id=user.class_id).first()
     school = db_sess.query(School).filter_by(id=user.school_id).first()
-    roles = list(sorted(db_sess.query(Role).filter(Role.id.in_(user.roles.split(", "))).all(),  # noqa
-                           key=lambda s: s.priory, reverse=True))
+    roles = list(sorted(get_roles(user), key=lambda s: s.priory, reverse=True))
 
     roles_titles = []
     for role in roles:
