@@ -39,7 +39,7 @@ def profile(user_id=None):
     school_class = db_sess.query(Class).filter_by(id=user.class_id).first()
     school = db_sess.query(School).filter_by(id=user.school_id).first()
     roles = list(sorted(db_sess.query(Role).filter(Role.id.in_(user.roles.split(", "))).all(),  # noqa
-                           key=lambda s: s.id, reverse=True))
+                           key=lambda s: s.priory, reverse=True))
 
     roles_titles = []
     for role in roles:
