@@ -62,4 +62,4 @@ def generate_qrcode(user_id):
     if result == 403:
         abort(403)
 
-    return redirect(url_for("home"))
+    return redirect(url_for("profile.profile", user_id=user_id))
