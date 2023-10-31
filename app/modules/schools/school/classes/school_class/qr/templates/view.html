@@ -43,7 +43,7 @@
                     </td>
                     <td>
                         {% if student.qr %}
-                            <img src="/static/files/qrcodes/users/{{ student.qr }}" width="125"
+                            <img src="/static/uploads/qrcodes/users/{{ student.qr }}" width="125"
                                  class="rounded mx-auto d-block" alt="QR код {{ student.id }}">
                         {% else %}
                             <a href="{{ url_for("qr.generate_qrcode", user_id=student.id) }}"

@@ -2,9 +2,10 @@ from datetime import datetime
 from json import load, dump
 from os import path
 
+from qrcode.image.styledpil import StyledPilImage
+from qrcode import make, QRCode, constants
 from flask import url_for
 from pytz import timezone
-from qrcode import make
 
 from .models import User, Role, Permission
 from .db_session import create_session
@@ -252,7 +253,7 @@ def admit(user, current_user):
     return True
 
 
-def generate_qrs(users, current_user, uploads):
+def generate_qrs(users, current_user, qrcodes_path):
     if not (isinstance(users, (User, int, list)) and isinstance(current_user, (User, int))):  # noqa
         raise TypeError
 
@@ -303,8 +304,14 @@ def generate_qrs(users, current_user, uploads):
                 return 403
 
         name = f"pass_{user.id}.png"
-        qr = make(url_for("qr.admit", user_id=user.id, _external=True))  # TODO: Добавить картинку
-        qr.save(path.join(uploads, name))
+        qr = QRCode(
+            version=2,
+            error_correction=constants.ERROR_CORRECT_H
+        )
+        qr.add_data(url_for("qr.admit", user_id=user.id, _external=True))
+        img = qr.make_image(image_factory=StyledPilImage,
+                            embeded_image_path=f'app/{url_for("static", filename="logos/logo.jpg")}')
+        img.save(path.join(qrcodes_path, name))
 
         u = db_sess.query(User).get(user.id)
         u.qr = name

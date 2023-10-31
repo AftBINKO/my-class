@@ -57,11 +57,11 @@ def generate_qrcodes(school_id, class_id):
 
     db_sess.close()
 
-    uploads = path.join(current_app.root_path, path.join(app.config["UPLOAD_FOLDER"], path.join("qrcodes", "users")))
+    qrcodes_path = path.join(current_app.root_path,
+                             path.join(app.config["UPLOAD_FOLDER"], path.join("qrcodes", "users")))
 
-    result = generate_qrs(students, current_user, uploads)
+    result = generate_qrs(students, current_user, qrcodes_path)
     if result == 403:
         abort(403)
 
     return redirect(url_for(".view_qrs", school_id=school_id, class_id=class_id))
-

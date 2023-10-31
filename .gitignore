@@ -1,6 +1,6 @@
 /tests.py
 /app/db/data.sqlite3
-/app/static/files/qrcodes/classes/*
+/app/static/uploads/qrcodes/classes/*
 /app/static/tmp/*
 /app/tmp/*
 /tmp/*

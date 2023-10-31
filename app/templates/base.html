@@ -6,7 +6,7 @@
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <title>
         {% block title %}
-        {% endblock %} — Мой класс
+        {% endblock %} — ENTER
     </title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
           rel="stylesheet"
@@ -15,11 +15,14 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 </head>
 
+<body class="d-flex flex-column min-vh-100">
 {% if not without_header %}
     <header>
         <nav class="navbar navbar-expand-lg bg-body-tertiary">
             <div class="container-fluid">
-                <a class="navbar-brand mb-0 h1" href="{{ url_for("home") }}">Мой класс</a>
+                <a class="navbar-brand" href="{{ url_for("home") }}">
+                    <img src="{{ url_for('static', filename='logos/enter.svg') }}" alt="logo" height="24">
+                </a>
                 {% if current_user.is_authenticated %}
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                             data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
@@ -31,7 +34,7 @@
                             {% if "5" in current_user.roles.split(", ") %}
                                 <li class="nav-item">
                                     <a class="nav-link" href="{{ url_for("admin_tools.admin_panel") }}">
-                                        Панель администратора
+                                        Панель управления
                                     </a>
                                 </li>
                             {% endif %}
@@ -86,10 +89,21 @@
     </header>
 {% endif %}
 
-<body>
-
 {% block content %}
 {% endblock %}
+
+{% if not without_header %}
+    <footer class="mt-auto d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top"
+            style="margin-left: 250px; margin-right: 250px; margin-top: auto;">
+        <a href="https://vk.com/aftcis"
+           class="col-md-4 mb-3 mb-md-0 me-md-auto link-dark text-decoration-none">
+            <img src="{{ url_for("static", filename="logos/aftservices.svg") }}" alt="AFT Services" height="24"
+                 style="opacity: 0.5">
+        </a>
+        <span class="text-muted">© 2023</span>
+    </footer>
+{% endif %}
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
         crossorigin="anonymous"></script>

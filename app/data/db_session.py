@@ -8,7 +8,7 @@ SqlAlchemyBase = dec.declarative_base()
 __factory = None
 
 
-def global_init(db_file, echo=False):
+def global_init(db_file, echo=False, af=False):
     global __factory
 
     if __factory:
@@ -23,7 +23,7 @@ def global_init(db_file, echo=False):
         print(f"Подключение к базе данных по адресу {conn_str}")
 
     engine = sa.create_engine(conn_str, echo=echo)
-    __factory = orm.sessionmaker(bind=engine)
+    __factory = orm.sessionmaker(bind=engine, autoflush=af)
 
     from . import __all_models
 

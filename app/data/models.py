@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Column, String, Integer, Boolean, Text, ForeignKey, orm, DateTime
+from sqlalchemy import Column, String, Integer, Boolean, Text, ForeignKey, orm, DateTime, BLOB
 from sqlalchemy_serializer import SerializerMixin
 
 from werkzeug.security import generate_password_hash, check_password_hash

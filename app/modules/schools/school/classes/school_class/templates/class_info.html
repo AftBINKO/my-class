@@ -170,7 +170,7 @@
                         {% if "editing_classes" in permissions or ("view_self_arrival_times" in permissions and current_user.class_id == class.id) %}
                             <td>
                                 {% if student.qr %}
-                                    <img src="/static/files/qrcodes/users/{{ student.qr }}" width="50"
+                                    <img src="/static/uploads/qrcodes/users/{{ student.qr }}" width="50"
                                          class="rounded mx-auto d-block" alt="QR код {{ student.id }}">
                                 {% endif %}
                             </td>

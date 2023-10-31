@@ -6,7 +6,7 @@ app_dir = path.abspath(path.dirname(__file__))
 class BaseConfig(object):
     SECRET_KEY = environ.get('SECRET_KEY') or 'never-never-never-sleep'
     JSON_AS_ASCII = environ.get('JSON_AS_ASCII') or False
-    UPLOAD_FOLDER = environ.get('UPLOAD_FOLDER') or path.abspath("app/static/files")
+    UPLOAD_FOLDER = environ.get('UPLOAD_FOLDER') or path.abspath("app/static/uploads")
 
 
 class DevelopmentConfig(BaseConfig):
