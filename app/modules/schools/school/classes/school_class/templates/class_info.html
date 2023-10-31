@@ -20,7 +20,7 @@
             {% if "editing_classes" in permissions or ("editing_self_class" in permissions and current_user.class_id == class.id) %}
                 <a href="{{ url_for("schools.school.classes.school_class.edit_class", school_id=school.id, class_id=class.id) }}"
                    class="bi bi-gear"
-                   style="color: #000000"></a>
+                   style="color: inherit"></a>
             {% endif %}
         </h1>
     </div>
