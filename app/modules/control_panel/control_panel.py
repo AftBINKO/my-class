@@ -26,20 +26,30 @@ def check_permissions():
 
 
 @bp.route('/')
-def control_panel():
+@bp.route('/schools_list')
+def schools_list():
     db_sess = create_session()
-
     schools = db_sess.query(School).all()
-    admins = [user for user in db_sess.query(User).all() if check_role(user, "Администратор")]
-
     db_sess.close()
 
     data = {
-        "schools": schools,
+        "schools": schools
+    }
+
+    return render_template("schools.html", **data)  # noqa
+
+
+@bp.route('/admins_list')
+def admins_list():
+    db_sess = create_session()
+    admins = [user for user in db_sess.query(User).all() if check_role(user, "Администратор")]
+    db_sess.close()
+
+    data = {
         "admins": admins
     }
 
-    return render_template("control_panel.html", **data)  # noqa
+    return render_template("admins.html", **data)  # noqa
 
 
 @bp.route('/admins/add', methods=['GET', 'POST'])
@@ -65,7 +75,7 @@ def add_admin():
             db_sess.commit()
             db_sess.close()
 
-            return redirect(url_for(".control_panel"))
+            return redirect(url_for(".schools_list"))
 
     return render_template('add_admin.html', **data)  # noqa
 
@@ -90,7 +100,7 @@ def add_existing_admin():
         user_id = int(form.select.data)
         if user_id:
             add_role(user_id, "Администратор")
-            return redirect(url_for(".control_panel"))
+            return redirect(url_for(".schools_list"))
 
         data["message"] = "Вы не выбрали пользователя"
 

@@ -25,7 +25,7 @@ def home():
     db_sess.close()
 
     if check_permission(current_user, permission):
-        return redirect(url_for("control_panel.control_panel"))
+        return redirect(url_for("control_panel.schools_list"))
 
     if current_user.class_id:
         return redirect(url_for("schools.school.classes.school_class.class_info",

@@ -21,7 +21,12 @@
         <nav class="navbar navbar-expand-lg bg-body-tertiary">
             <div class="container-fluid">
                 <a class="navbar-brand" href="{{ url_for("home") }}">
-                    <img src="{{ url_for('static', filename='logos/enter.svg') }}" alt="logo" height="24">
+                    <img src="{{ url_for('static', filename='logos/enter.svg') }}"
+                         alt="ENTER для образовательных учреждений" height="24">
+                    <span class="badge text-bg-primary">
+                        для школ
+                        <span class="visually-hidden">для образовательных учреждений</span>
+                    </span>
                 </a>
                 {% if current_user.is_authenticated %}
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -33,7 +38,7 @@
                         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                             {% if "5" in current_user.roles.split(", ") %}
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{{ url_for("control_panel.control_panel") }}">
+                                    <a class="nav-link" href="{{ url_for("control_panel.schools_list") }}">
                                         <i class="bi bi-toggles"></i> Панель управления
                                     </a>
                                 </li>
