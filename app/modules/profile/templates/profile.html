@@ -9,102 +9,208 @@
         <h1 style="text-align: center">Профиль</h1>
     </div>
     <div class="container" style="margin-top: 25px">
-        <h2 style="text-align: center">
-            {{ user.fullname }}
-        </h2>
-        <p style="text-align: center">
-            {{ roles_titles|join(", ") }}
-        </p>
-        {% if school %}
-            <p class="fs-3" style="text-align: center">
-                Образовательное учреждение: {{ school.name }}
-            </p>
-        {% endif %}
-        {% if current_user.id == user.id %}
-            <p class="fs-3" style="text-align: center">Логин: {{ user.login }}</p>
-        {% endif %}
-        <p class="fs-3" style="text-align: center">ID: {{ user.id }}</p>
-        {% if user.key %}
-            <p class="fs-3" style="text-align: center">Ключ: {{ user.key }}</p>
-        {% endif %}
-        <div class="content">
-            {% if user.qr %}
-                <h3 style="text-align: center">QR код</h3>
-                <img src="/static/files/qrcodes/users/{{ user.qr }}" class="rounded mx-auto d-block" alt="QR код">
-            {% elif current_user.id != user.id or "generate_self_qr" in permissions %}
-                <h3 style="text-align: center">QR код</h3>
-                <div style="justify-content: center; display: flex">
-                    <a href="{{ url_for("qr.generate_qrcode", user_id=user.id) }}"
-                       class="btn btn-success">
-                        Сгенерировать QR код
-                    </a>
-                </div>
-            {% endif %}
-        </div>
-        {% if current_user.id == user.id %}
-            {% if "editing_profile" in permissions %}
-                <div class="dropdown" style="justify-content: right; display: flex; margin-top: 50px">
-                    <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                        Редактировать
-                    </button>
-                    <ul class="dropdown-menu">
-                        {% if "changing_fullname" in permissions %}
-                            <li>
-                                <a href="{{ url_for('.change_fullname', user_id=user.id) }}" class="dropdown-item">
-                                    Изменить ФИО
-                                </a>
-                            </li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                        {% endif %}
-                        {% if "changing_login" in permissions %}
-                            <li>
-                                <a href="{{ url_for('.change_login', user_id=user.id) }}" class="dropdown-item">
-                                    Изменить логин
-                                </a>
-                            </li>
-                        {% endif %}
-                        {% if "changing_password" in permissions %}
-                            <li>
-                                <a href="{{ url_for('.change_password', user_id=user.id) }}" class="dropdown-item">
-                                    Изменить пароль
-                                </a>
-                            </li>
-                        {% endif %}
-                    </ul>
-                </div>
-            {% endif %}
-        {% else %}
-            <div class="dropdown" style="justify-content: center; display: flex">
-                <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                        aria-expanded="false">
-                    Редактировать
-                </button>
-                <ul class="dropdown-menu">
-                    <li>
-                        <a href="{{ url_for('.change_fullname', user_id=user.id) }}" class="dropdown-item">
-                            Изменить ФИО
-                        </a>
-                    </li>
-                    {% if user.login and user.hashed_password %}
-                        <li>
-                            <a href="{{ url_for('.delete_login', user_id=user.id) }}" class="dropdown-item">
-                                Удалить авторизационные данные
-                            </a>
-                        </li>
-                    {% endif %}
-                    <li>
-                        <hr class="dropdown-divider">
-                    </li>
-                    <li>
-                        <a href="{{ url_for(".delete_user", user_id=user.id) }}" class="dropdown-item">
-                            Удалить пользователя
-                        </a>
-                    </li>
-                </ul>
+        {% if not user.is_registered %}
+            <div class="alert alert-warning">
+                <strong>Пользователь не завершил регистрацию.</strong> Напомните пользователю ввести ключ и завершить
+                регистрацию, придумав логин и пароль, чтобы он мог полноценно пользоваться сервисом.
             </div>
         {% endif %}
+        <div class="row d-flex justify-content-center">
+            <div class="col-lg-4">
+                {% if user.qr or current_user.id != user.id or "generate_self_qr" in permissions %}
+                    <div class="card mb-4">
+                        <div class="card-body text-center">
+                            <h5 class="my-3">QR код</h5>
+                            {% if user.qr %}
+                                <img src="/static/uploads/qrcodes/users/{{ user.qr }}" style="width: 150px;"
+                                     alt="QR код">
+                                <p class="text-muted mb-1">
+                                    Вы можете показать его на входе в образовательное учреждение
+                                </p>
+                            {% elif current_user.id != user.id or "generate_self_qr" in permissions %}
+                                <div style="justify-content: center; display: flex">
+                                    <a href="{{ url_for("qr.generate_qrcode", user_id=user.id) }}"
+                                       class="btn btn-success">
+                                        Сгенерировать QR код
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <p class="mb-0">ID</p>
+                            </div>
+                            <div class="col-sm-9">
+                                <p class="text-muted mb-0">{{ user.id }}</p>
+                            </div>
+                        </div>
+                        {% if current_user.id == user.id %}
+                            {% if user.login %}
+                                <hr>
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <p class="mb-0">Логин</p>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <p class="text-muted mb-0">
+                                            {{ user.login }}
+                                            {% if "changing_login" in permissions %}
+                                                <a class="bi bi-pencil"
+                                                   href="{{ url_for('.change_login', user_id=user.id) }}"
+                                                   style="color: inherit"></a>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            {% if user.hashed_password and "changing_password" in permissions %}
+                                <hr>
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <p class="mb-0">Пароль</p>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <a class="btn btn-outline-secondary"
+                                           href="{{ url_for('.change_password', user_id=user.id) }}">
+                                            <i class="bi bi-pencil"></i> Изменить
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                        {% if user.key %}
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <p class="mb-0">Ключ</p>
+                                </div>
+                                <div class="col-sm-9">
+                                    <p class="text-muted mb-0">{{ user.key }}</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                        {% if current_user.id != user.id and (user.login or user.hashed_password) %}
+                            <hr>
+                            <div class="d-flex justify-content-center mb-2">
+                                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal"
+                                        data-bs-target="#deleteLoginData">
+                                    Удалить авторизационные данные
+                                </button>
+                                <div class="modal fade" id="deleteLoginData" tabindex="-1"
+                                     aria-labelledby="deleteLoginDataModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h1 class="modal-title fs-5" id="deleteLoginDataModalLabel">
+                                                    Удалить авторизационные данные?
+                                                </h1>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>
+                                                    Вы удалите логин и пароль пользователя и сгенерируете ключ,
+                                                    используя который, он сможет указать новые логин и пароль. <u>Это
+                                                    действие отменить невозможно.</u>
+                                                </p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                    Отмена
+                                                </button>
+                                                <a href="{{ url_for('.delete_login', user_id=user.id) }}"
+                                                   class="btn btn-danger">Удалить</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <p class="mb-0">ФИО</p>
+                            </div>
+                            <div class="col-sm-9">
+                                <p class="text-muted mb-0">
+                                    {{ user.fullname }}
+                                    {% if current_user.id != user.id or "changing_fullname" in permissions %}
+                                        <a class="bi bi-pencil"
+                                           href="{{ url_for('.change_fullname', user_id=user.id) }}"
+                                           style="color: inherit"></a>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <p class="mb-0">Роли</p>
+                            </div>
+                            <div class="col-sm-9">
+                                <p class="text-muted mb-0">{{ roles_titles|join(", ") }}</p>
+                            </div>
+                        </div>
+                        {% if school %}
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <p class="mb-0">Образовательное учреждение</p>
+                                </div>
+                                <div class="col-sm-9">
+                                    <p class="text-muted mb-0">{{ school.name }}</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if current_user.id != user.id %}
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal"
+                                data-bs-target="#deleteUser">
+                            Удалить пользователя
+                        </button>
+                        <div class="modal fade" id="deleteUser" tabindex="-1"
+                             aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="deleteUserModalLabel">
+                                            Удалить пользователя?
+                                        </h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>
+                                            Вы удалите аккаунт пользователя безвозвратно. <u>Это действие отменить
+                                            невозможно.</u>
+                                        </p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">
+                                            Отмена
+                                        </button>
+                                        <a href="{{ url_for(".delete_user", user_id=user.id) }}" class="btn btn-danger">
+                                            Удалить
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
     </div>
 {% endblock %}
