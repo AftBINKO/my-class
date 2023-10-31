@@ -97,13 +97,15 @@
                 <tr>
                     <th scope="col">Фамилия Имя Отчество</th>
                     {% if "editing_classes" in permissions or ("view_self_arrival_times" in permissions and current_user.class_id == class.id) %}
-                        <th scope="col">QR код <a
-                                href="{{ url_for(".qr_class.view_qrs", school_id=school.id, class_id=class.id) }}"
-                                class="bi bi-list" style="color: #000000"></a></th>
+                        <th scope="col">
+                            QR код
+                            <a href="{{ url_for(".qr_class.view_qrs", school_id=school.id, class_id=class.id) }}"
+                               class="bi bi-list" style="color: inherit"></a></th>
                         <th scope="col">В школе?</th>
-                        <th scope="col">Время явки <a
-                                href="{{ url_for(".schedule.annual_schedule", school_id=school.id, class_id=class.id) }}"
-                                class="bi bi-list" style="color: #000000"></a></th>
+                        <th scope="col">
+                            Время явки
+                            <a href="{{ url_for(".schedule.annual_schedule", school_id=school.id, class_id=class.id) }}"
+                               class="bi bi-list" style="color: inherit"></a></th>
                     {% endif %}
 
                     {% if "editing_classes" in permissions or ("editing_self_class" in permissions and current_user.class_id == class.id) %}
