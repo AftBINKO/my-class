@@ -21,11 +21,11 @@ def home():
         abort(401)
 
     db_sess = create_session()
-    permission = db_sess.query(Permission).filter_by(title="access_admin_panel").first()
+    permission = db_sess.query(Permission).filter_by(title="access_control_panel").first()
     db_sess.close()
 
     if check_permission(current_user, permission):
-        return redirect(url_for("admin_tools.admin_panel"))
+        return redirect(url_for("control_panel.control_panel"))
 
     if current_user.class_id:
         return redirect(url_for("schools.school.classes.school_class.class_info",

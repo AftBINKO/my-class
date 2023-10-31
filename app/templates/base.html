@@ -33,7 +33,7 @@
                         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                             {% if "5" in current_user.roles.split(", ") %}
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{{ url_for("admin_tools.admin_panel") }}">
+                                    <a class="nav-link" href="{{ url_for("control_panel.control_panel") }}">
                                         Панель управления
                                     </a>
                                 </li>

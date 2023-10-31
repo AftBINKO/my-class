@@ -5,7 +5,7 @@ from app.data.functions import check_permission, check_role, add_role
 from app.data.models import Permission, School, User, Role
 from app.data.forms import ChangeFullnameForm, SelectUser
 from app.data.db_session import create_session
-from app.modules.admin_tools import bp
+from app.modules.control_panel import bp
 from app import RUSSIAN_ALPHABET
 
 
@@ -17,7 +17,7 @@ def check_permissions():
 
     db_sess = create_session()
 
-    permission = db_sess.query(Permission).filter_by(title="access_admin_panel").first()
+    permission = db_sess.query(Permission).filter_by(title="access_control_panel").first()
     if not check_permission(current_user, permission):
         db_sess.close()
         abort(403)
@@ -25,8 +25,8 @@ def check_permissions():
     db_sess.close()
 
 
-@bp.route('/admin_panel')
-def admin_panel():
+@bp.route('/')
+def control_panel():
     db_sess = create_session()
 
     schools = db_sess.query(School).all()
@@ -39,10 +39,10 @@ def admin_panel():
         "admins": admins
     }
 
-    return render_template("admin_panel.html", **data)  # noqa
+    return render_template("control_panel.html", **data)  # noqa
 
 
-@bp.route('/admin_panel/admins/add', methods=['GET', 'POST'])
+@bp.route('/admins/add', methods=['GET', 'POST'])
 def add_admin():
     form = ChangeFullnameForm()
     data = {
@@ -65,12 +65,12 @@ def add_admin():
             db_sess.commit()
             db_sess.close()
 
-            return redirect(url_for(".admin_panel"))
+            return redirect(url_for(".control_panel"))
 
     return render_template('add_admin.html', **data)  # noqa
 
 
-@bp.route('/admin_panel/admins/add_existing', methods=['GET', 'POST'])
+@bp.route('/admins/add_existing', methods=['GET', 'POST'])
 def add_existing_admin():
     form = SelectUser()
 
@@ -90,7 +90,7 @@ def add_existing_admin():
         user_id = int(form.select.data)
         if user_id:
             add_role(user_id, "Администратор")
-            return redirect(url_for(".admin_panel"))
+            return redirect(url_for(".control_panel"))
 
         data["message"] = "Вы не выбрали пользователя"
 

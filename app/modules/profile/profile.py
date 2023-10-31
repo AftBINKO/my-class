@@ -55,7 +55,7 @@ def profile(user_id=None):
         roles_titles.append(role.title)
 
     permissions = None
-    permission3 = db_sess.query(Permission).filter_by(title="access_admin_panel").first()
+    permission3 = db_sess.query(Permission).filter_by(title="access_control_panel").first()
     if current_user.id == user_id:
         permissions = set(map(lambda permission: permission.title, all_permissions(user)))
     else:
