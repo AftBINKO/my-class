@@ -26,7 +26,7 @@
                 <div class="dropdown">
                     <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown"
                             aria-expanded="false">
-                        Добавить модератора
+                        <i class="bi bi-person-add"></i> Добавить модератора
                     </button>
                     <ul class="dropdown-menu">
                         <li>
@@ -96,7 +96,7 @@
         <div class="container-fluid" style="margin-top: 25px">
             {% if "adding_classes" in permissions %}
                 <a href="{{ url_for("schools.school.classes.add_class", school_id=school.id) }}"
-                   class="btn btn-success">Добавить класс</a>
+                   class="btn btn-success"><i class="bi bi-plus-lg"></i> Добавить класс</a>
             {% endif %}
 {#            {% if "editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) %}#}
 {#                <a href="{{ url_for("schools.school.download_school_excel", school_id=school.id) }}"#}
@@ -146,7 +146,7 @@
             <div class="dropdown">
                 <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown"
                         aria-expanded="false">
-                    Добавить учителя
+                    <i class="bi bi-person-add"></i> Добавить учителя
                 </button>
                 <ul class="dropdown-menu">
                     <li>

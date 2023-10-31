@@ -34,7 +34,7 @@
                             {% if "5" in current_user.roles.split(", ") %}
                                 <li class="nav-item">
                                     <a class="nav-link" href="{{ url_for("control_panel.control_panel") }}">
-                                        Панель управления
+                                        <i class="bi bi-toggles"></i> Панель управления
                                     </a>
                                 </li>
                             {% endif %}
@@ -42,7 +42,7 @@
                                 <li class="nav-item">
                                     <a class="nav-link"
                                        href="{{ url_for("admit.admit") }}">
-                                        Отметить присутствующих
+                                        <i class="bi bi-check-circle"></i> Отметить присутствующих
                                     </a>
                                 </li>
                             {% endif %}
@@ -50,7 +50,7 @@
                                 <li class="nav-item">
                                     <a class="nav-link"
                                        href="{{ url_for("schools.school.school_info", school_id=current_user.school_id) }}">
-                                        Моя школа
+                                        <i class="bi bi-building"></i> Моя школа
                                     </a>
                                 </li>
                             {% endif %}
@@ -58,7 +58,7 @@
                                 <li class="nav-item">
                                     <a class="nav-link"
                                        href="{{ url_for("schools.school.classes.school_class.class_info", school_id=current_user.school_id, class_id=current_user.class_id) }}">
-                                        Мой класс
+                                        <i class="bi bi-mortarboard"></i> Мой класс
                                     </a>
                                 </li>
                             {% endif %}

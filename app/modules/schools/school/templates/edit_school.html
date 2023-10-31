@@ -44,9 +44,38 @@
                 Управлять образовательным учреждением
             </h3>
             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                <a href="{{ url_for("schools.school.delete_school", school_id=school.id) }}" class="btn btn-danger">
-                    Удалить образовательное учреждение
-                </a>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal"
+                        data-bs-target="#deleteSchool">
+                    <i class="bi bi-trash"></i> Удалить образовательное учреждение
+                </button>
+                <div class="modal fade" id="deleteSchool" tabindex="-1"
+                     aria-labelledby="deleteSchoolModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="deleteSchoolModalLabel">
+                                    Удалить образовательное учреждение?
+                                </h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>
+                                    Вы удалите данные образовательного учреждения безвозвратно. <u>Это действие отменить
+                                    невозможно.</u>
+                                </p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">
+                                    Отмена
+                                </button>
+                                <a href="{{ url_for("schools.school.delete_school", school_id=school.id) }}"
+                                   class="btn btn-danger">Удалить</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     {% endif %}

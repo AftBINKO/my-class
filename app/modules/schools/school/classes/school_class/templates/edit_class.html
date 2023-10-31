@@ -52,8 +52,35 @@
                 Управлять классом
             </h3>
             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                <a href="{{ url_for("schools.school.classes.school_class.delete_class", school_id=school.id, class_id=class.id) }}"
-                   class="btn btn-danger">Удалить класс</a>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal"
+                        data-bs-target="#deleteClass">
+                    <i class="bi bi-trash"></i> Удалить класс
+                </button>
+                <div class="modal fade" id="deleteClass" tabindex="-1"
+                     aria-labelledby="deleteClassModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="deleteClassModalLabel">
+                                    Удалить класс?
+                                </h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Вы удалите данные класса безвозвратно. <u>Это действие отменить невозможно.</u></p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">
+                                    Отмена
+                                </button>
+                                <a href="{{ url_for("schools.school.classes.school_class.delete_class", school_id=school.id, class_id=class.id) }}"
+                                   class="btn btn-danger">Удалить</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     {% endif %}

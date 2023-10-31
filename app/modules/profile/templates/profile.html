@@ -31,7 +31,7 @@
                                 <div style="justify-content: center; display: flex">
                                     <a href="{{ url_for("qr.generate_qrcode", user_id=user.id) }}"
                                        class="btn btn-success">
-                                        Сгенерировать QR код
+                                        <i class="bi bi-qr-code"></i> Сгенерировать QR код
                                     </a>
                                 </div>
                             {% endif %}
@@ -98,7 +98,7 @@
                             <div class="d-flex justify-content-center mb-2">
                                 <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal"
                                         data-bs-target="#deleteLoginData">
-                                    Удалить авторизационные данные
+                                    <i class="bi bi-trash"></i> Удалить авторизационные данные
                                 </button>
                                 <div class="modal fade" id="deleteLoginData" tabindex="-1"
                                      aria-labelledby="deleteLoginDataModalLabel" aria-hidden="true">
@@ -177,7 +177,7 @@
                     <div class="d-flex justify-content-end">
                         <button type="button" class="btn btn-danger" data-bs-toggle="modal"
                                 data-bs-target="#deleteUser">
-                            Удалить пользователя
+                            <i class="bi bi-trash"></i> Удалить пользователя
                         </button>
                         <div class="modal fade" id="deleteUser" tabindex="-1"
                              aria-labelledby="deleteUserModalLabel" aria-hidden="true">

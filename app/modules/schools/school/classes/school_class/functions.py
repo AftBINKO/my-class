@@ -1,5 +1,5 @@
 from app.data.models import School, Class, Permission, User
-from app.data.functions import check_permission
+from app.data.functions import check_permission as cp
 from app.data.db_session import create_session
 
 
@@ -31,9 +31,8 @@ def delete_classes(school, classes, user=None, check_permission=True):
         permission2 = db_sess.query(Permission).filter_by(title="deleting_classes").first()
         permission3 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
-        if not ((check_permission(user, permission2) or (
-                check_permission(user, permission1) and user.class_id in classes)) and (
-                        user.school_id == school or check_permission(user, permission3))):
+        if not ((cp(user, permission2) or (cp(user, permission1) and user.class_id in classes)) and (
+                user.school_id == school or cp(user, permission3))):
             db_sess.close()
             return 403
 

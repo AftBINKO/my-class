@@ -5,11 +5,15 @@
 {% endblock %}
 
 {% block content %}
+    <div class="container" style="margin-top: 25px">
+        <h1 style="text-align: center">
+            Добавить класс в {{ school.name }}
+        </h1>
+    </div>
     <div class="container">
         <div class="row justify-content-center align-items-center">
             <form action="" method="post">
                 {{ form.hidden_tag() }}
-                <legend style="text-align: center">Добавить класс в {{ school.name }}</legend>
                 <div class="mb-3">
                     {{ form.class_number.label(class="form-label") }}*
                     {{ form.class_number(class="form-control", placeholder='11') }}
