@@ -35,6 +35,8 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
 
     roles = Column(String, nullable=False, default="1")
 
+    home_page = Column(String, nullable=False, default="profile")
+
     user_class = orm.relationship('Class')
     school = orm.relationship('School')
 

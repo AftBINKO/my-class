@@ -77,6 +77,53 @@ def profile(user_id=None):
     return render_template("profile.html", **data)  # noqa
 
 
+@bp.route('/<int:user_id>/change_home_page/<page>', methods=['GET', 'POST'])
+@bp.route('/my/change_home_page/<page>', methods=['GET', 'POST'])
+@bp.route('/change_home_page/<page>', methods=['GET', 'POST'])
+@login_required
+def change_home_page(page, user_id=None):
+    db_sess = create_session()
+
+    if not user_id:
+        user_id = current_user.id
+
+    user = db_sess.query(User).get(user_id)
+
+    if not current_user.id == user_id:
+        db_sess.close()
+        abort(403)
+
+    match page:
+        case "control_panel":
+            permission = db_sess.query(Permission).filter_by(title="access_control_panel").first()
+            if not check_permission(current_user, permission):
+                db_sess.close()
+                abort(401)
+
+            user.home_page = "control_panel"
+
+        case "my_school":
+            if not current_user.school_id:
+                abort(401)
+
+            user.home_page = "my_school"
+
+        case "my_class":
+            if not current_user.class_id:
+                abort(401)
+
+            user.home_page = "my_class"
+
+        case "profile":
+            user.home_page = "profile"
+
+        case _:
+            abort(404)
+
+    db_sess.commit()
+    return redirect(url_for('home'))
+
+
 @bp.route('/<int:user_id>/edit_fullname', methods=['GET', 'POST'])
 @bp.route('/my/edit_fullname', methods=['GET', 'POST'])
 @bp.route('/edit_fullname', methods=['GET', 'POST'])

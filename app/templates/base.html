@@ -81,6 +81,64 @@
                                     <li>
                                         <hr class="dropdown-divider">
                                     </li>
+
+                                    <li><h6 class="dropdown-header">Главная страница</h6></li>
+                                    <li>
+                                        {% if current_user.home_page == "profile" %}
+                                            <a class="dropdown-item active" href="#" aria-current="true">Профиль</a>
+                                        {% else %}
+                                            <a class="dropdown-item"
+                                               href="{{ url_for("profile.change_home_page", page="profile") }}">
+                                                Профиль
+                                            </a>
+                                        {% endif %}
+                                    </li>
+                                    {% if current_user.class_id %}
+                                        <li>
+                                            {% if current_user.home_page == "my_class" %}
+                                                <a class="dropdown-item active" href="#" aria-current="true">
+                                                    Мой класс
+                                                </a>
+                                            {% else %}
+                                                <a class="dropdown-item"
+                                                   href="{{ url_for("profile.change_home_page", page="my_class") }}">
+                                                    Мой класс
+                                                </a>
+                                            {% endif %}
+                                        </li>
+                                    {% endif %}
+                                    {% if current_user.school_id %}
+                                        <li>
+                                            {% if current_user.home_page == "my_school" %}
+                                                <a class="dropdown-item active" href="#" aria-current="true">
+                                                    Моя школа
+                                                </a>
+                                            {% else %}
+                                                <a class="dropdown-item"
+                                                   href="{{ url_for("profile.change_home_page", page="my_school") }}">
+                                                    Моя школа
+                                                </a>
+                                            {% endif %}
+                                        </li>
+                                    {% endif %}
+                                    {% if "5" in current_user.roles.split(", ") %}
+                                        <li>
+                                            {% if current_user.home_page == "control_panel" %}
+                                                <a class="dropdown-item active" href="#" aria-current="true">
+                                                    Панель управления
+                                                </a>
+                                            {% else %}
+                                                <a class="dropdown-item"
+                                                   href="{{ url_for("profile.change_home_page", page="control_panel") }}">
+                                                    Панель управления
+                                                </a>
+                                            {% endif %}
+                                        </li>
+                                    {% endif %}
+
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
                                     <li>
                                         <a class="dropdown-item" href="{{ url_for("auth.logout") }}">Выйти</a>
                                     </li>
