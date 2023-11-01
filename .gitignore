@@ -1,7 +1,7 @@
 /tests.py
 /app/db/data.sqlite3
 /app/static/uploads/qrcodes/users/*
-/app/static/tmp/*
+/app/static/uploads/tmp/*
 /app/tmp/*
 /tmp/*
 /app/data/config.json
