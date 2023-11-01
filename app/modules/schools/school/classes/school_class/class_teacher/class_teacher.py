@@ -4,7 +4,7 @@ from flask_login import login_required, current_user
 from app.modules.schools.school.classes.school_class.class_teacher import bp
 from app.data.models import User, Permission, School, Class, Role
 from app.data.forms import ChangeFullnameForm, SelectUser
-from app.data.functions import check_permission, add_role, get_roles, get_max_role
+from app.data.functions import check_permission, add_role, get_roles, get_max_role, check_role, del_role
 from app.data.db_session import create_session
 from app import RUSSIAN_ALPHABET
 
@@ -17,9 +17,10 @@ def check_permissions(endpoint, values):
 
     permission1 = db_sess.query(Permission).filter_by(title="editing_self_school").first()
     permission2 = db_sess.query(Permission).filter_by(title="editing_school").first()
+    permission3 = db_sess.query(Permission).filter_by(title="editing_classes").first()
 
-    if not (check_permission(current_user, permission2) or (
-            check_permission(current_user, permission1) and current_user.school_id == school_id)):
+    if not (check_permission(current_user, permission3) and (check_permission(current_user, permission2) or (
+            check_permission(current_user, permission1) and current_user.school_id == school_id))):
         db_sess.close()
         abort(403)
 
@@ -116,10 +117,31 @@ def add_existing_class_teacher(school_id, class_id):
             db_sess.close()
 
             return redirect(
-                url_for("schools.school.classes.school_class.class_info",
-                        school_id=school_id, class_id=class_id))
+                url_for("schools.school.classes.school_class.class_info", school_id=school_id, class_id=class_id)
+            )
         data["message"] = "Вы не выбрали пользователя"
 
     db_sess.close()
 
     return render_template('add_existing.html', **data)
+
+
+@bp.route('/delete', methods=['GET', 'POST'])
+@login_required
+def delete(school_id, class_id):
+    db_sess = create_session()
+
+    users = db_sess.query(User).filter_by(class_id=class_id).all()
+    class_teacher = None
+    for user in users:
+        if check_role(user, "Классный руководитель"):
+            class_teacher = user
+            break
+
+    if class_teacher is None:
+        abort(404)
+
+    del_role(class_teacher.id, "Классный руководитель")
+    db_sess.close()
+
+    return redirect(url_for("schools.school.classes.school_class.class_info", school_id=school_id, class_id=class_id))

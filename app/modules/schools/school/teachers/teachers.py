@@ -57,7 +57,7 @@ def add_teacher(school_id):
             db_sess.commit()
             db_sess.close()
 
-            return redirect(url_for("schools.school.school_info", school_id=school_id))
+            return redirect(url_for("schools.school.classes_list", school_id=school_id))
 
     db_sess.close()
 
@@ -97,7 +97,7 @@ def add_existing_teacher(school_id):
             add_role(user_id, "Учитель")
             db_sess.close()
 
-            return redirect(url_for("schools.school.school_info", school_id=school_id))
+            return redirect(url_for("schools.school.classes_list", school_id=school_id))
         data["message"] = "Вы не выбрали пользователя"
 
     db_sess.close()

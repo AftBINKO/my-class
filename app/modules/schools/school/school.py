@@ -35,18 +35,38 @@ def check_permissions(endpoint, values):
 
 
 @bp.route('/')
+@bp.route('/classes')
 @login_required
-def school_info(school_id):
+def classes_list(school_id):
     db_sess = create_session()
     permissions = set(map(lambda permission: permission.title, all_permissions(current_user)))
 
     school = db_sess.query(School).get(school_id)
     classes = db_sess.query(Class).filter_by(school_id=school_id).all()
 
-    users = db_sess.query(User).filter_by(school_id=school_id).all()
+    db_sess.close()
+
+    data = {
+        "school": school,
+        "permissions": permissions,
+        "classes": classes,
+    }
+
+    return render_template("classes.html", **data)  # noqa
+
+
+@bp.route('/users')
+@login_required
+def users(school_id):
+    db_sess = create_session()
+    permissions = set(map(lambda permission: permission.title, all_permissions(current_user)))
+
+    school = db_sess.query(School).get(school_id)
+
+    school_users = db_sess.query(User).filter_by(school_id=school_id).all()
     moderators = []
     teachers = []
-    for user in users:
+    for user in school_users:
         roles = list(map(int, user.roles.split(", ")))
         if 4 in roles:
             moderators.append(user)
@@ -61,12 +81,11 @@ def school_info(school_id):
     data = {
         "school": school,
         "permissions": permissions,
-        "classes": classes,
         "moderators": moderators,
         "teachers": teachers
     }
 
-    return render_template("school_info.html", **data)  # noqa
+    return render_template("users.html", **data)  # noqa
 
 
 @bp.route('/download_excel', methods=['GET', 'POST'])
@@ -141,7 +160,7 @@ def edit_school(school_id):
 
         db_sess.close()
 
-        return redirect(url_for(".school_info", school_id=school_id))
+        return redirect(url_for(".classes_list", school_id=school_id))
 
     db_sess.close()
 

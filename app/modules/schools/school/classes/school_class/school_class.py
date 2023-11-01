@@ -6,7 +6,7 @@ from flask_login import login_required, current_user
 from xlsxwriter import Workbook
 
 from app.modules.schools.school.classes.school_class.functions import delete_classes
-from app.data.functions import check_permission, check_role, all_permissions
+from app.data.functions import check_permission, check_role, all_permissions, get_titles_roles
 from app.modules.schools.school.classes.school_class.forms import EditClassForm
 from app.data.models import User, Permission, School, Class, Role
 from app.modules.schools.school.classes.school_class import bp
@@ -46,12 +46,14 @@ def class_info(school_id, class_id):
 
     students = []
     class_teacher = None
+    class_teacher_roles = None
 
     for user in db_sess.query(User).filter_by(class_id=class_id).all():
         if check_role(user, "Ученик"):
             students.append(user)
         elif check_role(user, "Классный руководитель"):
             class_teacher = user
+            class_teacher_roles = get_titles_roles(class_teacher)
 
     students.sort(key=lambda st: st.fullname.split()[0])
 
@@ -60,6 +62,7 @@ def class_info(school_id, class_id):
         "permissions": permissions,
         "students": students,
         "class_teacher": class_teacher,
+        "class_teacher_roles": class_teacher_roles,
         "class": school_class,
     }
 
@@ -118,7 +121,7 @@ def delete_class(school_id, class_id):
     if delete_classes(school_id, class_id, current_user) == 405:
         abort(403)
 
-    return redirect(url_for("schools.school.school_info", school_id=school_id))
+    return redirect(url_for("schools.school.classes_list", school_id=school_id))
 
 
 @bp.route('/download_excel', methods=['GET', 'POST'])

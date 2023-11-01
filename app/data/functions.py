@@ -3,11 +3,11 @@ from json import load, dump
 from os import path
 
 from qrcode.image.styledpil import StyledPilImage
-from qrcode import make, QRCode, constants
+from qrcode import QRCode, constants
 from flask import url_for
 from pytz import timezone
 
-from .models import User, Role, Permission
+from .models import User, Role, Permission, Class
 from .db_session import create_session
 
 
@@ -134,6 +134,34 @@ def get_roles(user):
     db_sess.close()
 
     return roles
+
+
+def get_titles_roles(user):
+    if not isinstance(user, (User, int)):  # noqa
+        raise TypeError
+
+    db_sess = create_session()
+
+    if isinstance(user, int):
+        user = db_sess.query(User).get(user)
+
+    roles = list(sorted(get_roles(user), key=lambda r: r.priority, reverse=True))
+
+    roles_titles = []
+    for role in roles:
+        if role.title in ["Классный руководитель", "Ученик", "Староста"]:
+            if user.class_id:
+                school_class = db_sess.query(Class).get(user.class_id)
+                title = f"{role.title} {school_class.class_number}-го "
+                if school_class.letter:
+                    title += f'"{school_class.letter}" '
+                title += "класса"
+                roles_titles.append(title)
+                continue
+
+        roles_titles.append(role.title)
+    db_sess.close()
+    return roles_titles
 
 
 def get_max_role(user):

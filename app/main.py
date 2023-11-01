@@ -32,6 +32,6 @@ def home():
                                 school_id=current_user.school_id, class_id=current_user.class_id))
 
     if current_user.school_id:
-        return redirect(url_for("schools.school.school_info", school_id=current_user.school_id))
+        return redirect(url_for("schools.school.classes_list", school_id=current_user.school_id))
 
     return redirect(url_for("profile.profile"))

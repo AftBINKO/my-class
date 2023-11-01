@@ -43,7 +43,7 @@
                     <th scope="row">{{ school.id }}</th>
                     <td>{{ school.name }}</td>
                     <td>
-                        <a href="{{ url_for("schools.school.school_info", school_id=school.id) }}"
+                        <a href="{{ url_for("schools.school.classes_list", school_id=school.id) }}"
                            class="btn btn-primary">Открыть</a>
                     </td>
                 </tr>

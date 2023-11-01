@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ school.name }}
+{% endblock %}
+
+{% block content %}
+    <div class="container" style="margin-top: 25px">
+        <h1 style="text-align: center">
+            {{ school.name }}
+            {% if "editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) %}
+                <a href="{{ url_for(".edit_school", school_id=school.id) }}" class="bi bi-gear"
+                   style="color: inherit"></a>
+            {% endif %}
+        </h1>
+    </div>
+    <div class="container" style="margin-top: 25px">
+        <p>{{ school.fullname }}</p>
+    </div>
+    <div class="container" style="margin-top: 25px">
+        <ul class="nav nav-pills nav-fill">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for(".classes_list", school_id=school.id) }}">
+                    Классы
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="#">Сотрудники</a>
+            </li>
+        </ul>
+    </div>
+    <div class="container" style="margin-top: 25px">
+        <div class="row">
+            <div class="col-lg" style="margin-top: 50px">
+                <div class="container" style="margin-top: 25px">
+                    <h3 style="text-align: center">Преподавательский коллектив</h3>
+                </div>
+                {% if "editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) %}
+                    <div class="dropdown">
+                        <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                            <i class="bi bi-person-add"></i> Добавить учителя
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href="{{ url_for('schools.school.teachers.add_teacher', school_id=school.id) }}"
+                                   class="dropdown-item">
+                                    Создать новый аккаунт
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('schools.school.teachers.add_existing_teacher', school_id=school.id) }}"
+                                   class="dropdown-item">
+                                    Добавить из существующих модераторов/классных руководителей
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                {% endif %}
+                <div class="container" style="margin-top: 25px">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th scope="col">Фамилия Имя Отчество</th>
+                            {% if "editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) %}
+                                <th scope="col">Ключ</th>
+                            {% endif %}
+                            <th scope="col"></th>
+                        </tr>
+                        </thead>
+                        <tbody class="table-group-divider">
+                        {% for teacher in teachers %}
+                            <tr>
+                                <td>
+                                    {{ teacher.fullname }}
+                                    {% if teacher.id == current_user.id %}
+                                        <span class="badge bg-secondary">вы</span>
+                                    {% endif %}
+                                </td>
+                                {% if "editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) %}
+                                    <td>
+                                        {% if teacher.key %}
+                                            {{ teacher.key }}
+                                        {% endif %}
+                                    </td>
+                                {% endif %}
+                                <td>
+                                    {% if ("editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) or current_user.id == teacher.id) %}
+                                        <form action="" method="post">
+                                            <a href="{{ url_for("profile.profile", user_id=teacher.id) }}"
+                                               class="btn btn-primary">
+                                                Открыть
+                                            </a>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-lg" style="margin-top: 50px">
+                <div class="container" style="margin-top: 25px">
+                    <h3 style="text-align: center">Администрация</h3>
+                </div>
+                {% if "editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) %}
+                    <div class="container" style="margin-top: 25px">
+                        <div class="dropdown">
+                            <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                <i class="bi bi-person-add"></i> Добавить модератора
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a href="{{ url_for('schools.school.moderators.add_moderator', school_id=school.id) }}"
+                                       class="dropdown-item">
+                                        Создать новый аккаунт
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ url_for('schools.school.moderators.add_existing_moderator', school_id=school.id) }}"
+                                       class="dropdown-item">
+                                        Добавить из существующих учителей
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <p>Вы можете добавить директора, информатика, завуча или другого управляющего лица</p>
+                    </div>
+                {% endif %}
+                <div class="container" style="margin-top: 25px">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th scope="col">Фамилия Имя Отчество</th>
+                            {% if "editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) %}
+                                <th scope="col">Ключ</th>
+                            {% endif %}
+                            <th scope="col"></th>
+                        </tr>
+                        </thead>
+                        <tbody class="table-group-divider">
+                        {% for moder in moderators %}
+                            <tr>
+                                <td>
+                                    {{ moder.fullname }}
+                                    {% if moder.id == current_user.id %}
+                                        <span class="badge bg-secondary">вы</span>
+                                    {% endif %}
+                                </td>
+                                {% if "editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) %}
+                                    <td>
+                                        {% if moder.key %}
+                                            {{ moder.key }}
+                                        {% endif %}
+                                    </td>
+                                {% endif %}
+                                <td>
+                                    {% if ("editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) or current_user.id == moder.id) %}
+                                        <form action="" method="post">
+                                            <a href="{{ url_for("profile.profile", user_id=moder.id) }}"
+                                               class="btn btn-primary">
+                                                Открыть
+                                            </a>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

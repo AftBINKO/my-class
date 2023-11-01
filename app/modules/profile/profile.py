@@ -3,8 +3,8 @@ from string import ascii_letters, digits, punctuation
 from flask import redirect, url_for, abort, render_template
 from flask_login import login_required, current_user
 
-from app.data.functions import all_permissions, check_permission, get_max_role, get_roles
-from app.data.models import User, Class, Permission, School
+from app.data.functions import all_permissions, check_permission, get_max_role, get_titles_roles
+from app.data.models import User, Permission, School
 from app.data.db_session import create_session
 from app.data.forms import ChangeFullnameForm
 from app import RUSSIAN_ALPHABET
@@ -36,22 +36,8 @@ def profile(user_id=None):
     if not user:
         abort(404)
 
-    school_class = db_sess.query(Class).filter_by(id=user.class_id).first()
     school = db_sess.query(School).filter_by(id=user.school_id).first()
-    roles = list(sorted(get_roles(user), key=lambda r: r.priority, reverse=True))
-
-    roles_titles = []
-    for role in roles:
-        if role.title in ["Классный руководитель", "Ученик", "Староста"]:
-            if school_class:
-                title = f"{role.title} {school_class.class_number}-го "
-                if school_class.letter:
-                    title += f'"{school_class.letter}" '
-                title += "класса"
-                roles_titles.append(title)
-                continue
-
-        roles_titles.append(role.title)
+    roles_titles = get_titles_roles(user)
 
     permissions = None
     permission3 = db_sess.query(Permission).filter_by(title="access_control_panel").first()
