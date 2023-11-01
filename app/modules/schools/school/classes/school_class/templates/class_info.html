@@ -139,7 +139,7 @@
         <p class="fs-5 fw-bold">Общее количество учеников: {{ students|length }}</p>
         {% if "editing_classes" in permissions or ("editing_self_class" in permissions and current_user.class_id == class.id) %}
             <div class="container-fluid" style="margin-top: 25px">
-                <a href="{{ url_for("schools.school.classes.school_class.students.add_student", school_id=school.id, class_id=class.id) }}"
+                <a href="{{ url_for(".students.add_student", school_id=school.id, class_id=class.id) }}"
                    class="btn btn-success"><i class="bi bi-person-add"></i> Добавить ученика</a>
                 {#                <a href="{{ url_for("schools.school.classes.school_class.download_excel", school_id=school.id, class_id=class.id) }}"#}
                 {#                   class="btn btn-outline-success">#}

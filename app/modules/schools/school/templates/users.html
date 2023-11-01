@@ -43,13 +43,13 @@
                         </button>
                         <ul class="dropdown-menu">
                             <li>
-                                <a href="{{ url_for('schools.school.teachers.add_teacher', school_id=school.id) }}"
+                                <a href="{{ url_for('.teachers.add_teacher', school_id=school.id) }}"
                                    class="dropdown-item">
                                     Создать новый аккаунт
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ url_for('schools.school.teachers.add_existing_teacher', school_id=school.id) }}"
+                                <a href="{{ url_for('.teachers.add_existing_teacher', school_id=school.id) }}"
                                    class="dropdown-item">
                                     Добавить из существующих модераторов/классных руководителей
                                 </a>
@@ -113,13 +113,13 @@
                             </button>
                             <ul class="dropdown-menu">
                                 <li>
-                                    <a href="{{ url_for('schools.school.moderators.add_moderator', school_id=school.id) }}"
+                                    <a href="{{ url_for('.moderators.add_moderator', school_id=school.id) }}"
                                        class="dropdown-item">
                                         Создать новый аккаунт
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="{{ url_for('schools.school.moderators.add_existing_moderator', school_id=school.id) }}"
+                                    <a href="{{ url_for('.moderators.add_existing_moderator', school_id=school.id) }}"
                                        class="dropdown-item">
                                         Добавить из существующих учителей
                                     </a>

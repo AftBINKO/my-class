@@ -74,8 +74,8 @@ def add_existing_teacher(school_id):
     form = SelectUser()
 
     school_users = db_sess.query(User).filter_by(school_id=school_id).all()
-    users = [(0, "Выбрать...")]
-    for us in school_users:  # noqa
+    users = [(0, "Выбрать...")]  # noqa
+    for us in school_users:
         roles = get_roles(us)
         role = get_max_role(us)
         if role.title in ["Модератор", "Классный руководитель"] and "Учитель" not in list(
