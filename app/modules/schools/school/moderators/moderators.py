@@ -12,9 +12,9 @@ from app import RUSSIAN_ALPHABET
 @bp.url_value_preprocessor
 @login_required
 def check_permissions(endpoint, values):
-    school_id = values['school_id']
+    school_id = values['school_id']  # noqa
 
-    db_sess = create_session()  # noqa
+    db_sess = create_session()
 
     permission1 = db_sess.query(Permission).filter_by(title="editing_self_school").first()
     permission2 = db_sess.query(Permission).filter_by(title="editing_school").first()
@@ -56,7 +56,7 @@ def add_moderator(school_id):
             db_sess.commit()
             db_sess.close()
 
-            return redirect(url_for("schools.school.classes_list", school_id=school_id))
+            return redirect(url_for("schools.school.users", school_id=school_id))
 
     db_sess.close()
 
@@ -92,7 +92,7 @@ def add_existing_moderator(school_id):
             add_role(user_id, "Модератор")
             db_sess.close()
 
-            return redirect(url_for("schools.school.classes_list", school_id=school_id))
+            return redirect(url_for("schools.school.users", school_id=school_id))
         data["message"] = "Вы не выбрали пользователя"
 
     db_sess.close()

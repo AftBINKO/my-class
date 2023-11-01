@@ -75,7 +75,7 @@ def add_admin():
             db_sess.commit()
             db_sess.close()
 
-            return redirect(url_for(".schools_list"))
+            return redirect(url_for(".admins_list"))
 
     return render_template('add_admin.html', **data)  # noqa
 
@@ -100,7 +100,7 @@ def add_existing_admin():
         user_id = int(form.select.data)
         if user_id:
             add_role(user_id, "Администратор")
-            return redirect(url_for(".schools_list"))
+            return redirect(url_for(".admins_list"))
 
         data["message"] = "Вы не выбрали пользователя"
 
