@@ -155,6 +155,9 @@ def change_fullname(user_id=None):
             abort(403)
 
     form = ChangeFullnameForm()
+    if not form.fullname.data:
+        form.fullname.data = user.fullname
+
     data = {
         'form': form,
         'message': None
@@ -197,6 +200,9 @@ def change_login(user_id=None):
         abort(403)
 
     form = ChangeLoginForm()
+    if not form.login.data:
+        form.login.data = user.login
+
     data = {
         'form': form,
         'message': None

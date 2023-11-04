@@ -106,8 +106,14 @@ def edit_school(school_id):
     is_deleting_school = check_permission(current_user, permission3) or (
             check_permission(current_user, permission4) and current_user.school_id == school_id)
 
-    form = EditSchoolForm()
     school = db_sess.query(School).get(school_id)
+
+    form = EditSchoolForm()
+    if not form.school.data:
+        form.school.data = school.name
+    if not form.fullname.data:
+        form.fullname.data = school.fullname
+
     data = {
         'form': form,
         'school': school,

@@ -90,9 +90,15 @@ def edit_class(school_id, class_id):
         db_sess.close()
         abort(403)
 
-    form = EditClassForm()
     school = db_sess.query(School).get(school_id)
     school_class = db_sess.query(Class).get(class_id)
+
+    form = EditClassForm()
+    if not form.class_number.data:
+        form.class_number.data = school_class.class_number
+    if not form.letter.data:
+        form.letter.data = school_class.letter
+
     data = {
         'form': form,
         'school': school,
