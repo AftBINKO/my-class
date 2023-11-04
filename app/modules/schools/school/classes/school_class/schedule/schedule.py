@@ -93,15 +93,21 @@ def weekly_schedule(school_id, class_id, week=None):
                 presence[WEEKDAYS[w]] += 1
                 total_presence += 1
 
+    permission = db_sess.query(Permission).filter_by(title="editing_self_class").first()
+    generate_table = check_permission(current_user, permission)
+
     data = {
         "school": school,
         "students": students,
+        "monday": monday,
+        "saturday": saturday,
         "class": school_class,
         "weekdays": weekdays,
         "schedule": schedule,
         "presence": presence,
         "today": today,
         "today_week": today_week,
+        "generate_table": generate_table,
         "week": week,
         "total_presence": total_presence
     }
@@ -171,6 +177,9 @@ def annual_schedule(school_id, class_id, date=None):
         if not f1 and not f2:
             break
 
+    permission = db_sess.query(Permission).filter_by(title="editing_self_class").first()
+    generate_table = check_permission(current_user, permission)
+
     data = {
         "school": school,
         "students": students,
@@ -181,6 +190,7 @@ def annual_schedule(school_id, class_id, date=None):
         "pagination": pagination,
         "start_date": start_date,
         "today": today,
+        "generate_table": generate_table,
         "previous": date - timedelta(days=1),
         "next": date + timedelta(days=1),
     }
@@ -237,7 +247,7 @@ def monthly_schedule(school_id, class_id, month=None):
 
                 if start_date <= datetime.strptime(d, "%d.%m.%y").date() <= today:
                     for student in students:
-                        arrival_time = student.arrival_time_for(datetime.strptime(d, "%d.%m.%y").date())
+                        arrival_time = student.arrival_time_for(datetime.strptime(d, "%d.%m.%y").date())  # noqa
                         if arrival_time:
                             presence += 1
                 else:
@@ -284,9 +294,14 @@ def monthly_schedule(school_id, class_id, month=None):
     school = db_sess.query(School).get(school_id)
     school_class = db_sess.query(Class).get(class_id)
 
+    permission = db_sess.query(Permission).filter_by(title="editing_self_class").first()
+    generate_table = check_permission(current_user, permission)
+
     data = {
         'date': date,
         'class': school_class,
+        'start_month': start_month,
+        'end_month': end_month,
         'school': school,
         'class_id': class_id,
         'school_id': school_id,
@@ -294,6 +309,7 @@ def monthly_schedule(school_id, class_id, month=None):
         'pagination': pagination,
         "start_date": start_date,
         "today": today,
+        "generate_table": generate_table,
         "previous": start_month - timedelta(days=1),
         "next": end_month + timedelta(days=1)
     }

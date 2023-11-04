@@ -39,6 +39,14 @@
             </li>
         </ul>
     </div>
+    {% if generate_table %}
+        <div class="container d-flex justify-content-end" style="margin-top: 25px">
+            <a href="{{ url_for("schools.school.excel.generate", school_id=school.id, class_id=class.id, start_date=monday.strftime("%d.%m.%y"), end_date=saturday.strftime("%d.%m.%y")) }}"
+               class="btn btn-outline-success">
+                <i class="bi bi-table"></i> Сгенерировать таблицу в формате Excel
+            </a>
+        </div>
+    {% endif %}
     <div class="container" style="margin-top: 25px">
         <p class="fs-5 fw-bold">Общее количество явок: {{ total_presence }}</p>
         <table class="table table-bordered">
@@ -113,7 +121,7 @@
                     {% else %}
                         <li class="page-item">
                             <a class="page-link"  {# учитывая week -= 1 #}
-                               href="{{ url_for(".weekly_schedule", school_id=school.id, class_id=class.id, week=1)}}">
+                               href="{{ url_for(".weekly_schedule", school_id=school.id, class_id=class.id, week=1) }}">
                                 <i class="bi bi-chevron-double-left"></i>
                             </a>
                         </li>

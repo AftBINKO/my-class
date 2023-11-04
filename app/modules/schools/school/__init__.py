@@ -7,7 +7,9 @@ from app.modules.schools.school import school
 from app.modules.schools.school.moderators import bp as moderators_bp
 from app.modules.schools.school.teachers import bp as teachers_bp
 from app.modules.schools.school.classes import bp as classes_bp
+from app.modules.schools.school.excel import bp as excel_bp
 
 bp.register_blueprint(moderators_bp)
 bp.register_blueprint(teachers_bp)
 bp.register_blueprint(classes_bp)
+bp.register_blueprint(excel_bp)
