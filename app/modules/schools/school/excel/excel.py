@@ -36,10 +36,12 @@ def generate(school_id):
         class_id = int(class_id)
     if start_date:
         start_date = datetime.strptime(start_date, "%d.%m.%y").date()
-        form.start_date.data = start_date
+        if not form.start_date.data:
+            form.start_date.data = start_date
     if end_date:
         end_date = datetime.strptime(end_date, "%d.%m.%y").date()
-        form.end_date.data = end_date
+        if not form.end_date.data:
+            form.end_date.data = end_date
 
     permission1 = db_sess.query(Permission).filter_by(title="editing_self_school").first()
     permission2 = db_sess.query(Permission).filter_by(title="editing_school").first()
