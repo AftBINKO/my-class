@@ -1,9 +1,9 @@
-from flask import redirect, url_for, abort, render_template
+from flask import redirect, url_for, abort, render_template, request, session
 from flask_login import login_required, current_user
 
 from app.data.functions import check_permission, check_role, add_role
-from app.data.models import Permission, School, User, Role
 from app.data.forms import ChangeFullnameForm, SelectUser
+from app.data.models import Permission, School, User
 from app.data.db_session import create_session
 from app.modules.control_panel import bp
 from app import RUSSIAN_ALPHABET
@@ -28,6 +28,8 @@ def check_permissions():
 @bp.route('/')
 @bp.route('/schools_list')
 def schools_list():
+    session['url'] = request.base_url
+
     db_sess = create_session()
     schools = db_sess.query(School).all()
     db_sess.close()
@@ -41,6 +43,8 @@ def schools_list():
 
 @bp.route('/admins_list')
 def admins_list():
+    session['url'] = request.base_url
+
     db_sess = create_session()
     admins = [user for user in db_sess.query(User).all() if check_role(user, "Администратор")]
     db_sess.close()
@@ -75,7 +79,7 @@ def add_admin():
             db_sess.commit()
             db_sess.close()
 
-            return redirect(url_for(".admins_list"))
+            return redirect(session.pop('url', url_for(".admins_list")))
 
     return render_template('add_admin.html', **data)  # noqa
 
@@ -100,7 +104,7 @@ def add_existing_admin():
         user_id = int(form.select.data)
         if user_id:
             add_role(user_id, "Администратор")
-            return redirect(url_for(".admins_list"))
+            return redirect(session.pop('url', url_for(".admins_list")))
 
         data["message"] = "Вы не выбрали пользователя"
 

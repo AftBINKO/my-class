@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Сгенерировать таблицу из {{ school.name }}
+{% endblock %}
+
+{% block content %}
+    <div class="container" style="margin-top: 25px">
+        <h1 style="text-align: center">
+            Сгенерировать таблицу из {{ school.name }}
+        </h1>
+        <p>Тут вы можете сгенерировать таблицу явки учеников за разный промежуток времени</p>
+    </div>
+    <div class="container" style="margin-top: 25px">
+        <div class="row justify-content-center align-items-center">
+            <form action="" method="post">
+                {{ form.hidden_tag() }}
+                {% if message %}
+                    <div class="alert alert-danger">{{ message }}</div>
+                {% endif %}
+                <div class="mb-3">
+                    {{ form.classes.label(class="form-label") }}
+                    <br>
+                    {% if class_index is defined %}
+                        {% if "editing_classes" in permissions %}
+                            {% for c in form.classes %}
+                                <div class="form-check form-check-inline">
+                                    {% set check = False %}
+                                    {% if loop.index0 == class_index %}
+                                        {% set check = True %}
+                                    {% endif %}
+                                    {{ c(class="form-check-input", type="checkbox", checked=check) }}
+                                    {{ c.label(class="form-label") }}
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            {% for c in form.classes %}
+                                <div class="form-check form-check-inline">
+                                    {% set check = False %}
+                                    {% if loop.index0 == class_index %}
+                                        {% set check = True %}
+                                    {% endif %}
+                                    {{ c(class="form-check-input", type="checkbox", checked=check, disabled=True) }}
+                                    {{ c.label(class="form-label") }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% else %}
+                        {% for c in form.classes %}
+                            <div class="form-check form-check-inline">
+                                {{ c(class="form-check-input", type="checkbox", checked=True) }}
+                                {{ c.label(class="form-label") }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                {% for error in form.classes.errors %}
+                    <div class="alert alert-danger" role="alert">{{ error }}</div>
+                {% endfor %}
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-1">
+                        {{ form.start_date.label(class="form-label") }}
+                    </div>
+                    {% if start_date %}
+                        <div class="col-md-2">
+                            {{ form.start_date(class="form-control", type="date") }}
+                        </div>
+                    {% else %}
+                        <div class="col-md-2">
+                            {{ form.start_date(class="form-control", type="date") }}
+                        </div>
+                    {% endif %}
+                    {% for error in form.start_date.errors %}
+                        <div class="alert alert-danger" role="alert">{{ error }}</div>
+                    {% endfor %}
+
+                    <div class="col-md-1">
+                        {{ form.end_date.label(class="form-label") }}
+                    </div>
+                    {% if end_date %}
+                        <div class="col-md-2">
+                            {{ form.end_date(class="form-control", type="date") }}
+                        </div>
+                    {% else %}
+                        <div class="col-md-2">
+                            {{ form.end_date(class="form-control", type="date") }}
+                        </div>
+                    {% endif %}
+                    {% for error in form.end_date.errors %}
+                        <div class="alert alert-danger" role="alert">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="mb-3">
+                    {{ form.submit(type="submit", class="btn btn-success") }}
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

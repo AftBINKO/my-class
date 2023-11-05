@@ -38,10 +38,10 @@
                                             <p class="text-muted">{{ class_teacher_roles|join(", ") }}</p>
                                             {% if "editing_classes" in permissions and ("editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id)) %}
                                                 <hr>
-                                                <div class="d-flex">
+                                                <div class="d-flex justify-content-between">
                                                     <a href="{{ url_for("profile.profile", user_id=class_teacher.id) }}"
-                                                       class="btn btn-primary ms-1">Открыть</a>
-                                                    <button type="button" class="btn btn-warning ms-1"
+                                                       class="btn btn-primary">Открыть</a>
+                                                    <button type="button" class="btn btn-warning"
                                                             data-bs-toggle="modal" data-bs-target="#deleteClassTeacher">
                                                         Разжаловать
                                                     </button>
@@ -137,10 +137,6 @@
             <div class="container-fluid" style="margin-top: 25px">
                 <a href="{{ url_for(".students.add_student", school_id=school.id, class_id=class.id) }}"
                    class="btn btn-success"><i class="bi bi-person-add"></i> Добавить ученика</a>
-                {#                <a href="{{ url_for("schools.school.classes.school_class.download_excel", school_id=school.id, class_id=class.id) }}"#}
-                {#                   class="btn btn-outline-success">#}
-                {#                    Скачать таблицу в формате Excel#}
-                {#                </a>#}
             </div>
         {% endif %}
         <div class="container" style="margin-top: 25px">

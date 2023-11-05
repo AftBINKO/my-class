@@ -1,9 +1,5 @@
-from os import path
-
-from flask import redirect, url_for, abort, render_template, send_file
+from flask import redirect, url_for, abort, render_template, session, request
 from flask_login import login_required, current_user
-
-from xlsxwriter import Workbook
 
 from app.data.functions import all_permissions, check_permission, check_role
 from app.modules.schools.school.functions import delete_schools
@@ -15,6 +11,9 @@ from app.modules.schools.school import bp
 
 @bp.url_value_preprocessor
 def check_permissions(endpoint, values):
+    if not current_user.is_authenticated:
+        abort(401)
+
     school_id = values['school_id']
 
     db_sess = create_session()
@@ -38,6 +37,8 @@ def check_permissions(endpoint, values):
 @bp.route('/classes')
 @login_required
 def classes_list(school_id):
+    session['url'] = request.base_url  # noqa
+
     db_sess = create_session()
     permissions = set(map(lambda permission: permission.title, all_permissions(current_user)))
 
@@ -58,6 +59,8 @@ def classes_list(school_id):
 @bp.route('/users')
 @login_required
 def users(school_id):
+    session['url'] = request.base_url  # noqa
+
     db_sess = create_session()
     permissions = set(map(lambda permission: permission.title, all_permissions(current_user)))
 
@@ -88,42 +91,6 @@ def users(school_id):
     return render_template("users.html", **data)  # noqa
 
 
-@bp.route('/download_excel', methods=['GET', 'POST'])
-@login_required
-def download_school_excel(school_id):
-    db_sess = create_session()
-
-    tmp_path = path.abspath("app/static/tmp/table.xlsx")
-    school = db_sess.query(School).get(school_id)
-    classes = db_sess.query(Class).filter_by(school_id=school_id).all()
-
-    with Workbook(tmp_path) as workbook:
-        for school_class in classes:
-            worksheet = workbook.add_worksheet(f"{school_class.class_number}{school_class.letter}")
-
-            students = [user for user in db_sess.query(User).filter_by(class_id=school_class.id).all() if
-                        check_role(user, "Ученик")]
-
-            header_row_format = workbook.add_format({'bold': True})  # noqa
-            worksheet.set_row(0, None, header_row_format)
-
-            headers = ["ФИО", "В школе?", "Дата и время прибытия"]
-
-            for col, header in enumerate(headers):
-                worksheet.write(0, col, header)
-
-            for row, student in enumerate(students, start=1):
-                worksheet.write(row, 0, student.fullname)
-                if student.is_arrived:
-                    worksheet.write(row, 1, "Да")
-                elif student.is_arrived is not None:
-                    worksheet.write(row, 1, "Нет")
-                if student.arrival_time:
-                    worksheet.write(row, 2, student.arrival_time.strftime("%d.%m.%Y %H:%M"))
-
-    return send_file(tmp_path, as_attachment=True, download_name=f"{school.name}.xlsx")
-
-
 @bp.route('/edit', methods=['GET', 'POST'])
 @login_required
 def edit_school(school_id):
@@ -142,8 +109,14 @@ def edit_school(school_id):
     is_deleting_school = check_permission(current_user, permission3) or (
             check_permission(current_user, permission4) and current_user.school_id == school_id)
 
-    form = EditSchoolForm()
     school = db_sess.query(School).get(school_id)
+
+    form = EditSchoolForm()
+    if not form.school.data:
+        form.school.data = school.name
+    if not form.fullname.data:
+        form.fullname.data = school.fullname
+
     data = {
         'form': form,
         'school': school,
@@ -160,7 +133,7 @@ def edit_school(school_id):
 
         db_sess.close()
 
-        return redirect(url_for(".classes_list", school_id=school_id))
+        return redirect(session.pop('url', url_for(".classes_list", school_id=school_id)))
 
     db_sess.close()
 
@@ -173,4 +146,4 @@ def delete_school(school_id):
     if delete_schools(school_id, current_user) == 403:
         abort(403)
 
-    return redirect(url_for("home"))
+    return redirect(session.pop('url', url_for("home")))

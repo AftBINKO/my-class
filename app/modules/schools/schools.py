@@ -1,4 +1,4 @@
-from flask import redirect, url_for, abort, render_template
+from flask import redirect, url_for, abort, render_template, session
 from flask_login import login_required, current_user
 
 from app.modules.schools.forms import EditSchoolForm
@@ -43,7 +43,7 @@ def add_school():
 
         db_sess.close()
 
-        return redirect(url_for(".school.classes_list", school_id=school_id))
+        return redirect(session.pop('url', url_for(".school.classes_list", school_id=school_id)))
 
     db_sess.close()
 

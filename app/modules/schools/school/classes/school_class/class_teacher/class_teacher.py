@@ -1,4 +1,4 @@
-from flask import redirect, url_for, abort, render_template
+from flask import redirect, url_for, abort, render_template, session
 from flask_login import login_required, current_user
 
 from app.modules.schools.school.classes.school_class.class_teacher import bp
@@ -64,9 +64,8 @@ def add_class_teacher(school_id, class_id):
             db_sess.commit()
             db_sess.close()
 
-            return redirect(
-                url_for("schools.school.classes.school_class.class_info",
-                        school_id=school_id, class_id=class_id))
+            return redirect(session.pop('url', url_for("schools.school.classes.school_class.class_info",
+                                                       school_id=school_id, class_id=class_id)))
 
     db_sess.close()
 

@@ -1,6 +1,11 @@
-from wtforms import StringField, SubmitField, SelectField
+from wtforms import StringField, SubmitField, SelectField, SelectMultipleField, widgets
 from wtforms.validators import DataRequired
 from flask_wtf import FlaskForm
+
+
+class MultiCheckboxField(SelectMultipleField):
+  widget = widgets.ListWidget(prefix_label=False)  # noqa
+  option_widget = widgets.CheckboxInput()  # noqa
 
 
 class ChangeFullnameForm(FlaskForm):
