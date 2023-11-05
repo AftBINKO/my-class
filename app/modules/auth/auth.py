@@ -1,5 +1,5 @@
 from flask_login import login_required, logout_user, current_user, login_user
-from flask import redirect, url_for, render_template, abort
+from flask import redirect, url_for, render_template, abort, session
 
 from string import ascii_letters, digits, punctuation
 
@@ -34,20 +34,16 @@ def logout():
 
 
 @bp.route('/login', methods=['GET', 'POST'])
-@bp.route('/enter_to_class/<int:user_id>/login', methods=['GET', 'POST'])
-def login(user_id=None):
+def login():
     if current_user.is_authenticated:
         if not current_user.is_registered:
             abort(401)
-        if user_id:
-            return redirect(url_for("qr.enter_to_class", user_id=user_id))
-        return redirect(url_for("home"))
+        return redirect(session.pop('url', url_for("home")))
 
     form = LoginForm()
     data = {
         "form": form,
         "message": None,
-        "user_id": user_id
     }
 
     if form.validate_on_submit():
@@ -58,9 +54,7 @@ def login(user_id=None):
         if user:
             if user.check_password(form.password.data):  # noqa
                 login_user(user, remember=form.remember_me.data)
-                if user_id:
-                    return redirect(url_for("qr.enter_to_class", user_id=user_id))
-                return redirect(url_for("home"))
+                return redirect(session.pop('url', url_for("home")))
 
             data["message"] = "Неверный пароль"
 
@@ -70,14 +64,11 @@ def login(user_id=None):
 
 
 @bp.route('/login_key', methods=['GET', 'POST'])
-@bp.route('/enter_to_class/<int:user_id>/login_key', methods=['GET', 'POST'])
-def login_with_key(user_id=None):
+def login_with_key():
     if current_user.is_authenticated:
         if not current_user.is_registered:
             abort(401)
-        if user_id:
-            return redirect(url_for("qr.enter_to_class", user_id=user_id))
-        return redirect(url_for("home"))
+        return redirect(session.pop('url', url_for("home")))
 
     form = LoginKeyForm()
     data = {
@@ -92,20 +83,17 @@ def login_with_key(user_id=None):
 
         if user is not None:
             login_user(user, remember=True)
-            return redirect(url_for(".finish_register", user_id=user_id))
+            return redirect(url_for(".finish_register", user_id=user.id))
         else:
             data["message"] = "Неверный ключ"
     return render_template("login_key.html", **data)  # noqa
 
 
 @bp.route('/finish_register', methods=['GET', 'POST'])
-@bp.route('/enter_to_class/<int:user_id>/finish_register', methods=['GET', 'POST'])
 @login_required
-def finish_register(user_id=None):
+def finish_register():
     if current_user.is_registered:
-        if user_id:
-            return redirect(url_for("qr.enter_to_class", user_id=user_id))
-        return redirect(url_for("home"))
+        return redirect(session.pop('url', url_for("home")))
 
     form = FinishRegisterForm()
     data = {
@@ -137,9 +125,8 @@ def finish_register(user_id=None):
             db_sess.commit()
             db_sess.close()
 
-            if user_id:
-                return redirect(url_for("qr.enter_to_class", user_id=user_id))
+            return redirect(session.pop('url', url_for("home")))
 
-            return redirect(url_for("home"))
         db_sess.close()
+
     return render_template("finish_register.html", **data)  # noqa

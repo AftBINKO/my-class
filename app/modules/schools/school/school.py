@@ -1,9 +1,5 @@
-from os import path
-
-from flask import redirect, url_for, abort, render_template, send_file
+from flask import redirect, url_for, abort, render_template, session, request
 from flask_login import login_required, current_user
-
-from xlsxwriter import Workbook
 
 from app.data.functions import all_permissions, check_permission, check_role
 from app.modules.schools.school.functions import delete_schools
@@ -15,6 +11,9 @@ from app.modules.schools.school import bp
 
 @bp.url_value_preprocessor
 def check_permissions(endpoint, values):
+    if not current_user.is_authenticated:
+        abort(401)
+
     school_id = values['school_id']
 
     db_sess = create_session()
@@ -38,6 +37,8 @@ def check_permissions(endpoint, values):
 @bp.route('/classes')
 @login_required
 def classes_list(school_id):
+    session['url'] = request.base_url  # noqa
+
     db_sess = create_session()
     permissions = set(map(lambda permission: permission.title, all_permissions(current_user)))
 
@@ -58,6 +59,8 @@ def classes_list(school_id):
 @bp.route('/users')
 @login_required
 def users(school_id):
+    session['url'] = request.base_url  # noqa
+
     db_sess = create_session()
     permissions = set(map(lambda permission: permission.title, all_permissions(current_user)))
 
@@ -130,7 +133,7 @@ def edit_school(school_id):
 
         db_sess.close()
 
-        return redirect(url_for(".classes_list", school_id=school_id))
+        return redirect(session.pop('url', url_for(".classes_list", school_id=school_id)))
 
     db_sess.close()
 
@@ -143,4 +146,4 @@ def delete_school(school_id):
     if delete_schools(school_id, current_user) == 403:
         abort(403)
 
-    return redirect(url_for("home"))
+    return redirect(session.pop('url', url_for("home")))

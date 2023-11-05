@@ -3,7 +3,7 @@ from pytz import timezone
 from json import load
 from os import path
 
-from flask import request, render_template, jsonify, abort, redirect, url_for, current_app, send_file
+from flask import request, render_template, abort, redirect, url_for, current_app, send_file
 from flask_login import login_required, current_user
 from xlsxwriter import Workbook
 

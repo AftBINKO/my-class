@@ -1,9 +1,5 @@
-from os import path
-
-from flask import redirect, url_for, abort, render_template, send_file
+from flask import redirect, url_for, abort, render_template, send_file, session, request
 from flask_login import login_required, current_user
-
-from xlsxwriter import Workbook
 
 from app.modules.schools.school.classes.school_class.functions import delete_classes
 from app.data.functions import check_permission, check_role, all_permissions, get_titles_roles
@@ -38,6 +34,8 @@ def check_permissions(endpoint, values):
 @bp.route('/', methods=['GET', 'POST'])
 @login_required
 def class_info(school_id, class_id):
+    session['url'] = request.base_url
+
     db_sess = create_session()
     permissions = set(map(lambda permission: permission.title, all_permissions(current_user)))
 
@@ -113,8 +111,9 @@ def edit_class(school_id, class_id):
         db_sess.commit()
         db_sess.close()
 
-        return redirect(
-            url_for(".class_info", school_id=school_id, class_id=class_id))
+        return redirect(session.pop('url', url_for(
+            ".class_info", school_id=school_id, class_id=class_id
+        )))
 
     db_sess.close()
 
@@ -127,4 +126,4 @@ def delete_class(school_id, class_id):
     if delete_classes(school_id, class_id, current_user) == 405:
         abort(403)
 
-    return redirect(url_for("schools.school.classes_list", school_id=school_id))
+    return redirect(session.pop('url', url_for("schools.school.classes_list", school_id=school_id)))

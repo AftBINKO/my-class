@@ -1,6 +1,6 @@
 from string import ascii_letters, digits, punctuation
 
-from flask import redirect, url_for, abort, render_template
+from flask import redirect, url_for, abort, render_template, request, session
 from flask_login import login_required, current_user
 
 from app.data.functions import all_permissions, check_permission, get_max_role, get_titles_roles
@@ -121,7 +121,7 @@ def change_home_page(page, user_id=None):
             abort(404)
 
     db_sess.commit()
-    return redirect(url_for('home'))
+    return redirect(session.pop('url', url_for("home")))
 
 
 @bp.route('/<int:user_id>/edit_fullname', methods=['GET', 'POST'])
@@ -173,7 +173,7 @@ def change_fullname(user_id=None):
 
             db_sess.commit()
             db_sess.close()
-            return redirect(url_for(".profile", user_id=user_id))
+            return redirect(session.pop('url', url_for(".profile", user_id=user_id)))
     db_sess.close()
     return render_template('change_fullname.html', **data)  # noqa
 
@@ -218,7 +218,7 @@ def change_login(user_id=None):
 
             db_sess.commit()
             db_sess.close()
-            return redirect(url_for(".profile", user_id=user_id))
+            return redirect(session.pop('url', url_for(".profile", user_id=user_id)))
 
     db_sess.close()
 
@@ -271,7 +271,7 @@ def change_password(user_id=None):
 
             db_sess.commit()
             db_sess.close()
-            return redirect(url_for(".profile", user_id=user_id))
+            return redirect(session.pop('url', url_for(".profile", user_id=user_id)))
 
     db_sess.close()
 
@@ -294,7 +294,7 @@ def delete_login(user_id=None):
         case 404:
             abort(404)
 
-    return redirect(url_for(".profile", user_id=user_id))
+    return redirect(session.pop('url', url_for(".profile", user_id=user_id)))
 
 
 @bp.route('/<int:user_id>/delete', methods=['GET', 'POST'])
@@ -313,4 +313,4 @@ def delete_user(user_id=None):
         case 404:
             abort(404)
 
-    return redirect(url_for("home"))
+    return redirect(session.pop('url', url_for("home")))

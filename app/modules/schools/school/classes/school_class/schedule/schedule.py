@@ -202,6 +202,7 @@ def annual_schedule(school_id, class_id, date=None):
 @bp.route('/month')
 @bp.route('/month/current')
 @bp.route('/month/<month>')
+@login_required
 def monthly_schedule(school_id, class_id, month=None):
     with open(CONFIG_PATH) as json:
         start_date = datetime.strptime(load(json)["clear_times"], "%Y-%m-%d %H:%M:%S.%f").date()

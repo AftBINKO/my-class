@@ -1,11 +1,11 @@
-from flask import redirect, url_for, abort, render_template
+from flask import redirect, url_for, abort, render_template, session
 from flask_login import login_required, current_user
 
-from app.data.models import User, Permission, School, Role
-from app.data.forms import ChangeFullnameForm, SelectUser
 from app.data.functions import check_permission, add_role, get_roles, get_max_role
-from app.data.db_session import create_session
+from app.data.forms import ChangeFullnameForm, SelectUser
+from app.data.models import User, Permission, School
 from app.modules.schools.school.teachers import bp
+from app.data.db_session import create_session
 from app import RUSSIAN_ALPHABET
 
 
@@ -57,7 +57,7 @@ def add_teacher(school_id):
             db_sess.commit()
             db_sess.close()
 
-            return redirect(url_for("schools.school.users", school_id=school_id))
+            return redirect(session.pop('url', url_for("schools.school.users", school_id=school_id)))
 
     db_sess.close()
 
@@ -97,7 +97,7 @@ def add_existing_teacher(school_id):
             add_role(user_id, "Учитель")
             db_sess.close()
 
-            return redirect(url_for("schools.school.users", school_id=school_id))
+            return redirect(session.pop('url', url_for("schools.school.users", school_id=school_id)))
         data["message"] = "Вы не выбрали пользователя"
 
     db_sess.close()

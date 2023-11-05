@@ -1,4 +1,4 @@
-from flask import redirect, url_for, abort, render_template
+from flask import redirect, url_for, abort, render_template, session
 from flask_login import login_required, current_user
 
 from app.modules.schools.school.classes.school_class.students import bp
@@ -63,8 +63,9 @@ def add_student(school_id, class_id):
             db_sess.commit()
             db_sess.close()
 
-            return redirect(url_for("schools.school.classes.school_class.class_info",
-                                    school_id=school_id, class_id=class_id))
+            return redirect(session.pop('url', url_for(
+                "schools.school.classes.school_class.class_info", school_id=school_id, class_id=class_id
+            )))
 
     db_sess.close()
 
@@ -75,13 +76,15 @@ def add_student(school_id, class_id):
 @login_required
 def add_elder(school_id, class_id, user_id):
     add_role(user_id, "Староста")
-    return redirect(url_for("schools.school.classes.school_class.class_info",
-                            school_id=school_id, class_id=class_id))
+    return redirect(session.pop('url', url_for(
+        "schools.school.classes.school_class.class_info", school_id=school_id, class_id=class_id
+    )))
 
 
 @bp.route('/del_elder/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 def del_elder(school_id, class_id, user_id):
     del_role(user_id, "Староста")
-    return redirect(url_for("schools.school.classes.school_class.class_info",
-                            school_id=school_id, class_id=class_id))
+    return redirect(session.pop('url', url_for(
+        "schools.school.classes.school_class.class_info", school_id=school_id, class_id=class_id
+    )))

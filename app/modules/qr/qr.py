@@ -1,4 +1,4 @@
-from flask import redirect, url_for, abort, render_template, current_app, send_from_directory
+from flask import redirect, url_for, abort, render_template, current_app, send_from_directory, session, request
 from flask_login import login_required, current_user
 
 from qrcode import make as make_qr
@@ -15,9 +15,12 @@ from app import app
 
 
 @bp.route('/admit/<int:user_id>', methods=['GET', 'POST'])
+@login_required
 def admit(user_id):
-    if not current_user.is_authenticated:
-        return redirect(url_for("auth.login", user_id=user_id))
+    session['url'] = request.base_url
+
+    if not current_user.is_registered:
+        abort(401)
 
     result = let_it(user_id, current_user)
     match result:
@@ -62,4 +65,4 @@ def generate_qrcode(user_id):
     if result == 403:
         abort(403)
 
-    return redirect(url_for("profile.profile", user_id=user_id))
+    return redirect(session.pop('url', url_for("profile.profile", user_id=user_id)))
