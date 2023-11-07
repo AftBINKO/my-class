@@ -281,7 +281,7 @@ def admit(user, current_user):
     return True
 
 
-def generate_qrs(users, current_user, qrcodes_path):
+def generate_qrs(users, current_user, qrcodes_path, ignore_exists=True):
     if not (isinstance(users, (User, int, list)) and isinstance(current_user, (User, int))):  # noqa
         raise TypeError
 
@@ -306,6 +306,10 @@ def generate_qrs(users, current_user, qrcodes_path):
 
     for user in us:
         user: User
+
+        if user.qr and ignore_exists:
+            continue
+
         permission1 = db_sess.query(Permission).filter_by(title="generate_qr_school").first()
         permission2 = db_sess.query(Permission).filter_by(title="generate_self_qr").first()
         permission3 = db_sess.query(Permission).filter_by(title="generate_qr_class").first()
