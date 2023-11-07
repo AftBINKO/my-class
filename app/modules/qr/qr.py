@@ -61,7 +61,7 @@ def generate_qrcode(user_id):
     qrcodes_path = path.join(current_app.root_path,
                              path.join(app.config["UPLOAD_FOLDER"], path.join("qrcodes", "users")))
 
-    result = generate_qrs(user, current_user, qrcodes_path)
+    result = generate_qrs(user, current_user, qrcodes_path, ignore_exists=False)
     if result == 403:
         abort(403)
 
