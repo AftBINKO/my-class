@@ -10,6 +10,7 @@
     </content>
     <orderEntry type="jdk" jdkName="Python 3.11 (myclass)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="snowfall2020" level="application" />
   </component>
   <component name="PackageRequirementsSettings">
     <option name="versionSpecifier" value="Greater or equal (&gt;=x.y.z)" />
