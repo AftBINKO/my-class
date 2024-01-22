@@ -45,6 +45,10 @@ def groups_list(school_id):
     permissions = set(map(lambda permission: permission.title, all_permissions(current_user)))
 
     school = db_sess.query(School).get(school_id)
+
+    if not loads(school.types):
+        return redirect(url_for(".users", school_id=school_id))
+
     groups = db_sess.query(Group).filter_by(school_id=school_id).all()
 
     db_sess.close()
@@ -119,9 +123,12 @@ def edit_school(school_id):
     if not form.fullname.data:
         form.fullname.data = school.fullname
 
+    types = loads(school.types)
+
     data = {
         'form': form,
         'school': school,
+        'types': types,
         "is_deleting_school": is_deleting_school
     }
 
