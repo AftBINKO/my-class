@@ -13,12 +13,12 @@ from .db_session import SqlAlchemyBase
 class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     __tablename__ = 'users'
 
-    serialize_rules = ("-user_class", "-school",)
+    serialize_rules = ("-group", "-school",)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
     fullname = Column(String, nullable=False)
-    class_id = Column(Integer, ForeignKey("classes.id"))
+    group_id = Column(Integer, ForeignKey("groups.id"))
     school_id = Column(Integer, ForeignKey("schools.id"))
 
     login = Column(String, unique=True)
@@ -33,11 +33,11 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     arrival_time = Column(DateTime)
     list_times = Column(Text)
 
-    roles = Column(String, nullable=False, default="1")
+    roles = Column(String, nullable=False, default="[1]")
 
     home_page = Column(String, nullable=False, default="profile")
 
-    user_class = orm.relationship('Class')
+    group = orm.relationship('Group')
     school = orm.relationship('School')
 
     def __repr__(self):
@@ -70,34 +70,35 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
         self.key = None
 
 
-class Class(SqlAlchemyBase, SerializerMixin):
-    __tablename__ = 'classes'
+class Group(SqlAlchemyBase, SerializerMixin):
+    __tablename__ = 'groups'
 
     serialize_rules = ("-school", "-user",)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    class_number = Column(Integer, nullable=False)
-    letter = Column(String)
+    name = Column(String, nullable=False)
+    type = Column(Integer, nullable=False, default=0)
     school_id = Column(Integer, ForeignKey("schools.id"))
-    # qr = Column(String)
 
     school = orm.relationship('School')
-    user = orm.relationship("User", back_populates="user_class")
+    user = orm.relationship("User", back_populates="group")
 
     def __repr__(self):
-        return f"<Class {self.class_number}{self.letter}>"
+        return f"<Group {self.name}>"
 
 
 class School(SqlAlchemyBase, SerializerMixin):
     __tablename__ = 'schools'
 
-    serialize_rules = ("-school_class", "-user",)
+    serialize_rules = ("-group", "-user",)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, nullable=False)
     fullname = Column(Text)
 
-    school_class = orm.relationship("Class", back_populates="school")
+    types = Column(String, nullable=False, default="[]")
+
+    group = orm.relationship("Group", back_populates="school")
     user = orm.relationship("User", back_populates="school")
 
     def __repr__(self):
