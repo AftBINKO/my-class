@@ -1,13 +1,15 @@
+from json import load, loads, dump, dumps
 from datetime import datetime
-from json import load, dump
 from os import path
 
 from qrcode.image.styledpil import StyledPilImage
-from qrcode import QRCode, constants
+from qrcode.constants import ERROR_CORRECT_H
+from qrcode.main import QRCode
+
 from flask import url_for
 from pytz import timezone
 
-from .models import User, Role, Permission, Class
+from .models import User, Role, Permission, Group
 from .db_session import create_session
 
 
@@ -78,6 +80,23 @@ def check_role_permission(role, permission, allow_default=True):
     return
 
 
+def get_roles(user):
+    if not isinstance(user, (User, int)):  # noqa
+        raise TypeError
+
+    db_sess = create_session()
+
+    if isinstance(user, int):
+        user = db_sess.query(User).get(user)
+
+    roles = db_sess.query(Role).filter(Role.id.in_(loads(user.roles))).all()  # noqa
+    roles: list
+
+    db_sess.close()
+
+    return roles
+
+
 def all_permissions(user):
     if not isinstance(user, (User, int)):
         raise TypeError
@@ -88,8 +107,7 @@ def all_permissions(user):
         user = db_sess.query(User).get(user)
     user: User
 
-    roles = db_sess.query(Role).filter(Role.id.in_(user.roles.split(", "))).all()  # noqa
-    db_sess.close()
+    roles = get_roles(user)
 
     permissions = set()
 
@@ -108,7 +126,7 @@ def check_permission(user, permission, allow_default=True):
         user = db_sess.query(User).get(user)
     user: User
 
-    roles = db_sess.query(Role).filter(Role.id.in_(user.roles.split(", "))).all()  # noqa
+    roles = get_roles(user)
     db_sess.close()
 
     for role in roles:
@@ -117,23 +135,6 @@ def check_permission(user, permission, allow_default=True):
 
     if allow_default:
         return False
-
-
-def get_roles(user):
-    if not isinstance(user, (User, int)):  # noqa
-        raise TypeError
-
-    db_sess = create_session()
-
-    if isinstance(user, int):
-        user = db_sess.query(User).get(user)
-
-    roles = db_sess.query(Role).filter(Role.id.in_(user.roles.split(", "))).all()  # noqa
-    roles: list
-
-    db_sess.close()
-
-    return roles
 
 
 def get_titles_roles(user):
@@ -149,13 +150,10 @@ def get_titles_roles(user):
 
     roles_titles = []
     for role in roles:
-        if role.title in ["Классный руководитель", "Ученик", "Староста"]:
-            if user.class_id:
-                school_class = db_sess.query(Class).get(user.class_id)
-                title = f"{role.title} {school_class.class_number}-го "
-                if school_class.letter:
-                    title += f'"{school_class.letter}" '
-                title += "класса"
+        if role.title in ["Лидер", "Ученик", "Староста"]:
+            if user.group_id:
+                group = db_sess.query(Group).get(user.group_id)
+                title = f"{role.title} группы {group.name}"
                 roles_titles.append(title)
                 continue
 
@@ -188,7 +186,7 @@ def check_role(user, role):
 
     db_sess.close()
 
-    return role in set(map(int, user.roles.split(", ")))
+    return role in loads(user.roles)
 
 
 def add_role(user, role):
@@ -205,8 +203,9 @@ def add_role(user, role):
     elif isinstance(role, Role):
         role = role.title
 
-    user.roles = ", ".join(list(map(str, (list(sorted(list(map(int, user.roles.split(", "))) + [
-        db_sess.query(Role).filter_by(title=role).first().id]))))))
+    roles: list = loads(user.roles)
+    roles.append(db_sess.query(Role).filter_by(title=role).first().id)
+    user.roles = dumps(list(sorted(roles)))
 
     db_sess.commit()
     db_sess.close()
@@ -226,12 +225,12 @@ def del_role(user, role):
     elif isinstance(role, Role):
         role = role.id
 
-    roles = list(sorted(list(map(int, user.roles.split(", ")))))
+    roles = list(sorted(loads(user.roles)))
     if role in roles:
         roles.remove(role)
     else:
         return 404
-    user.roles = ", ".join(list(map(str, roles)))
+    user.roles = dumps(roles)
 
     db_sess.commit()
     db_sess.close()
@@ -312,7 +311,7 @@ def generate_qrs(users, current_user, qrcodes_path, ignore_exists=True):
 
         permission1 = db_sess.query(Permission).filter_by(title="generate_qr_school").first()
         permission2 = db_sess.query(Permission).filter_by(title="generate_self_qr").first()
-        permission3 = db_sess.query(Permission).filter_by(title="generate_qr_class").first()
+        permission3 = db_sess.query(Permission).filter_by(title="generate_qr_group").first()
         permission4 = db_sess.query(Permission).filter_by(title="generate_qr").first()
 
         if user.id == current_user.id:
@@ -326,7 +325,7 @@ def generate_qrs(users, current_user, qrcodes_path, ignore_exists=True):
             ) and current_user.school_id is not None and current_user.school_id == user.school_id) or \
                     (check_permission(
                         current_user, permission3
-                    ) and current_user.class_id is not None and current_user.class_id == user.class_id):
+                    ) and current_user.group_id is not None and current_user.group_id == user.group_id):
 
                 if get_max_role(user).priority >= get_max_role(current_user).priority:
                     db_sess.close()
@@ -338,7 +337,7 @@ def generate_qrs(users, current_user, qrcodes_path, ignore_exists=True):
         name = f"pass_{user.id}.png"
         qr = QRCode(
             version=2,
-            error_correction=constants.ERROR_CORRECT_H
+            error_correction=ERROR_CORRECT_H
         )
         qr.add_data(url_for("qr.admit", user_id=user.id, _external=True))
         img = qr.make_image(image_factory=StyledPilImage,
