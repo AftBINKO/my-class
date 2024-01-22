@@ -1,15 +1,12 @@
 from flask import redirect, url_for, abort, render_template, current_app, send_from_directory, session, request
 from flask_login import login_required, current_user
 
-from qrcode import make as make_qr
-from datetime import datetime
-from pytz import timezone
 from os import path
 
-from app.data.functions import check_role, check_permission, get_roles, get_max_role, get_min_role, generate_qrs
 from app.data.functions import admit as let_it
-from app.data.models import User, Permission, Class
 from app.data.db_session import create_session
+from app.data.functions import generate_qrs
+from app.data.models import User
 from app.modules.qr import bp
 from app import app
 
