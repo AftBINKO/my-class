@@ -18,7 +18,7 @@ WEEKDAYS = ["Понедельник", "Вторник", "Среда", "Четв�
 SERVICE_MODE = False
 
 app = Flask(__name__)
-app.config.from_object(environ.get('FLASK_ENV') or 'config.DevelopmentConfig')
+app.config.from_object(environ.get('FLASK_ENV') or 'config.ProductionConfig')
 
 global_init(DB_PATH, echo=app.config["DEBUG"])
 
