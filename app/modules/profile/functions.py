@@ -19,12 +19,12 @@ def delete_user(user, current_user=None, check_permission=True):  # TODO: пер
     if check_permission and current_user is not None:  # noqa
         max_role_id = get_max_role(user).id
         if max_role_id == 1:
-            permission1 = db_sess.query(Permission).filter_by(title="editing_self_class").first()
-            permission2 = db_sess.query(Permission).filter_by(title="editing_classes").first()
+            permission1 = db_sess.query(Permission).filter_by(title="editing_self_group").first()
+            permission2 = db_sess.query(Permission).filter_by(title="editing_groups").first()
             permission3 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
             if not ((cp(current_user, permission2) or (
-                    cp(current_user, permission1) and current_user.class_id == user.class_id)) and (
+                    cp(current_user, permission1) and current_user.group_id == user.group_id)) and (
                             current_user.school_id == user.school_id or cp(current_user, permission3))):
                 db_sess.close()
                 return 403
@@ -58,12 +58,12 @@ def delete_login_data(user, current_user=None, check_permission=True):
     if check_permission and current_user is not None:  # noqa
         max_role_id = get_max_role(user).id
         if max_role_id == 1:
-            permission1 = db_sess.query(Permission).filter_by(title="editing_self_class").first()
-            permission2 = db_sess.query(Permission).filter_by(title="editing_classes").first()
+            permission1 = db_sess.query(Permission).filter_by(title="editing_self_group").first()
+            permission2 = db_sess.query(Permission).filter_by(title="editing_groups").first()
             permission3 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
             if not ((cp(current_user, permission2) or (
-                    cp(current_user, permission1) and current_user.class_id == user.class_id)) and (
+                    cp(current_user, permission1) and current_user.group_id == user.group_id)) and (
                             current_user.school_id == user.school_id or cp(current_user, permission3))):
                 db_sess.close()
                 return 403

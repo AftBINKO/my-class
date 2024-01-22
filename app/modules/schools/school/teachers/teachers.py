@@ -50,7 +50,7 @@ def add_teacher(school_id):
         else:
             teacher.fullname = ' '.join(list(map(lambda name: name.lower().capitalize(), form.fullname.data.split())))
             teacher.school_id = school_id
-            teacher.roles = 2
+            teacher.roles = '[2]'
             teacher.generate_key()
 
             db_sess.add(teacher)

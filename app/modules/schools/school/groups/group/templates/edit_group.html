@@ -1,42 +1,26 @@
 {% extends "base.html" %}
 
 {% block title %}
-    {% if class.letter %}
-        Управление {{ class.class_number }} "{{ class.letter }}" классом {{ school.name }}
-    {% else %}
-        Управление {{ class.class_number }} классом {{ school.name }}
-    {% endif %}
+    Управление группой "{{ group.name }}" {{ school.name }}
 {% endblock %}
 
 {% block content %}
     <div class="container" style="margin-top: 25px">
         <h1 style="text-align: center">
-            {% if class.letter %}
-                Управление {{ class.class_number }} "{{ class.letter }}" классом {{ school.name }}
-            {% else %}
-                Управление {{ class.class_number }} классом {{ school.name }}
-            {% endif %}
+            Управление группой "{{ group.name }}" {{ school.name }}
         </h1>
     </div>
     <div class="container" style="margin-top: 25px">
         <h3 style="text-align: center">
-            Редактировать класс
+            Редактировать группу
         </h3>
         <div class="row justify-content-center align-items-center">
             <form action="" method="post">
                 {{ form.hidden_tag() }}
                 <div class="mb-3">
-                    {{ form.class_number.label(class="form-label") }}*
-                    {{ form.class_number(class="form-control", placeholder='11') }}
-                    {% for error in form.class_number.errors %}
-                        <div class="alert alert-danger" role="alert">{{ error }}</div>
-                    {% endfor %}
-                </div>
-                <div class="mb-3">
-                    {{ form.letter.label(class="form-label") }}
-                    {{ form.letter(class="form-control",
-                    placeholder="А") }}
-                    {% for error in form.letter.errors %}
+                    {{ form.name.label(class="form-label") }}*
+                    {{ form.name(class="form-control", placeholder='11') }}
+                    {% for error in form.name.errors %}
                         <div class="alert alert-danger" role="alert">{{ error }}</div>
                     {% endfor %}
                 </div>
@@ -46,15 +30,15 @@
             </form>
         </div>
     </div>
-    {% if is_deleting_class %}
+    {% if is_deleting_group %}
         <div class="container" style="margin-top: 25px">
             <h3 style="text-align: center">
-                Управлять классом
+                Управлять группой
             </h3>
             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                 <button type="button" class="btn btn-danger" data-bs-toggle="modal"
                         data-bs-target="#deleteClass">
-                    <i class="bi bi-trash"></i> Удалить класс
+                    <i class="bi bi-trash"></i> Удалить группу
                 </button>
                 <div class="modal fade" id="deleteClass" tabindex="-1"
                      aria-labelledby="deleteClassModalLabel" aria-hidden="true">
@@ -62,20 +46,20 @@
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h1 class="modal-title fs-5" id="deleteClassModalLabel">
-                                    Удалить класс?
+                                    Удалить группу?
                                 </h1>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                                         aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <p>Вы удалите данные класса безвозвратно. <u>Это действие отменить невозможно.</u></p>
+                                <p>Вы удалите данные группы безвозвратно. <u>Это действие отменить невозможно.</u></p>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary"
                                         data-bs-dismiss="modal">
                                     Отмена
                                 </button>
-                                <a href="{{ url_for(".delete_class", school_id=school.id, class_id=class.id) }}"
+                                <a href="{{ url_for(".delete_group", school_id=school.id, group_id=group.id) }}"
                                    class="btn btn-danger">Удалить</a>
                             </div>
                         </div>

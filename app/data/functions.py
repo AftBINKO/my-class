@@ -153,7 +153,7 @@ def get_titles_roles(user):
         if role.title in ["Лидер", "Ученик", "Староста"]:
             if user.group_id:
                 group = db_sess.query(Group).get(user.group_id)
-                title = f"{role.title} группы {group.name}"
+                title = f'{role.title} группы "{group.name}"'
                 roles_titles.append(title)
                 continue
 

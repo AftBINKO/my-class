@@ -1,10 +1,10 @@
 from flask import redirect, url_for, abort, render_template, session
 from flask_login import login_required, current_user
 
-from app.modules.schools.school.classes.school_class.class_teacher import bp
-from app.data.models import User, Permission, School, Class, Role
-from app.data.forms import ChangeFullnameForm, SelectUser
 from app.data.functions import check_permission, add_role, get_roles, get_max_role, check_role, del_role
+from app.modules.schools.school.groups.group.leader import bp
+from app.data.models import User, Permission, School, Group
+from app.data.forms import ChangeFullnameForm, SelectUser
 from app.data.db_session import create_session
 from app import RUSSIAN_ALPHABET
 
@@ -17,7 +17,7 @@ def check_permissions(endpoint, values):
 
     permission1 = db_sess.query(Permission).filter_by(title="editing_self_school").first()
     permission2 = db_sess.query(Permission).filter_by(title="editing_school").first()
-    permission3 = db_sess.query(Permission).filter_by(title="editing_classes").first()
+    permission3 = db_sess.query(Permission).filter_by(title="editing_groups").first()
 
     if not (check_permission(current_user, permission3) and (check_permission(current_user, permission2) or (
             check_permission(current_user, permission1) and current_user.school_id == school_id))):
@@ -27,58 +27,55 @@ def check_permissions(endpoint, values):
 
 @bp.route('/add', methods=['GET', 'POST'])
 @login_required
-def add_class_teacher(school_id, class_id):
+def add_leader(school_id, group_id):
     db_sess = create_session()
 
     school = db_sess.query(School).get(school_id)
-    school_class = db_sess.query(Class).get(class_id)
+    group = db_sess.query(Group).get(group_id)
 
     form = ChangeFullnameForm()
 
-    title = f"Создать классного руководителя в {school_class.class_number} "
-    if school_class.letter:
-        title += f'"{school_class.letter}" '
-    title += f"класс {school.name}"
+    title = f'Создать лидера группы "{group.name}" {school.name}'
 
     data = {
         'form': form,
         'title': title,
         'school': school,
-        'class': school_class,
+        'class': group,
         'message': None
     }
 
     if form.validate_on_submit():
-        teacher = User()
+        leader = User()
 
         if not all([symbol in RUSSIAN_ALPHABET + ' ' for symbol in form.fullname.data]):
             data['message'] = "Поле заполнено неверно. Используйте только буквы русского алфавита"
         else:
-            teacher.fullname = ' '.join(list(map(lambda name: name.lower().capitalize(), form.fullname.data.split())))
-            teacher.school_id = school_id
-            teacher.class_id = class_id
-            teacher.roles = 3
-            teacher.generate_key()
+            leader.fullname = ' '.join(list(map(lambda name: name.lower().capitalize(), form.fullname.data.split())))
+            leader.school_id = school_id
+            leader.group_id = group_id
+            leader.roles = '[3]'
+            leader.generate_key()
 
-            db_sess.add(teacher)
+            db_sess.add(leader)
             db_sess.commit()
             db_sess.close()
 
-            return redirect(session.pop('url', url_for("schools.school.classes.school_class.class_info",
-                                                       school_id=school_id, class_id=class_id)))
+            return redirect(session.pop('url', url_for("schools.school.groups.group.group_info",
+                                                       school_id=school_id, group_id=group_id)))
 
     db_sess.close()
 
-    return render_template('add_class_teacher.html', **data)  # noqa
+    return render_template('add_leader.html', **data)  # noqa
 
 
 @bp.route('/add_existing', methods=['GET', 'POST'])
 @login_required
-def add_existing_class_teacher(school_id, class_id):
+def add_existing_leader(school_id, group_id):
     db_sess = create_session()
 
     school = db_sess.query(School).get(school_id)
-    school_class = db_sess.query(Class).get(class_id)
+    group = db_sess.query(Group).get(group_id)
 
     form = SelectUser()  # noqa
 
@@ -87,16 +84,13 @@ def add_existing_class_teacher(school_id, class_id):
     for us in school_users:
         roles = get_roles(us)
         role = get_max_role(us)
-        if role.title in ["Модератор", "Учитель"] and "Классный руководитель" not in list(
+        if role.title in ["Модератор", "Учитель"] and "Лидер" not in list(
                 map(lambda s: s.title, roles)):
             users.append((us.id, us.fullname))
 
     form.select.choices = users
 
-    title = f"Выбрать классного руководителя в {school_class.class_number} "
-    if school_class.letter:
-        title += f'"{school_class.letter}" '
-    title += f"класс {school.name}"
+    title = f'Выбрать лидера группы "{group.name}" {school.name}'
 
     data = {
         'form': form,
@@ -109,14 +103,14 @@ def add_existing_class_teacher(school_id, class_id):
         user_id = int(form.select.data)
         if user_id:
             user = db_sess.query(User).get(user_id)
-            add_role(user, "Классный руководитель")
-            user.class_id = class_id
+            add_role(user, "Лидер")
+            user.group_id = group_id
 
             db_sess.commit()
             db_sess.close()
 
             return redirect(
-                url_for("schools.school.classes.school_class.class_info", school_id=school_id, class_id=class_id)
+                url_for("schools.school.groups.group.group_info", school_id=school_id, group_id=group_id)
             )
         data["message"] = "Вы не выбрали пользователя"
 
@@ -127,20 +121,20 @@ def add_existing_class_teacher(school_id, class_id):
 
 @bp.route('/delete', methods=['GET', 'POST'])
 @login_required
-def delete(school_id, class_id):
+def delete(school_id, group_id):
     db_sess = create_session()
 
-    users = db_sess.query(User).filter_by(class_id=class_id).all()
-    class_teacher = None
+    users = db_sess.query(User).filter_by(group_id=group_id).all()
+    leader = None
     for user in users:
-        if check_role(user, "Классный руководитель"):
-            class_teacher = user
+        if check_role(user, "Лидер"):
+            leader = user
             break
 
-    if class_teacher is None:
+    if leader is None:
         abort(404)
 
-    del_role(class_teacher.id, "Классный руководитель")
+    del_role(leader.id, "Лидер")
     db_sess.close()
 
-    return redirect(url_for("schools.school.classes.school_class.class_info", school_id=school_id, class_id=class_id))
+    return redirect(url_for("schools.school.groups.group.group_info", school_id=school_id, group_id=group_id))

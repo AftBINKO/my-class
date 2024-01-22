@@ -1,28 +1,18 @@
 {% extends "base.html" %}
 
 {% block title %}
-    QR коды учеников
-    {% if class.letter %}
-        {{ class.class_number }}-го "{{ class.letter }}" класса {{ school.name }}
-    {% else %}
-        {{ class.class_number }}-го класса {{ school.name }}
-    {% endif %}
+    QR коды учеников группы "{{ group.name }}" {{ school.name }}
 {% endblock %}
 
 {% block content %}
     <div class="container" style="margin-top: 25px">
         <h1 style="text-align: center">
-            QR коды учеников
-            {% if class.letter %}
-                {{ class.class_number }}-го "{{ class.letter }}" класса {{ school.name }}
-            {% else %}
-                {{ class.class_number }}-го класса {{ school.name }}
-            {% endif %}
+            QR коды учеников группы "{{ group.name }}" {{ school.name }}
         </h1>
     </div>
     <div class="container" style="margin-top: 25px">
         <div class="container-fluid" style="margin-top: 25px">
-            <a href="{{ url_for(".generate_qrcodes", school_id=school.id, class_id=class.id) }}"
+            <a href="{{ url_for(".generate_qrcodes", school_id=school.id, group_id=group.id) }}"
                class="btn btn-success"><i class="bi bi-qr-code"></i> Сгенерировать QR коды всем</a>
         </div>
         <table class="table">

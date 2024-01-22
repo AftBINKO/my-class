@@ -5,3 +5,4 @@
 /app/tmp/*
 /tmp/*
 /app/data/config.json
+/venv/

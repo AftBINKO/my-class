@@ -6,7 +6,7 @@ from app.data.forms import MultiCheckboxField
 
 
 class GenerateForm(FlaskForm):
-    classes = MultiCheckboxField('Классы', coerce=int)
+    groups = MultiCheckboxField('Группы', coerce=int)
     start_date = DateField("От", validators=[Optional()])
     end_date = DateField("До", validators=[Optional()])
     submit = SubmitField('Сгенерировать')

@@ -9,7 +9,7 @@ from xlsxwriter import Workbook
 
 from app.data.functions import all_permissions, check_permission, check_role
 from app.modules.schools.school.excel.forms import GenerateForm
-from app.data.models import School, Class, Permission, User
+from app.data.models import School, Group, Permission, User
 from app.modules.schools.school.excel import bp
 from app.data.db_session import create_session
 from app import CONFIG_PATH, app
@@ -29,11 +29,11 @@ def generate(school_id):
 
     form = GenerateForm()
 
-    class_id = request.args.get("class_id")
+    group_id = request.args.get("group_id")
     start_date = request.args.get("start_date")
     end_date = request.args.get("end_date")
-    if class_id:
-        class_id = int(class_id)
+    if group_id:
+        group_id = int(group_id)
     if start_date:
         start_date = datetime.strptime(start_date, "%d.%m.%y").date()
         if not form.start_date.data:
@@ -45,8 +45,8 @@ def generate(school_id):
 
     permission1 = db_sess.query(Permission).filter_by(title="editing_self_school").first()
     permission2 = db_sess.query(Permission).filter_by(title="editing_school").first()
-    permission3 = db_sess.query(Permission).filter_by(title="editing_classes").first()
-    permission4 = db_sess.query(Permission).filter_by(title="editing_self_class").first()
+    permission3 = db_sess.query(Permission).filter_by(title="editing_groups").first()
+    permission4 = db_sess.query(Permission).filter_by(title="editing_self_group").first()
 
     if not ((check_permission(current_user, permission2) or (
             check_permission(current_user, permission1) and current_user.school_id == school_id)) and
@@ -54,22 +54,20 @@ def generate(school_id):
         if not check_permission(current_user, permission4):
             db_sess.close()
             abort(403)
-        if not class_id:
-            return redirect(url_for(".generate", school_id=school_id, class_id=current_user.class_id))
-        if current_user.class_id != class_id:
+        if not group_id:
+            return redirect(url_for(".generate", school_id=school_id, group_id=current_user.group_id))
+        if current_user.group_id != group_id:
             abort(403)
 
-    classes = db_sess.query(Class).filter_by(school_id=school_id).all()
+    groups = db_sess.query(Group).filter_by(school_id=school_id).all()
 
     choices = []
-    for i, c in enumerate(classes):
-        if c.id == class_id:
-            data['class_index'] = i
-        title = str(c.class_number)
-        if c.letter:
-            title += f' "{c.letter}"'
+    for i, c in enumerate(groups):
+        if c.id == group_id:
+            data['group_index'] = i
+        title = str(c.name)
         choices.append((c.id, title))
-    form.classes.choices = choices
+    form.groups.choices = choices
 
     data['form'] = form
 
@@ -77,11 +75,11 @@ def generate(school_id):
         if not ((check_permission(current_user, permission2) or (
                 check_permission(current_user, permission1) and current_user.school_id == school_id)) and
                 check_permission(current_user, permission3)):
-            selected_classes = [db_sess.query(Class).get(current_user.class_id)]
-        elif not form.classes.data:
-            selected_classes = classes
+            selected_groups = [db_sess.query(Group).get(current_user.group_id)]
+        elif not form.groups.data:
+            selected_groups = groups
         else:
-            selected_classes = db_sess.query(Class).filter(Class.id.in_(form.classes.data)).all()  # noqa
+            selected_groups = db_sess.query(Group).filter(Group.id.in_(form.groups.data)).all()  # noqa
 
         start_date = form.start_date.data
         end_date = form.end_date.data
@@ -101,10 +99,10 @@ def generate(school_id):
             with Workbook(table_path) as workbook:
                 k = 1.5  # примерная длина символов
 
-                for school_class in selected_classes:
-                    worksheet = workbook.add_worksheet(f"{school_class.class_number}{school_class.letter}")
+                for group in selected_groups:
+                    worksheet = workbook.add_worksheet(f"{group.name}")
 
-                    students = sorted([user for user in db_sess.query(User).filter_by(class_id=school_class.id).all() if
+                    students = sorted([user for user in db_sess.query(User).filter_by(group_id=group.id).all() if
                                        check_role(user, "Ученик")], key=lambda user: user.fullname.split()[0])
 
                     header_row_format = workbook.add_format({

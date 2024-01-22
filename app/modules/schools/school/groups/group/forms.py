@@ -3,7 +3,6 @@ from wtforms.validators import DataRequired
 from flask_wtf import FlaskForm
 
 
-class EditClassForm(FlaskForm):
-    class_number = StringField('Класс', validators=[DataRequired()])
-    letter = StringField('Литера')
+class EditGroupForm(FlaskForm):
+    name = StringField('Название группы', validators=[DataRequired()])  # TODO: переделать
     submit = SubmitField('Подтвердить')

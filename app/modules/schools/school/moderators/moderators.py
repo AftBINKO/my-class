@@ -49,7 +49,7 @@ def add_moderator(school_id):
         else:
             moder.fullname = ' '.join(list(map(lambda name: name.lower().capitalize(), form.fullname.data.split())))
             moder.school_id = school_id
-            moder.roles = 4
+            moder.roles = '[4]'
             moder.generate_key()
 
             db_sess.add(moder)

@@ -19,14 +19,14 @@
                     <div class="alert alert-danger">{{ message }}</div>
                 {% endif %}
                 <div class="mb-3">
-                    {{ form.classes.label(class="form-label") }}
+                    {{ form.groups.label(class="form-label") }}
                     <br>
-                    {% if class_index is defined %}
-                        {% if "editing_classes" in permissions %}
-                            {% for c in form.classes %}
+                    {% if group_index is defined %}
+                        {% if "editing_groups" in permissions %}
+                            {% for c in form.groups %}
                                 <div class="form-check form-check-inline">
                                     {% set check = False %}
-                                    {% if loop.index0 == class_index %}
+                                    {% if loop.index0 == group_index %}
                                         {% set check = True %}
                                     {% endif %}
                                     {{ c(class="form-check-input", type="checkbox", checked=check) }}
@@ -34,10 +34,10 @@
                                 </div>
                             {% endfor %}
                         {% else %}
-                            {% for c in form.classes %}
+                            {% for c in form.groups %}
                                 <div class="form-check form-check-inline">
                                     {% set check = False %}
-                                    {% if loop.index0 == class_index %}
+                                    {% if loop.index0 == group_index %}
                                         {% set check = True %}
                                     {% endif %}
                                     {{ c(class="form-check-input", type="checkbox", checked=check, disabled=True) }}
@@ -46,7 +46,7 @@
                             {% endfor %}
                         {% endif %}
                     {% else %}
-                        {% for c in form.classes %}
+                        {% for c in form.groups %}
                             <div class="form-check form-check-inline">
                                 {{ c(class="form-check-input", type="checkbox", checked=True) }}
                                 {{ c.label(class="form-label") }}
@@ -54,7 +54,7 @@
                         {% endfor %}
                     {% endif %}
                 </div>
-                {% for error in form.classes.errors %}
+                {% for error in form.groups.errors %}
                     <div class="alert alert-danger" role="alert">{{ error }}</div>
                 {% endfor %}
 

@@ -1,36 +1,26 @@
 {% extends "base.html" %}
 
 {% block title %}
-    Таблица явки учеников на неделю
-    {% if class.letter %}
-        {{ class.class_number }}-го "{{ class.letter }}" класса {{ school.name }}
-    {% else %}
-        {{ class.class_number }}-го класса {{ school.name }}
-    {% endif %}
+    Таблица явки учеников на неделю группы "{{ group.name }}" {{ school.name }}
 {% endblock %}
 
 {% block content %}
     <div class="container" style="margin-top: 25px">
         <h1 style="text-align: center">
-            Таблица явки учеников на неделю
-            {% if class.letter %}
-                {{ class.class_number }}-го "{{ class.letter }}" класса {{ school.name }}
-            {% else %}
-                {{ class.class_number }}-го класса {{ school.name }}
-            {% endif %}
+            Таблица явки учеников на неделю группы "{{ group.name }}" {{ school.name }}
         </h1>
     </div>
     <div class="container" style="margin-top: 25px">
         <ul class="nav nav-pills nav-fill">
             <li class="nav-item">
                 <a class="nav-link"
-                   href="{{ url_for(".annual_schedule", class_id=class.id, school_id=school.id) }}">По дням</a>
+                   href="{{ url_for(".annual_schedule", group_id=group.id, school_id=school.id) }}">По дням</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link active" aria-current="page" href="#">Неделя</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for(".monthly_schedule", class_id=class.id, school_id=school.id) }}">
+                <a class="nav-link" href="{{ url_for(".monthly_schedule", group_id=group.id, school_id=school.id) }}">
                     Месяц
                 </a>
             </li>
@@ -41,7 +31,7 @@
     </div>
     {% if generate_table %}
         <div class="container d-flex justify-content-end" style="margin-top: 25px">
-            <a href="{{ url_for("schools.school.excel.generate", school_id=school.id, class_id=class.id, start_date=monday.strftime("%d.%m.%y"), end_date=saturday.strftime("%d.%m.%y")) }}"
+            <a href="{{ url_for("schools.school.excel.generate", school_id=school.id, group_id=group.id, start_date=monday.strftime("%d.%m.%y"), end_date=saturday.strftime("%d.%m.%y")) }}"
                class="btn btn-outline-success">
                 <i class="bi bi-table"></i> Сгенерировать таблицу в формате Excel
             </a>
@@ -121,13 +111,13 @@
                     {% else %}
                         <li class="page-item">
                             <a class="page-link"  {# учитывая week -= 1 #}
-                               href="{{ url_for(".weekly_schedule", school_id=school.id, class_id=class.id, week=1) }}">
+                               href="{{ url_for(".weekly_schedule", school_id=school.id, group_id=group.id, week=1) }}">
                                 <i class="bi bi-chevron-double-left"></i>
                             </a>
                         </li>
                         <li class="page-item">
                             <a class="page-link"
-                               href="{{ url_for(".weekly_schedule", school_id=school.id, class_id=class.id, week=week) }}">
+                               href="{{ url_for(".weekly_schedule", school_id=school.id, group_id=group.id, week=week) }}">
                                 <i class="bi bi-arrow-left"></i>
                             </a>
                         </li>
@@ -148,13 +138,13 @@
                     {% else %}
                         <li class="page-item">
                             <a class="page-link"  {# учитывая week -= 1 #}
-                               href="{{ url_for(".weekly_schedule", school_id=school.id, class_id=class.id, week=week + 2) }}">
+                               href="{{ url_for(".weekly_schedule", school_id=school.id, group_id=group.id, week=week + 2) }}">
                                 <i class="bi bi-arrow-right"></i>
                             </a>
                         </li>
                         <li class="page-item">
                             <a class="page-link"  {# учитывая отсчёт week с нуля #}
-                               href="{{ url_for(".weekly_schedule", school_id=school.id, class_id=class.id, week=today_week + 1) }}">
+                               href="{{ url_for(".weekly_schedule", school_id=school.id, group_id=group.id, week=today_week + 1) }}">
                                 <i class="bi bi-chevron-double-right"></i>
                             </a>
                         </li>

@@ -4,34 +4,26 @@
 {% set months = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"] %}
 
 {% block title %}
-    Таблица явки учеников на {{ months[date.month - 1].lower() }} {{ date.year }}-го года
-    {% if class.letter %}
-        {{ class.class_number }}-го "{{ class.letter }}" класса {{ school.name }}
-    {% else %}
-        {{ class.class_number }}-го класса {{ school.name }}
-    {% endif %}
+    Таблица явки учеников на {{ months[date.month - 1].lower() }} {{ date.year }}-го года группы "{{ group.name }}"
+    {{ school.name }}
 {% endblock %}
 
 {% block content %}
     <div class="container" style="margin-top: 25px">
         <h1 style="text-align: center">
-            Таблица явки учеников на {{ months[date.month - 1].lower() }} {{ date.year }}-го года
-            {% if class.letter %}
-                {{ class.class_number }}-го "{{ class.letter }}" класса {{ school.name }}
-            {% else %}
-                {{ class.class_number }}-го класса {{ school.name }}
-            {% endif %}
+            Таблица явки учеников на {{ months[date.month - 1].lower() }} {{ date.year }}-го года группы
+            "{{ group.name }}" {{ school.name }}
         </h1>
     </div>
     <div class="container" style="margin-top: 25px">
         <ul class="nav nav-pills nav-fill">
             <li class="nav-item">
                 <a class="nav-link" aria-disabled="true"
-                   href="{{ url_for(".annual_schedule", class_id=class.id, school_id=school.id) }}">По дням</a>
+                   href="{{ url_for(".annual_schedule", group_id=group.id, school_id=school.id) }}">По дням</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" aria-current="page"
-                   href="{{ url_for(".weekly_schedule", class_id=class.id, school_id=school.id) }}">Неделя</a>
+                   href="{{ url_for(".weekly_schedule", group_id=group.id, school_id=school.id) }}">Неделя</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link active" aria-disabled="true" href="#">Месяц</a>
@@ -43,7 +35,7 @@
     </div>
     {% if generate_table %}
         <div class="container d-flex justify-content-end" style="margin-top: 25px">
-            <a href="{{ url_for("schools.school.excel.generate", school_id=school.id, class_id=class.id, start_date=start_month.strftime("%d.%m.%y"), end_date=end_month.strftime("%d.%m.%y")) }}"
+            <a href="{{ url_for("schools.school.excel.generate", school_id=school.id, group_id=group.id, start_date=start_month.strftime("%d.%m.%y"), end_date=end_month.strftime("%d.%m.%y")) }}"
                class="btn btn-outline-success">
                 <i class="bi bi-table"></i> Сгенерировать таблицу в формате Excel
             </a>
@@ -69,7 +61,7 @@
                             {% if c != " " %}
                                 <p class="text-center fw-bold">
                                     {% if c["date"] %}
-                                        <a href="{{ url_for(".annual_schedule", class_id=class_id, school_id=school_id, date=c["date"]) }}">
+                                        <a href="{{ url_for(".annual_schedule", group_id=group_id, school_id=school_id, date=c["date"]) }}">
                                             {{ c["day"] }}
                                         </a>
                                     {% else %}
@@ -102,13 +94,13 @@
                 {% else %}
                     <li class="page-item">
                         <a class="page-link"
-                           href="{{ url_for(".monthly_schedule", school_id=school.id, class_id=class.id, month=start_date.strftime("%m.%y")) }}">
+                           href="{{ url_for(".monthly_schedule", school_id=school.id, group_id=group.id, month=start_date.strftime("%m.%y")) }}">
                             <i class="bi bi-chevron-double-left"></i>
                         </a>
                     </li>
                     <li class="page-item">
                         <a class="page-link"
-                           href="{{ url_for(".monthly_schedule", school_id=school.id, class_id=class.id, month=previous.strftime("%m.%y")) }}">
+                           href="{{ url_for(".monthly_schedule", school_id=school.id, group_id=group.id, month=previous.strftime("%m.%y")) }}">
                             <i class="bi bi-arrow-left"></i>
                         </a>
                     </li>
@@ -119,7 +111,7 @@
                     {% else %}
                         <li class="page-item">
                             <a class="page-link"
-                               href="{{ url_for(".monthly_schedule", school_id=school.id, class_id=class.id, month=p) }}">
+                               href="{{ url_for(".monthly_schedule", school_id=school.id, group_id=group.id, month=p) }}">
                                 {{ p }}
                             </a>
                         </li>
@@ -139,13 +131,13 @@
                 {% else %}
                     <li class="page-item">
                         <a class="page-link"
-                           href="{{ url_for(".monthly_schedule", school_id=school.id, class_id=class.id, month=next.strftime("%m.%y")) }}">
+                           href="{{ url_for(".monthly_schedule", school_id=school.id, group_id=group.id, month=next.strftime("%m.%y")) }}">
                             <i class="bi bi-arrow-right"></i>
                         </a>
                     </li>
                     <li class="page-item">
                         <a class="page-link"
-                           href="{{ url_for(".monthly_schedule", school_id=school.id, class_id=class.id, month=today.strftime("%m.%y")) }}">
+                           href="{{ url_for(".monthly_schedule", school_id=school.id, group_id=group.id, month=today.strftime("%m.%y")) }}">
                             <i class="bi bi-chevron-double-right"></i>
                         </a>
                     </li>

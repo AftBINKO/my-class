@@ -7,9 +7,9 @@ from flask_login import login_required, current_user
 from flask import abort, render_template
 from pytz import timezone
 
-from app.modules.schools.school.classes.school_class.schedule import bp
+from app.modules.schools.school.groups.group.schedule import bp
 from app.data.functions import check_permission, check_role
-from app.data.models import User, Permission, School, Class
+from app.data.models import User, Permission, School, Group
 from app.data.db_session import create_session
 from app import WEEKDAYS, CONFIG_PATH
 
@@ -17,16 +17,16 @@ from app import WEEKDAYS, CONFIG_PATH
 @bp.url_value_preprocessor
 def check_permissions(endpoint, values):
     school_id = values['school_id']
-    class_id = values['class_id']
+    group_id = values['group_id']
 
     db_sess = create_session()
 
     permission1 = db_sess.query(Permission).filter_by(title="view_self_arrival_times").first()
-    permission2 = db_sess.query(Permission).filter_by(title="editing_classes").first()  # noqa
+    permission2 = db_sess.query(Permission).filter_by(title="editing_groups").first()  # noqa
     permission3 = db_sess.query(Permission).filter_by(title="editing_school").first()
 
     if not ((check_permission(current_user, permission2) or (
-            check_permission(current_user, permission1) and current_user.class_id == class_id)) and (
+            check_permission(current_user, permission1) and current_user.group_id == group_id)) and (
                     current_user.school_id == school_id or check_permission(current_user, permission3))):
         db_sess.close()
         abort(403)
@@ -36,7 +36,7 @@ def check_permissions(endpoint, values):
 @bp.route('/week/current')
 @bp.route('/week/<int:week>')
 @login_required
-def weekly_schedule(school_id, class_id, week=None):
+def weekly_schedule(school_id, group_id, week=None):
     with open(CONFIG_PATH) as json:
         start_date = datetime.strptime(load(json)["clear_times"], "%Y-%m-%d %H:%M:%S.%f").date()
         monday_start_date = start_date - timedelta(days=start_date.weekday())
@@ -61,9 +61,9 @@ def weekly_schedule(school_id, class_id, week=None):
     db_sess = create_session()  # noqa
 
     school = db_sess.query(School).get(school_id)
-    school_class = db_sess.query(Class).get(class_id)
+    group = db_sess.query(Group).get(group_id)
 
-    students = list(sorted([user for user in db_sess.query(User).filter_by(class_id=class_id).all() if
+    students = list(sorted([user for user in db_sess.query(User).filter_by(group_id=group_id).all() if
                             check_role(user, "Ученик")], key=lambda st: st.fullname.split()[0]))
 
     dates = []
@@ -93,7 +93,7 @@ def weekly_schedule(school_id, class_id, week=None):
                 presence[WEEKDAYS[w]] += 1
                 total_presence += 1
 
-    permission = db_sess.query(Permission).filter_by(title="editing_self_class").first()
+    permission = db_sess.query(Permission).filter_by(title="editing_self_group").first()
     generate_table = check_permission(current_user, permission)
 
     data = {
@@ -101,7 +101,7 @@ def weekly_schedule(school_id, class_id, week=None):
         "students": students,
         "monday": monday,
         "saturday": saturday,
-        "class": school_class,
+        "group": group,
         "weekdays": weekdays,
         "schedule": schedule,
         "presence": presence,
@@ -121,7 +121,7 @@ def weekly_schedule(school_id, class_id, week=None):
 @bp.route('/annual/current')
 @bp.route('/annual/<date>')
 @login_required
-def annual_schedule(school_id, class_id, date=None):
+def annual_schedule(school_id, group_id, date=None):
     with open(CONFIG_PATH) as json:
         start_date = datetime.strptime(load(json)["clear_times"], "%Y-%m-%d %H:%M:%S.%f").date()
     today = datetime.now().astimezone(timezone("Europe/Moscow")).date()
@@ -137,9 +137,9 @@ def annual_schedule(school_id, class_id, date=None):
     db_sess = create_session()  # noqa
 
     school = db_sess.query(School).get(school_id)
-    school_class = db_sess.query(Class).get(class_id)
+    group = db_sess.query(Group).get(group_id)
 
-    students = list(sorted([user for user in db_sess.query(User).filter_by(class_id=class_id).all() if
+    students = list(sorted([user for user in db_sess.query(User).filter_by(group_id=group_id).all() if
                             check_role(user, "Ученик")], key=lambda st: st.fullname.split()[0]))
 
     presence = 0
@@ -177,13 +177,13 @@ def annual_schedule(school_id, class_id, date=None):
         if not f1 and not f2:
             break
 
-    permission = db_sess.query(Permission).filter_by(title="editing_self_class").first()
+    permission = db_sess.query(Permission).filter_by(title="editing_self_group").first()
     generate_table = check_permission(current_user, permission)
 
     data = {
         "school": school,
         "students": students,
-        "class": school_class,
+        "group": group,
         "date": date,
         "schedule": schedule,
         "presence": presence,
@@ -203,7 +203,7 @@ def annual_schedule(school_id, class_id, date=None):
 @bp.route('/month/current')
 @bp.route('/month/<month>')
 @login_required
-def monthly_schedule(school_id, class_id, month=None):
+def monthly_schedule(school_id, group_id, month=None):
     with open(CONFIG_PATH) as json:
         start_date = datetime.strptime(load(json)["clear_times"], "%Y-%m-%d %H:%M:%S.%f").date()
     today = datetime.now().astimezone(timezone("Europe/Moscow")).date()
@@ -221,7 +221,7 @@ def monthly_schedule(school_id, class_id, month=None):
 
     db_sess = create_session()
 
-    students = list(sorted([user for user in db_sess.query(User).filter_by(class_id=class_id).all() if
+    students = list(sorted([user for user in db_sess.query(User).filter_by(group_id=group_id).all() if
                             check_role(user, "Ученик")], key=lambda st: st.fullname.split()[0]))
 
     list_calendar = calendar.month(date.year, date.month).split('\n')[2:-1]
@@ -293,18 +293,18 @@ def monthly_schedule(school_id, class_id, month=None):
             break
 
     school = db_sess.query(School).get(school_id)
-    school_class = db_sess.query(Class).get(class_id)
+    group = db_sess.query(Group).get(group_id)
 
-    permission = db_sess.query(Permission).filter_by(title="editing_self_class").first()
+    permission = db_sess.query(Permission).filter_by(title="editing_self_group").first()
     generate_table = check_permission(current_user, permission)
 
     data = {
         'date': date,
-        'class': school_class,
+        'group': group,
         'start_month': start_month,
         'end_month': end_month,
         'school': school,
-        'class_id': class_id,
+        'group_id': group_id,
         'school_id': school_id,
         'calendar': cal,
         'pagination': pagination,

@@ -36,14 +36,14 @@
                     </button>
                     <div class="collapse navbar-collapse" id="navbarSupportedContent">
                         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                            {% if "5" in current_user.roles.split(", ") %}
+                            {% if "5" in current_user.roles[1:-1].split(", ") %}
                                 <li class="nav-item">
                                     <a class="nav-link" href="{{ url_for("control_panel.schools_list") }}">
                                         <i class="bi bi-toggles"></i> Панель управления
                                     </a>
                                 </li>
                             {% endif %}
-                            {% if not (current_user.roles.split(", ") == ["1", "6"] or current_user.roles.split(", ") == ["6", "1"] or current_user.roles.split(", ") == ["1"] or current_user.roles.split(", ") == ["6"]) %}
+                            {% if not current_user.roles == "[1, 6]" or current_user.roles == "[6, 1]" or current_user.roles == "[1]" or current_user.roles == "[6]" %}
                                 <li class="nav-item">
                                     <a class="nav-link"
                                        href="{{ url_for("admit.admit") }}">
@@ -54,16 +54,16 @@
                             {% if current_user.school_id %}
                                 <li class="nav-item">
                                     <a class="nav-link"
-                                       href="{{ url_for("schools.school.classes_list", school_id=current_user.school_id) }}">
+                                       href="{{ url_for("schools.school.groups_list", school_id=current_user.school_id) }}">
                                         <i class="bi bi-building"></i> Моя школа
                                     </a>
                                 </li>
                             {% endif %}
-                            {% if current_user.class_id %}
+                            {% if current_user.group_id %}
                                 <li class="nav-item">
                                     <a class="nav-link"
-                                       href="{{ url_for("schools.school.classes.school_class.class_info", school_id=current_user.school_id, class_id=current_user.class_id) }}">
-                                        <i class="bi bi-mortarboard"></i> Мой класс
+                                       href="{{ url_for("schools.school.groups.group.group_info", school_id=current_user.school_id, group_id=current_user.group_id) }}">
+                                        <i class="bi bi-mortarboard"></i> Моя группа
                                     </a>
                                 </li>
                             {% endif %}
@@ -93,16 +93,16 @@
                                             </a>
                                         {% endif %}
                                     </li>
-                                    {% if current_user.class_id %}
+                                    {% if current_user.group_id %}
                                         <li>
-                                            {% if current_user.home_page == "my_class" %}
+                                            {% if current_user.home_page == "my_group" %}
                                                 <a class="dropdown-item active" href="#" aria-current="true">
-                                                    Мой класс
+                                                    Моя группа
                                                 </a>
                                             {% else %}
                                                 <a class="dropdown-item"
-                                                   href="{{ url_for("profile.change_home_page", page="my_class") }}">
-                                                    Мой класс
+                                                   href="{{ url_for("profile.change_home_page", page="my_group") }}">
+                                                    Моя группа
                                                 </a>
                                             {% endif %}
                                         </li>

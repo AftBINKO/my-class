@@ -11,7 +11,7 @@ from sqlalchemy import DateTime
 from data.db_session import *
 import data.models as models
 
-path, tmp = "db/data.sqlite3", "tables/tables.json"
+path, tmp = "db/data.sqlite3", "tmp/tmp.json"
 
 
 def migrate():

@@ -31,11 +31,11 @@ def home():
 
         case "my_school":
             if current_user.school_id:
-                return redirect(url_for("schools.school.classes_list", school_id=current_user.school_id))
+                return redirect(url_for("schools.school.groups_list", school_id=current_user.school_id))
 
-        case "my_class":
-            if current_user.class_id:
-                return redirect(url_for("schools.school.classes.school_class.class_info",
-                                        school_id=current_user.school_id, class_id=current_user.class_id))
+        case "my_group":
+            if current_user.group_id:
+                return redirect(url_for("schools.school.groups.group.group_info",
+                                        school_id=current_user.school_id, group_id=current_user.group_id))
 
     return redirect(url_for("profile.profile"))

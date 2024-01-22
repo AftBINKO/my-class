@@ -21,7 +21,7 @@
         <ul class="nav nav-pills nav-fill">
             <li class="nav-item">
                 <a class="nav-link active" aria-current="page" href="#">
-                    Классы
+                    Группы
                 </a>
             </li>
             <li class="nav-item">
@@ -31,8 +31,8 @@
     </div>
     <div class="container" style="margin-top: 50px">
         <div class="d-flex justify-content-between" style="margin-top: 25px">
-            {% if "adding_classes" in permissions %}
-                <a href="{{ url_for(".classes.add_class", school_id=school.id) }}"
+            {% if "adding_groups" in permissions %}
+                <a href="{{ url_for(".groups.add_group", school_id=school.id) }}"
                    class="btn btn-success"><i class="bi bi-plus-lg"></i> Добавить класс</a>
             {% endif %}
             {% if "editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) %}
@@ -46,26 +46,22 @@
             <table class="table">
                 <thead>
                 <tr>
-                    <th scope="col">Класс</th>
+                    <th scope="col">Группа</th>
                     <th scope="col"></th>
                 </tr>
                 </thead>
                 <tbody class="table-group-divider">
-                {% for class in classes %}
+                {% for group in groups %}
                     <tr>
                         <td>
-                            {% if class.letter %}
-                                {{ class.class_number }} "{{ class.letter }}"
-                            {% else %}
-                                {{ class.class_number }}
-                            {% endif %}
-                            {% if current_user.class_id == class.id %}
-                                <span class="badge bg-secondary">ваш</span>
+                            {{ group.name }}
+                            {% if current_user.group_id == group.id %}
+                                <span class="badge bg-secondary">ваша</span>
                             {% endif %}
                         </td>
                         <td>
-                            {% if "view_details_classes" in permissions or ("view_self_details_class" in permissions and current_user.class_id == class.id) %}
-                                <a href="{{ url_for(".classes.school_class.class_info", school_id=school.id, class_id=class.id) }}"
+                            {% if "view_details_groups" in permissions or ("view_self_details_group" in permissions and current_user.group_id == group.id) %}
+                                <a href="{{ url_for(".groups.group.group_info", school_id=school.id, group_id=group.id) }}"
                                    class="btn btn-primary">Открыть</a>
                             {% endif %}
                         </td>

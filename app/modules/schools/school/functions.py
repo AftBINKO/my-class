@@ -1,5 +1,5 @@
-from app.modules.schools.school.classes.school_class.functions import delete_classes
-from app.data.models import School, Permission, Class, User
+from app.modules.schools.school.groups.group.functions import delete_groups
+from app.data.models import School, Permission, Group, User
 from app.data.functions import check_permission as cp
 from app.data.db_session import create_session
 
@@ -36,8 +36,8 @@ def delete_schools(schools, user=None, check_permission=True):
 
     schools = db_sess.query(School).filter(School.id.in_(schools)).all()  # noqa
     for school in schools:
-        classes = db_sess.query(Class).filter_by(school_id=school.id).all()
-        delete_classes(school, classes, check_permission=False)
+        groups = db_sess.query(Group).filter_by(school_id=school.id).all()
+        delete_groups(school, groups, check_permission=False)
 
         users = db_sess.query(User).filter_by(school_id=school.id).all()
         for user in users:

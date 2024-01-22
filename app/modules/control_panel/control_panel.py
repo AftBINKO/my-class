@@ -71,7 +71,7 @@ def add_admin():
         else:
             admin = User()
             admin.fullname = ' '.join(list(map(lambda name: name.lower().capitalize(), form.fullname.data.split())))
-            admin.roles = 5
+            admin.roles = '[5]'
             admin.generate_key()
 
             db_sess = create_session()
