@@ -43,7 +43,7 @@ def add_school():
 
         db_sess.close()
 
-        return redirect(session.pop('url', url_for(".school.classes_list", school_id=school_id)))
+        return redirect(url_for(".school.groups_list", school_id=school_id))
 
     db_sess.close()
 

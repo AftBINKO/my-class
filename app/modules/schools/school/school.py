@@ -1,9 +1,11 @@
+from json import loads
+
 from flask import redirect, url_for, abort, render_template, session, request
 from flask_login import login_required, current_user
 
 from app.data.functions import all_permissions, check_permission, check_role
 from app.modules.schools.school.functions import delete_schools
-from app.data.models import School, Permission, User, Class
+from app.data.models import School, Permission, User, Group
 from app.modules.schools.forms import EditSchoolForm
 from app.data.db_session import create_session
 from app.modules.schools.school import bp
@@ -34,26 +36,26 @@ def check_permissions(endpoint, values):
 
 
 @bp.route('/')
-@bp.route('/classes')
+@bp.route('/groups')
 @login_required
-def classes_list(school_id):
+def groups_list(school_id):
     session['url'] = request.base_url  # noqa
 
     db_sess = create_session()
     permissions = set(map(lambda permission: permission.title, all_permissions(current_user)))
 
     school = db_sess.query(School).get(school_id)
-    classes = db_sess.query(Class).filter_by(school_id=school_id).all()
+    groups = db_sess.query(Group).filter_by(school_id=school_id).all()
 
     db_sess.close()
 
     data = {
         "school": school,
         "permissions": permissions,
-        "classes": classes,
+        "groups": groups,
     }
 
-    return render_template("classes.html", **data)  # noqa
+    return render_template("groups.html", **data)  # noqa
 
 
 @bp.route('/users')
@@ -70,7 +72,7 @@ def users(school_id):
     moderators = []
     teachers = []
     for user in school_users:
-        roles = list(map(int, user.roles.split(", ")))
+        roles = loads(user.roles)
         if 4 in roles:
             moderators.append(user)
         if 2 in roles:
@@ -133,7 +135,7 @@ def edit_school(school_id):
 
         db_sess.close()
 
-        return redirect(session.pop('url', url_for(".classes_list", school_id=school_id)))
+        return redirect(session.pop('url', url_for(".groups_list", school_id=school_id)))
 
     db_sess.close()
 
@@ -146,4 +148,4 @@ def delete_school(school_id):
     if delete_schools(school_id, current_user) == 403:
         abort(403)
 
-    return redirect(session.pop('url', url_for("home")))
+    return redirect(url_for("home"))
