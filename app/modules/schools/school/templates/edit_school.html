@@ -12,7 +12,7 @@
     </div>
     <div class="container">
         <h3 style="text-align: center">
-            Редактирование образовательное учреждение
+            Редактирование образовательного учреждения
         </h3>
         <div class="row justify-content-center align-items-center">
             <form action="" method="post">
@@ -43,7 +43,7 @@
             Управление категориями групп образовательного учреждения
         </h3>
         <div class="container-fluid" style="margin-top: 25px">
-            <a href=""
+            <a href="{{ url_for(".types.add_type", school_id=school.id) }}"
                class="btn btn-success"><i class="bi bi-bookmark-plus"></i> Добавить категорию</a>
         </div>
         <div class="container" style="margin-top: 25px">
@@ -65,9 +65,9 @@
                                 </a>
                                 <ul class="dropdown-menu">
                                     <li>
-                                        <a href=""
+                                        <a href="{{ url_for(".types.edit_type", i=loop.index0, school_id=school.id) }}"
                                            class="dropdown-item">
-                                            Переименовать
+                                            Редактировать
                                         </a>
                                     </li>
                                     <li>
@@ -83,7 +83,7 @@
                             </div>
                         </td>
                         <td>
-                            Количество групп в этой категории:
+                            Количество групп в этой категории: {{ counts_types[type] }}
                         </td>
                     </tr>
                 {% endfor %}

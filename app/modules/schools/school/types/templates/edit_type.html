@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Редактировать категорию "{{ type }}"
+{% endblock %}
+
+{% block content %}
+    <div class="container" style="margin-top: 25px">
+        <h1 style="text-align: center">
+            Управление категорией "{{ type }}"
+        </h1>
+    </div>
+    <div class="container">
+        <h3 style="text-align: center">
+            Редактирование категории
+        </h3>
+        <div class="row justify-content-center align-items-center">
+            <form action="" method="post">
+                {{ form.hidden_tag() }}
+                <div class="mb-3">
+                    {{ form.name.label(class="form-label") }}*
+                    {{ form.name(class="form-control", placeholder='Класс') }}
+                    {% for error in form.name.errors %}
+                        <div class="alert alert-danger" role="alert">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div>
+                    {{ form.submit(type="submit", class="btn btn-success") }}
+                </div>
+            </form>
+        </div>
+    </div>
+        <div class="container">
+        <h3 style="text-align: center">
+            Управление категорией
+        </h3>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <a class="btn btn-danger">Удалить категорию</a>
+        </div>
+    </div>
+{% endblock %}

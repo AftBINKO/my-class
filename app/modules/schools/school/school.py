@@ -3,7 +3,7 @@ from json import loads
 from flask import redirect, url_for, abort, render_template, session, request
 from flask_login import login_required, current_user
 
-from app.data.functions import all_permissions, check_permission, check_role
+from app.data.functions import all_permissions, check_permission
 from app.modules.schools.school.functions import delete_schools
 from app.data.models import School, Permission, User, Group
 from app.modules.schools.forms import EditSchoolForm
@@ -124,12 +124,20 @@ def edit_school(school_id):
         form.fullname.data = school.fullname
 
     types = loads(school.types)
+    counts_types = {}
+
+    for group in db_sess.query(Group).filter_by(school_id=school_id).all():
+        try:
+            counts_types[types[group.type]] += 1
+        except KeyError:
+            counts_types[types[group.type]] = 1
 
     data = {
         'form': form,
         'school': school,
         'types': types,
-        "is_deleting_school": is_deleting_school
+        'is_deleting_school': is_deleting_school,
+        'counts_types': counts_types
     }
 
     if form.validate_on_submit():
