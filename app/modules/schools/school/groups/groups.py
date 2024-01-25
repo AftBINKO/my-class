@@ -1,4 +1,6 @@
-from flask import redirect, url_for, abort, render_template, session
+from json import loads
+
+from flask import redirect, url_for, abort, render_template
 from flask_login import login_required, current_user
 
 from app.modules.schools.school.groups.group.forms import EditGroupForm
@@ -23,28 +25,37 @@ def add_group(school_id):
         db_sess.close()
         abort(403)
 
+    types = [(0, "Выбрать...")] + [(i, t) for i, t in enumerate(loads(school.types), start=1)]
+
     form = EditGroupForm()
+    form.t.choices = types
+
     data = {
         'form': form,
-        'school': school
+        'school': school,
+        'message': None
     }
 
     if form.validate_on_submit():
-        group = Group()
+        i = int(form.t.data)
+        if i:
+            group = Group()
 
-        group.name = form.name.data
-        group.school_id = school_id
+            group.name = form.name.data
+            group.school_id = school_id
+            group.type = i - 1
 
-        db_sess.add(group)
-        db_sess.commit()
+            db_sess.add(group)
+            db_sess.commit()
 
-        group_id = group.id
+            group_id = group.id
 
-        db_sess.close()
+            db_sess.close()
 
-        return redirect(url_for(
-            ".group.group_info", school_id=school_id, group_id=group_id
-        ))
+            return redirect(url_for(
+                ".group.group_info", school_id=school_id, group_id=group_id
+            ))
+        data['message'] = "Вы не выбрали категорию группы"
 
     db_sess.close()
 

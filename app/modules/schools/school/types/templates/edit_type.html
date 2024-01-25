@@ -20,6 +20,9 @@
                 <div class="mb-3">
                     {{ form.name.label(class="form-label") }}*
                     {{ form.name(class="form-control", placeholder='Класс') }}
+                    <div class="form-text">
+                        Используйте слово в именительном падеже и в единственном числе, регистр не учитывается
+                    </div>
                     {% for error in form.name.errors %}
                         <div class="alert alert-danger" role="alert">{{ error }}</div>
                     {% endfor %}
@@ -30,12 +33,43 @@
             </form>
         </div>
     </div>
-        <div class="container">
+    <div class="container">
         <h3 style="text-align: center">
             Управление категорией
         </h3>
         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-            <a class="btn btn-danger">Удалить категорию</a>
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal"
+                    data-bs-target="#deleteType">Удалить
+                категорию
+            </button>
+            <div class="modal fade" id="deleteType" tabindex="-1"
+                 aria-labelledby="deleteTypeModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="deleteTypeModalLabel">
+                                Удалить категорию "{{ type }}"?
+                            </h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>
+                                <b>Внимание! При удалении категории вместе с ней будут удалены группы этой категории</b>.
+                                Данное действие отменить невозможно.
+                            </p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary"
+                                    data-bs-dismiss="modal">
+                                Отмена
+                            </button>
+                            <a href="{{ url_for(".delete_type", school_id=school.id, i=i) }}"
+                               class="btn btn-danger">Удалить</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}

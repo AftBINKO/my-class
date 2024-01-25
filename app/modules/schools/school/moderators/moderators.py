@@ -74,7 +74,7 @@ def add_existing_moderator(school_id):
 
     school_users = db_sess.query(User).filter_by(school_id=school_id).all()
     users = [(0, "Выбрать...")] + [
-        (us.id, us.fullname) for us in school_users if get_max_role(us).title in ["Учитель", "Классный руководитель"]
+        (us.id, us.fullname) for us in school_users if get_max_role(us).title in ["Учитель", "Лидер"]
     ]
 
     form.select.choices = users

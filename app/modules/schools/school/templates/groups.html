@@ -33,7 +33,7 @@
         <div class="d-flex justify-content-between" style="margin-top: 25px">
             {% if "adding_groups" in permissions %}
                 <a href="{{ url_for(".groups.add_group", school_id=school.id) }}"
-                   class="btn btn-success"><i class="bi bi-plus-lg"></i> Добавить класс</a>
+                   class="btn btn-success"><i class="bi bi-plus-lg"></i> Добавить группу</a>
             {% endif %}
             {% if "editing_school" in permissions or ("editing_self_school" in permissions and current_user.school_id == school.id) %}
                 <a href="{{ url_for(".excel.generate", school_id=school.id) }}"
@@ -47,27 +47,33 @@
                 <thead>
                 <tr>
                     <th scope="col">Группа</th>
+                    <th scope="col">Категория</th>
                     <th scope="col"></th>
                 </tr>
                 </thead>
-                <tbody class="table-group-divider">
-                {% for group in groups %}
-                    <tr>
-                        <td>
-                            {{ group.name }}
-                            {% if current_user.group_id == group.id %}
-                                <span class="badge bg-secondary">ваша</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if "view_details_groups" in permissions or ("view_self_details_group" in permissions and current_user.group_id == group.id) %}
-                                <a href="{{ url_for(".groups.group.group_info", school_id=school.id, group_id=group.id) }}"
-                                   class="btn btn-primary">Открыть</a>
-                            {% endif %}
-                        </td>
-                    </tr>
+                {% for type in groups %}
+                    <tbody class="table-group-divider">
+                    {% for group in groups[type] %}
+                        <tr>
+                            <td>
+                                {{ group.name }}
+                                {% if current_user.group_id == group.id %}
+                                    <span class="badge bg-secondary">ваша</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <i>{{ type }}</i>
+                            </td>
+                            <td>
+                                {% if "view_details_groups" in permissions or ("view_self_details_group" in permissions and current_user.group_id == group.id) %}
+                                    <a href="{{ url_for(".groups.group.group_info", school_id=school.id, group_id=group.id) }}"
+                                       class="btn btn-primary">Открыть</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
                 {% endfor %}
-                </tbody>
             </table>
         </div>
     </div>

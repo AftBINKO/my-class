@@ -17,7 +17,7 @@ from app import CONFIG_PATH, app
 
 @bp.route('/generate', methods=['GET', 'POST'])
 @login_required
-def generate(school_id):
+def generate(school_id):  # TODO: Модернизировать под категории групп
     db_sess = create_session()
     school = db_sess.query(School).get(school_id)
     permissions = set(map(lambda permission: permission.title, all_permissions(current_user)))

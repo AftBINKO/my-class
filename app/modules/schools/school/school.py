@@ -45,18 +45,29 @@ def groups_list(school_id):
     permissions = set(map(lambda permission: permission.title, all_permissions(current_user)))
 
     school = db_sess.query(School).get(school_id)
+    types = loads(school.types)
 
     if not loads(school.types):
         return redirect(url_for(".users", school_id=school_id))
 
     groups = db_sess.query(Group).filter_by(school_id=school_id).all()
+    group_types = {}
+
+    for group in groups:
+        try:
+            group_types[types[group.type]] += [group]
+        except KeyError:
+            group_types[types[group.type]] = [group]
+
+    group_types = {key: list(sorted(value, key=lambda v: v.name))
+                   for key, value in sorted(group_types.items(), key=lambda item: len(item[1]), reverse=True)}
 
     db_sess.close()
 
     data = {
         "school": school,
         "permissions": permissions,
-        "groups": groups,
+        "groups": group_types,
     }
 
     return render_template("groups.html", **data)  # noqa
