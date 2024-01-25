@@ -1,8 +1,9 @@
 from json import loads, dumps
 
-from flask import redirect, url_for, abort, render_template, session
+from flask import redirect, url_for, abort, render_template
 from flask_login import login_required, current_user
 
+from app.modules.schools.school.types.functions import delete_type as del_type
 from app.modules.schools.school.types.forms import EditTypeForm
 from app.modules.schools.school.types import bp
 from app.data.functions import check_permission
@@ -43,7 +44,7 @@ def add_type(school_id):
 
     if form.validate_on_submit():
         types = loads(school.types)
-        types.append(form.name.data)
+        types.append(form.name.data.lower().capitalize())
         school.types = dumps(types)
 
         db_sess.commit()
@@ -71,14 +72,15 @@ def edit_type(school_id, i):
     data = {
         'form': form,
         'school': school,
-        'type': t
+        'type': t,
+        'i': i
     }
 
     if not form.name.data:
         form.name.data = t
 
     if form.validate_on_submit():
-        types[i] = form.name.data
+        types[i] = form.name.data.lower().capitalize()
         school.types = dumps(types)
 
         db_sess.commit()
@@ -89,3 +91,13 @@ def edit_type(school_id, i):
     db_sess.close()
 
     return render_template('edit_type.html', **data)  # noqa
+
+
+@bp.route('/delete/<int:i>', methods=['GET', 'POST'])
+@login_required
+def delete_type(school_id, i):
+    db_sess = create_session()  # noqa
+
+    del_type(school_id, i)
+
+    return redirect(url_for("schools.school.edit_school", school_id=school_id))

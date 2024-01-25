@@ -14,10 +14,23 @@
         <div class="row justify-content-center align-items-center">
             <form action="" method="post">
                 {{ form.hidden_tag() }}
-                <div class="mb-3">  {# TODO: доделать #}
+                {% if message %}
+                    <div class="alert alert-danger">{{ message }}</div>
+                {% endif %}
+                <div class="mb-3">
                     {{ form.name.label(class="form-label") }}*
-                    {{ form.name(class="form-control", placeholder='11') }}
+                    {{ form.name(class="form-control", placeholder='11А') }}
+                    <div class="form-text">
+                        Регистр не учитывается
+                    </div>
                     {% for error in form.name.errors %}
+                        <div class="alert alert-danger" role="alert">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="mb-3">
+                    {{ form.t.label(class="form-label") }}*
+                    {{ form.t(class="form-control") }}
+                    {% for error in form.t.errors %}
                         <div class="alert alert-danger" role="alert">{{ error }}</div>
                     {% endfor %}
                 </div>

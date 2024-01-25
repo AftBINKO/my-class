@@ -17,6 +17,9 @@
                 <div class="mb-3">
                     {{ form.name.label(class="form-label") }}*
                     {{ form.name(class="form-control", placeholder='Класс') }}
+                    <div class="form-text">
+                        Используйте слово в именительном падеже и в единственном числе, регистр не учитывается
+                    </div>
                     {% for error in form.name.errors %}
                         <div class="alert alert-danger" role="alert">{{ error }}</div>
                     {% endfor %}

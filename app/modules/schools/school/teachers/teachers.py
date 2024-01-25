@@ -78,7 +78,7 @@ def add_existing_teacher(school_id):
     for us in school_users:
         roles = get_roles(us)
         role = get_max_role(us)
-        if role.title in ["Модератор", "Классный руководитель"] and "Учитель" not in list(
+        if role.title in ["Модератор", "Лидер"] and "Учитель" not in list(
                 map(lambda s: s.title, roles)):
             users.append((us.id, us.fullname))
 

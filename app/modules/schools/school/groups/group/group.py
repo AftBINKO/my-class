@@ -1,3 +1,5 @@
+from json import loads
+
 from flask import redirect, url_for, abort, render_template, send_file, session, request
 from flask_login import login_required, current_user
 
@@ -62,6 +64,7 @@ def group_info(school_id, group_id):
         "leader": leader,
         "leader_roles": leader_roles,
         "group": group,
+        "type": loads(school.types)[group.type]
     }
 
     db_sess.close()
@@ -89,11 +92,21 @@ def edit_group(school_id, group_id):
         abort(403)
 
     school = db_sess.query(School).get(school_id)
+    # types = [(i, t) for i, t in enumerate(loads(school.types), start=1)]
+    types = loads(school.types)
     group = db_sess.query(Group).get(group_id)
 
     form = EditGroupForm()
     if not form.name.data:
         form.name.data = group.name
+
+    ts = [(0, "Выбрать...")]
+    if not form.t.data:
+        ts = [(group.type + 1, types[group.type])]
+    ts += [(i, t) for i, t in enumerate(loads(school.types), start=1) if (i, t) not in ts]
+    print(ts)
+
+    form.t.choices = ts
 
     data = {
         'form': form,
@@ -104,6 +117,7 @@ def edit_group(school_id, group_id):
 
     if form.validate_on_submit():
         group.name = form.name.data
+        group.type = int(form.t.data) - 1
 
         db_sess.commit()
         db_sess.close()

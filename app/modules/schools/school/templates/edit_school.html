@@ -74,7 +74,7 @@
                                         <hr class="dropdown-divider">
                                     </li>
                                     <li>
-                                        <a href=""
+                                        <a data-bs-toggle="modal" data-bs-target="#deleteType{{ loop.index0 }}"
                                            class="dropdown-item">
                                             Удалить
                                         </a>
@@ -83,7 +83,12 @@
                             </div>
                         </td>
                         <td>
-                            Количество групп в этой категории: {{ counts_types[type] }}
+                            Количество групп в этой категории:
+                            {% if counts_types[type] %}
+                                {{ counts_types[type] }}
+                            {% else %}
+                                0
+                            {% endif %}
                         </td>
                     </tr>
                 {% endfor %}
@@ -132,4 +137,35 @@
             </div>
         </div>
     {% endif %}
+
+    {% for type in types %}
+        <div class="modal fade" id="deleteType{{ loop.index0 }}" tabindex="-1"
+             aria-labelledby="deleteTypeModalLabel{{ loop.index0 }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="deleteTypeModalLabel{{ loop.index0 }}">
+                            Удалить категорию "{{ type }}"?
+                        </h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            <b>Внимание! При удалении категории вместе с ней будут удалены группы этой категории</b>.
+                            Данное действие отменить невозможно.
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Отмена
+                        </button>
+                        <a href="{{ url_for(".types.delete_type", school_id=school.id, i=loop.index0) }}"
+                           class="btn btn-danger">Удалить</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
 {% endblock %}
