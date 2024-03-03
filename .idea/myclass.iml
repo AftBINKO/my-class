@@ -9,7 +9,7 @@
       <excludeFolder url="file://$MODULE_DIR$/app/static/files/qrcodes" />
       <excludeFolder url="file://$MODULE_DIR$/.idea/dataSources" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.12 (myclass)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.12 (myclass) (2)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="snowfall2020" level="application" />
   </component>
