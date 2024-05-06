@@ -121,7 +121,7 @@
                                             {% endif %}
                                         </li>
                                     {% endif %}
-                                    {% if "5" in current_user.roles.split(", ") %}
+                                    {% if "5" in current_user.roles[1:-1].split(", ") %}
                                         <li>
                                             {% if current_user.home_page == "control_panel" %}
                                                 <a class="dropdown-item active" href="#" aria-current="true">

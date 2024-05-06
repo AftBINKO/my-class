@@ -1,17 +1,19 @@
+from os import path
 from string import ascii_letters, digits, punctuation
 
-from flask import redirect, url_for, abort, render_template, request, session
+from flask import redirect, url_for, abort, render_template, request, session, current_app
 from flask_login import login_required, current_user
 
 from app.data.functions import all_permissions, check_permission, get_max_role, get_titles_roles
 from app.data.models import User, Permission, School
 from app.data.db_session import create_session
 from app.data.forms import ChangeFullnameForm
-from app import RUSSIAN_ALPHABET
+from app import RUSSIAN_ALPHABET, app
 
-from app.modules.profile.forms import ChangeLoginForm, ChangePasswordForm
+from app.modules.profile.functions import delete_login_data, add_image
+from app.modules.profile.functions import delete_image as del_image
 from app.modules.profile.functions import delete_user as del_user
-from app.modules.profile.functions import delete_login_data
+from app.modules.profile.forms import *
 from app.modules.profile import bp
 
 
@@ -22,9 +24,9 @@ def check_register():
         abort(401)
 
 
-@bp.route('/')
-@bp.route('/my')
-@bp.route('/<int:user_id>')
+@bp.route('/', methods=['GET', 'POST'])
+@bp.route('/my', methods=['GET', 'POST'])
+@bp.route('/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 def profile(user_id=None):
     db_sess = create_session()
@@ -64,15 +66,29 @@ def profile(user_id=None):
                 db_sess.close()
                 abort(403)
 
-    db_sess.close()
+    form = UploadForm()
 
     data = {
         "roles_titles": roles_titles,
         "permissions": permissions,
         "user": user,
+        "form": form,
         "admin": check_permission(current_user, permission3),
         "school": school
     }
+
+    if form.validate_on_submit():
+        image_path = path.join(current_app.root_path,
+                               path.join(app.config["UPLOAD_FOLDER"], "images"))
+
+        result = add_image(user, current_user, form.upload.data, image_path)
+        match result:
+            case 403:
+                data["message"] = "Недостаточно прав для установки изображения."
+            case 415:
+                data["message"] = "Формат загружаемого изображения не соответствует требованиям."
+
+    db_sess.close()
 
     return render_template("profile.html", **data)  # noqa
 
@@ -278,6 +294,25 @@ def change_password(user_id=None):
     return render_template('change_password.html', **data)  # noqa
 
 
+@bp.route('/<int:user_id>/delete_image', methods=['GET', 'POST'])
+@bp.route('/my/delete_image', methods=['GET', 'POST'])
+@bp.route('/delete_image', methods=['GET', 'POST'])
+@login_required
+def delete_image(user_id=None):
+    if not user_id:
+        user_id = current_user.id
+
+    status = del_image(user_id, current_user)
+
+    match status:
+        case 403:
+            abort(403)
+        case 404:
+            abort(404)
+
+    return redirect(url_for(".profile", user_id=user_id))
+
+
 @bp.route('/<int:user_id>/delete_login', methods=['GET', 'POST'])
 @bp.route('/my/delete_login', methods=['GET', 'POST'])
 @bp.route('/delete_login', methods=['GET', 'POST'])
@@ -286,9 +321,9 @@ def delete_login(user_id=None):
     if not user_id:
         user_id = current_user.id
 
-    role = delete_login_data(user_id, current_user)
+    status = delete_login_data(user_id, current_user)
 
-    match role:
+    match status:
         case 403:
             abort(403)
         case 404:
@@ -305,9 +340,9 @@ def delete_user(user_id=None):
     if not user_id:
         user_id = current_user.id
 
-    role = del_user(user_id, current_user)
+    status = del_user(user_id, current_user)
 
-    match role:
+    match status:
         case 403:
             abort(403)
         case 404:

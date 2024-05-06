@@ -1,5 +1,4 @@
 from os import path, environ
-from locale import setlocale, LC_TIME
 
 from flask_apscheduler import APScheduler
 from flask_bootstrap import Bootstrap
