@@ -28,6 +28,7 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     is_registered = Column(Boolean, nullable=False, default=False)
 
     qr = Column(String)
+    image = Column(String)
 
     is_arrived = Column(Boolean)
     arrival_time = Column(DateTime)

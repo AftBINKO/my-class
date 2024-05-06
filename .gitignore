@@ -1,8 +1,11 @@
 /tests.py
 /app/db/data.sqlite3
 /app/static/uploads/qrcodes/users/*
+/app/static/uploads/images/*
 /app/static/uploads/tables/*
+/app/static/tmp/*
 /app/tmp/*
 /tmp/*
 /app/data/config.json
 /venv/
+/app/static/uploads/images/
