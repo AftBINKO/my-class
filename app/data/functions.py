@@ -236,7 +236,7 @@ def del_role(user, role):
     db_sess.close()
 
 
-def admit(user, current_user):
+def admit(user, current_user, only_check_permission=False):
     if not (isinstance(user, (User, int)) and isinstance(current_user, (User, int))):  # noqa
         raise TypeError
 
@@ -244,6 +244,8 @@ def admit(user, current_user):
 
     if isinstance(user, int):
         user = db_sess.query(User).get(user)
+    if not user:
+        return 404
 
     if isinstance(current_user, int):
         current_user = db_sess.query(User).get(current_user)
@@ -261,6 +263,9 @@ def admit(user, current_user):
 
     if user.is_arrived:
         return
+
+    if only_check_permission:
+        return True
 
     user.is_arrived = True
     arrival_time = datetime.now().astimezone(timezone("Europe/Moscow"))

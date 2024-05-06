@@ -1,8 +1,7 @@
-from flask import abort, render_template
+from flask import abort, render_template, redirect, url_for
 from flask_login import login_required, current_user
 
 from app.data.functions import check_permission
-from app.data.functions import admit as let_it
 from app.data.db_session import create_session
 from app.modules.admits.forms import AdmitForm
 from app.data.models import Permission
@@ -31,16 +30,6 @@ def admit():
     }
 
     if form.validate_on_submit():
-        result = let_it(int(form.id.data), current_user)
-        match result:
-            case 403:
-                data['type'] = 'danger'
-                data['message'] = 'Вы не имеете права отмечать данного пользователя.'
-            case None:
-                data['type'] = 'warning'
-                data['message'] = 'Пользователь уже был отмечен как присутствующий, всё в порядке.'
-            case True:
-                data['type'] = 'success'
-                data['message'] = 'Пользователь теперь отмечен как присутствующий.'
+        return redirect(url_for('qr.admit', user_id=form.id.data))
 
-    return render_template('admit.html', **data)  # noqa
+    return render_template('letit.html', **data)  # noqa
