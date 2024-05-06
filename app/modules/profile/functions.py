@@ -52,7 +52,7 @@ def add_image(user, current_user, image, image_path, check_permission=True):
                     return 403
             else:
                 db_sess.close()
-            return 403
+                return 403
 
     filename = f"image_{user.id}.{image.filename.split('.')[-1]}"
     image.save(path.join(image_path, filename))
@@ -106,7 +106,7 @@ def delete_image(user, current_user, check_permission=True):
                     return 403
             else:
                 db_sess.close()
-            return 403
+                return 403
 
     u = db_sess.query(User).get(user.id)
     u.image = None
