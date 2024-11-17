@@ -5,6 +5,5 @@
 /app/static/tmp/*
 /app/tmp/*
 /tmp/*
-/app/data/config.json
 /venv/
 /app/static/uploads/images/
