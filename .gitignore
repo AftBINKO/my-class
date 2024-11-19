@@ -1,9 +1,2 @@
 /tests.py
-/app/static/uploads/qrcodes/users/*
-/app/static/uploads/images/*
-/app/static/uploads/tables/*
-/app/static/tmp/*
-/app/tmp/*
-/tmp/*
 /venv/
-/app/static/uploads/images/
